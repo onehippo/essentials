@@ -14,17 +14,25 @@
  * limitations under the License.
  */
 
-package org.onehippo.cms7.essentials.components.info;
+package org.onehippo.cms7.essentials.dashboard.utils;
 
-import org.hippoecm.hst.core.parameters.Parameter;
+import org.junit.Test;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  * @version "$Id$"
  */
-public interface EssentialsNewsComponentInfo extends EssentialsDocumentListComponentInfo {
+public class TemplateUtilsTest {
 
-    // TODO better description
-    @Parameter(name = "hideFutureItems", defaultValue = "true", required = false, displayName = "Hide future documents")
-    Boolean isHideFutureItems();
+    private static Logger log = LoggerFactory.getLogger(TemplateUtilsTest.class);
 
+    @Test
+    public void testInjectTemplate() throws Exception {
+
+        String result = TemplateUtils.injectTemplate(null);
+        assertTrue(result == null);
+    }
 }

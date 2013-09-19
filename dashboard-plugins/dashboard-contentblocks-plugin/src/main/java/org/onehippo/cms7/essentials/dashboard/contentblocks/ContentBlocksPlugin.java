@@ -43,6 +43,7 @@ import org.onehippo.cms7.essentials.dashboard.contentblocks.matcher.HasProviderM
 import org.onehippo.cms7.essentials.dashboard.contentblocks.model.ContentBlockModel;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.ui.EssentialsFeedbackPanel;
+import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.HippoNodeUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.wicket.SortedTypeChoiceRenderer;
 import org.slf4j.Logger;
@@ -92,8 +93,8 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
         final SortedTypeChoiceRenderer renderer = new SortedTypeChoiceRenderer(context, this, primaryNodeTypes);
         final SortedTypeChoiceRenderer providerRender = new SortedTypeChoiceRenderer(context, this, providerList);
 
-        final DropDownChoice<String> provider = new DropDownChoice<String>("provider", new PropertyModel(this, "provider"), providerList, providerRender);
-        provider.add(new OnChangeAjaxBehavior() {
+        final DropDownChoice<String> myProvider = new DropDownChoice<>("provider", new PropertyModel<String>(this, "provider"), providerList, providerRender);
+        myProvider.add(new OnChangeAjaxBehavior() {
 
             private static final long serialVersionUID = 1L;
 
@@ -102,10 +103,11 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
                 //empty
             }
         });
-        provider.setOutputMarkupId(true);
-        add(provider);
+        myProvider.setOutputMarkupId(true);
+        add(myProvider);
 
         final DropDownChoice<Prefer> prefer = new DropDownChoice<>("prefer", new PropertyModel<Prefer>(this, "selected"), Arrays.asList(Prefer.RIGHT, Prefer.LEFT), new IChoiceRenderer<Prefer>() {
+            private static final long serialVersionUID = 1L;
             @Override
             public Object getDisplayValue(final Prefer object) {
                 return object;
@@ -130,7 +132,8 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
         add(prefer);
 
 
-        final DropDownChoice<Type> type = new DropDownChoice<>("type", new PropertyModel<Type>(this, "type"), Arrays.asList(Type.DROPDOWN, Type.LINKS), new IChoiceRenderer<Type>() {
+        final DropDownChoice<Type> myType = new DropDownChoice<>("type", new PropertyModel<Type>(this, "type"), Arrays.asList(Type.DROPDOWN, Type.LINKS), new IChoiceRenderer<Type>() {
+            private static final long serialVersionUID = 1L;
             @Override
             public Object getDisplayValue(final Type object) {
                 return object;
@@ -141,7 +144,7 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
                 return object.getType();
             }
         });
-        type.add(new OnChangeAjaxBehavior() {
+        myType.add(new OnChangeAjaxBehavior() {
 
             private static final long serialVersionUID = 1L;
 
@@ -150,8 +153,8 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
                 //empty
             }
         });
-        type.setOutputMarkupId(true);
-        add(type);
+        myType.setOutputMarkupId(true);
+        add(myType);
 
         TextField<String> path = new TextField<>("name", new PropertyModel<String>(this, "name"));
         path.add(new OnChangeAjaxBehavior() {
@@ -170,7 +173,9 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
         final ListChoice<String> availableTypesListChoice = new ListChoice<>("available-types", available, renderer);
         availableTypesListChoice.setOutputMarkupId(true);
 
-        final ListChoice<ContentBlockModel> addToTypesListChoice = new ListChoice("add-to-types", new PropertyModel<ContentBlockModel>(this, "contentblock"), toAdd, new IChoiceRenderer<ContentBlockModel>() {
+        final ListChoice<ContentBlockModel> addToTypesListChoice = new ListChoice<>("add-to-types", new PropertyModel<ContentBlockModel>(this, "contentblock"), toAdd, new IChoiceRenderer<ContentBlockModel>() {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public Object getDisplayValue(final ContentBlockModel object) {
                 return providerRender.getDisplayValue(object.getProvider()) + " on " + renderer.getDisplayValue(object.getDocumentType());
@@ -227,7 +232,7 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
     private boolean removeContentBlockFromType(final ContentBlockModel contentBlockModel) {
         final Session session = getContext().getSession();
         final String documentType = contentBlockModel.getDocumentType();
-        final String name = contentBlockModel.getName();
+        final String myName = contentBlockModel.getName();
         try {
             Node docType;
             if (documentType.contains(":")) {
@@ -235,11 +240,11 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
             } else {
                 docType = session.getNode("/hippo:namespaces/system/" + documentType);
             }
-            final String nodeTypePath = String.format("hipposysedit:nodetype/hipposysedit:nodetype/%s", name);
+            final String nodeTypePath = String.format("hipposysedit:nodetype/hipposysedit:nodetype/%s", myName);
             if (docType.hasNode(nodeTypePath)) {
                 docType.getNode(nodeTypePath).remove();
             }
-            final String templatePath = String.format("editor:templates/_default_/%s", name);
+            final String templatePath = String.format("editor:templates/_default_/%s", myName);
             if (docType.hasNode(templatePath)) {
                 docType.getNode(templatePath).remove();
             }
@@ -247,7 +252,7 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
                 session.save();
                 return true;
             } else {
-                //error
+                //TODO add error message
             }
         } catch (RepositoryException e) {
             log.error("", e);
@@ -274,10 +279,10 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
             if (docType.hasNode("hipposysedit:nodetype/hipposysedit:nodetype")) {
                 nodeType = docType.getNode("hipposysedit:nodetype/hipposysedit:nodetype");
             }
-            PluginType pluginType = null;
             if (docType.hasNode("editor:templates/_default_/root")) {
                 final Node ntemplate = docType.getNode("editor:templates/_default_");
                 final Node root = docType.getNode("editor:templates/_default_/root");
+                PluginType pluginType = null;
                 if (root.hasProperty("plugin.class")) {
                     pluginType = PluginType.get(root.getProperty("plugin.class").getString());
                 }
@@ -291,7 +296,7 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
                     data.put("name", contentBlockModel.getName());
                     data.put("path", new StringCodecFactory.UriEncoding().encode(contentBlockModel.getName()));
                     data.put("documenttype", documentType);
-                    data.put("namespace", documentType.substring(0, documentType.indexOf(":")));
+                    data.put("namespace", documentType.substring(0, documentType.indexOf(':')));
                     data.put("type", contentBlockModel.getType().getType());
                     data.put("provider", contentBlockModel.getProvider());
 
@@ -327,13 +332,10 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
                     return true;
                 }
             }
-            session.refresh(false);
-        } catch (RepositoryException e) {
-            log.error("", e);
-        } catch (TemplateException e) {
-            log.error("", e);
-        } catch (IOException e) {
-            log.error("", e);
+
+        } catch (RepositoryException | TemplateException | IOException e) {
+            GlobalUtils.refreshSession(session, false);
+            log.error("Error in content bocks plugin", e);
         } finally {
             IOUtils.closeQuietly(in);
             IOUtils.closeQuietly(out);
@@ -346,6 +348,7 @@ public class ContentBlocksPlugin extends InstallablePlugin<ContentBlocksInstalle
         final Session session = getContext().getSession();
         try {
             final QueryManager queryManager = session.getWorkspace().getQueryManager();
+            @SuppressWarnings("deprecation")
             final Query query = queryManager.createQuery("hippo:namespaces//element(*,frontend:plugin)[@plugin.class = 'org.onehippo.forge.contentblocks.ContentBlocksFieldPlugin']", Query.XPATH);
             final NodeIterator it = query.execute().getNodes();
             while (it.hasNext()) {

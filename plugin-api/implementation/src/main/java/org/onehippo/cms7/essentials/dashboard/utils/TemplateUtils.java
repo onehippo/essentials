@@ -14,17 +14,27 @@
  * limitations under the License.
  */
 
-package org.onehippo.cms7.essentials.components.info;
+package org.onehippo.cms7.essentials.dashboard.utils;
 
-import org.hippoecm.hst.core.parameters.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import freemarker.template.Configuration;
+import freemarker.template.Template;
 
 /**
  * @version "$Id$"
  */
-public interface EssentialsNewsComponentInfo extends EssentialsDocumentListComponentInfo {
+public final class TemplateUtils {
 
-    // TODO better description
-    @Parameter(name = "hideFutureItems", defaultValue = "true", required = false, displayName = "Hide future documents")
-    Boolean isHideFutureItems();
+    private static Logger log = LoggerFactory.getLogger(TemplateUtils.class);
 
+    private TemplateUtils() {
+    }
+
+    public static String injectTemplate(final String template) {
+        final Configuration config = new Configuration();
+        //
+        return null;
+    }
 }

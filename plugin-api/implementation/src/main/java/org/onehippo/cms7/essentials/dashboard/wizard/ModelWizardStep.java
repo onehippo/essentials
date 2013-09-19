@@ -14,17 +14,26 @@
  * limitations under the License.
  */
 
-package org.onehippo.cms7.essentials.components.info;
+package org.onehippo.cms7.essentials.dashboard.wizard;
 
-import org.hippoecm.hst.core.parameters.Parameter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @version "$Id$"
  */
-public interface EssentialsNewsComponentInfo extends EssentialsDocumentListComponentInfo {
+public class ModelWizardStep<T> extends EssentialsWizardStep {
 
-    // TODO better description
-    @Parameter(name = "hideFutureItems", defaultValue = "true", required = false, displayName = "Hide future documents")
-    Boolean isHideFutureItems();
+    private static final long serialVersionUID = 1L;
+    private static Logger log = LoggerFactory.getLogger(ModelWizardStep.class);
 
+    final T model;
+    public ModelWizardStep(final String title, final T model) {
+        super(title);
+        this.model = model;
+    }
+
+    public T getModel() {
+        return model;
+    }
 }

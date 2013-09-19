@@ -32,9 +32,10 @@ import org.slf4j.LoggerFactory;
  */
 public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWizard {
 
+    private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(AjaxWizardPanel.class);
 
-    final Form form;
+    final Form<?> form;
     final WizardModel wizardModel;
     final FeedbackPanel feedbackPanel;
     final AjaxButton next;
@@ -56,6 +57,8 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
         nextorfinishLabel.setOutputMarkupId(true);
 
         prev = new AjaxButton("prev") {
+            private static final long serialVersionUID = 1L;
+
             @Override
             protected void onSubmit(final AjaxRequestTarget target, final Form<?> form) {
                 final boolean previousAvailable = wizardModel.isPreviousAvailable();
@@ -79,14 +82,22 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
         prev.add(previousLabel);
 
         next = new AjaxButton("next") {
+            private static final long serialVersionUID = 1L;
             @Override
             protected void onSubmit(final AjaxRequestTarget target, final Form<?> form) {
                 final boolean nextAvailable = wizardModel.isNextAvailable();
-                final EssentialsWizardStep activeStep = (EssentialsWizardStep) wizardModel.getActiveStep();
-                activeStep.setProcessed(true);
-                if (nextAvailable) {
+                final IWizardStep activeStep = wizardModel.getActiveStep();
+                activeStep.applyState();
+                final boolean complete = activeStep.isComplete();
+                if(!complete){
+                    log.info("Current step not completed, stay: {}," , activeStep);
+                }
+                if (complete && nextAvailable) {
                     wizardModel.next();
-                    onActiveStepChanged(wizardModel.getActiveStep());
+                    final EssentialsWizardStep nextActiveStep = (EssentialsWizardStep) wizardModel.getActiveStep();
+                    onActiveStepChanged(nextActiveStep);
+                    nextActiveStep.refresh(target);
+
                     if (!wizardModel.isNextAvailable()) {
                         replace(new Label("nextorfinish", getFinishButtonLabel()));
                     }
@@ -121,8 +132,13 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
 
     @Override
     public void onActiveStepChanged(final IWizardStep newStep) {
-        form.replace(newStep.getView("view", this, this));
+        if(newStep.isComplete()){
+            form.replace(newStep.getView("view", this, this));
+        }
+
     }
+
+
 
     @Override
     public void onCancel() {
@@ -145,9 +161,10 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
         return new StringResourceModel("finish", this, null);
     }
 
-    private class Overview extends RefreshingView<EssentialsWizardStep> {
+    private static class Overview extends RefreshingView<IWizardStep> {
 
-        private final List<IModel<EssentialsWizardStep>> list = new ArrayList<>();
+        private static final long serialVersionUID = 1L;
+        private final List<IModel<IWizardStep>> list = new ArrayList<>();
         private final WizardModel model;
 
         private Overview(final String id, final WizardModel model) {
@@ -155,20 +172,20 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
             setOutputMarkupId(true);
             final Iterator<IWizardStep> iWizardStepIterator = model.stepIterator();
             while (iWizardStepIterator.hasNext()) {
-                list.add(new Model(iWizardStepIterator.next()));
+                list.add(new Model<>(iWizardStepIterator.next()));
             }
             this.model = model;
         }
 
 
         @Override
-        protected Iterator<IModel<EssentialsWizardStep>> getItemModels() {
+        protected Iterator<IModel<IWizardStep>> getItemModels() {
             return list.iterator();
         }
 
         @Override
-        protected void populateItem(final Item<EssentialsWizardStep> item) {
-            final EssentialsWizardStep wizardStep = item.getModelObject();
+        protected void populateItem(final Item<IWizardStep> item) {
+            final EssentialsWizardStep wizardStep = (EssentialsWizardStep) item.getModelObject();
             final int index = item.getIndex() + 1;
             final boolean processes = wizardStep.isProcessed();
             final boolean active = model.getActiveStep().equals(wizardStep);
@@ -176,7 +193,10 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
             item.add(new AttributeAppender("class", processes ? " complete" : ""));
             item.add(new AttributeModifier("data-target", String.format("#step%s", index)));
             item.add(new Label("no", index));
-            item.add(new Label("title", wizardStep.getTitle()));
+            final String titleText = "<h4 class=\"header smaller lighter blue\">"+wizardStep.getTitle()+"</h4>";
+            final Label title = new Label("title", titleText);
+            title.setEscapeModelStrings(false);
+            item.add(title);
             final String s = String.valueOf(100 / list.size());
             item.add(new AttributeModifier("style", String.format("min-width: %s%%; max-width: %s%%;", s, s)));
         }
@@ -184,8 +204,14 @@ public class AjaxWizardPanel extends Panel implements IWizardModelListener, IWiz
 
     }
 
-    public void addWizard(EssentialsWizardStep step) {
+    public void addWizard(IWizardStep step) {
         wizardModel.add(step);
+    }
+
+    @Override
+    protected void onInitialize() {
+        super.onInitialize();
+        initSteps();
     }
 
     public void initSteps() {

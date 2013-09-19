@@ -115,6 +115,7 @@ public class GalleryPlugin extends DashboardPlugin {
     private LoadableDetachableModel<List<String>> createImageSetTypesModel() {
 
         return new LoadableDetachableModel<List<String>>() {
+            private static final long serialVersionUID = 1L;
 
             @Override
             protected List<String> load() {
@@ -281,16 +282,16 @@ public class GalleryPlugin extends DashboardPlugin {
             return;
         }
         for (final Node variant : GalleryUtils.getFieldVariantsFromTemplate(imagesetTemplate)) {
-            final String prefix = HippoNodeUtils.getPrefixFromType(HippoNodeUtils.getStringProperty(variant, HippoNodeUtils.HIPPOSYSEDIT_PATH));
-            if (prefix != null) {
-                final ImageModel model = new ImageModel(prefix);
+            final String myPrefix = HippoNodeUtils.getPrefixFromType(HippoNodeUtils.getStringProperty(variant, HippoNodeUtils.HIPPOSYSEDIT_PATH));
+            if (myPrefix != null) {
+                final ImageModel model = new ImageModel(myPrefix);
                 model.setName(variant.getName());
 
                 // Get values from gallery processor variant
                 final Node processorVariant = GalleryUtils.getGalleryProcessorVariant(session, model.getType());
                 if (processorVariant != null) {
-                    model.setHeight(HippoNodeUtils.getLongProperty(processorVariant, "height", Long.valueOf(0L)).intValue());
-                    model.setWidth(HippoNodeUtils.getLongProperty(processorVariant, "width", Long.valueOf(0L)).intValue());
+                    model.setHeight(HippoNodeUtils.getLongProperty(processorVariant, "height", 0L).intValue());
+                    model.setWidth(HippoNodeUtils.getLongProperty(processorVariant, "width", 0L).intValue());
                 }
 
                 // Retrieve and set the translations to the model
