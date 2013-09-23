@@ -27,15 +27,9 @@ public class GlobalToolbarPanel extends PanelPlugin {
 
     public GlobalToolbarPanel(final String id, final PluginContext ctx) {
         super(id, ctx);
-        /**
-         <ul>
-         <ui wicket:id="repeatableList"><span wicket:id="label">[LABEL]<span></ui>
-         </ul>
-         */
+
         final RepeatingView view = new RepeatingView("repeatableList");
-
         final WebMarkupContainer list = new WebMarkupContainer(view.newChildId());
-
         try {
             final Session session = getContext().getSession();
             if (session.nodeExists(AUTO_EXPORT_PATH)) {
