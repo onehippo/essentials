@@ -52,6 +52,11 @@ public class GlobalToolbarPanel extends PanelPlugin {
         } catch (Exception e) {
             log.error("Error checking panel", e);
         }
+        if(totalNotifications==0){
+            list.add(new Label("label", "No notifications"));
+        }
+
+
         add(new Label("totalNotifications", String.valueOf(totalNotifications)));
         add(view);
         view.add(list);
