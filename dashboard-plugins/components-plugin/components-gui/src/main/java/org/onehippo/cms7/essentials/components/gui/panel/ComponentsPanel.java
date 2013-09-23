@@ -19,9 +19,6 @@ import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableBiMap;
-
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang.StringUtils;
 import org.apache.wicket.ajax.AjaxEventBehavior;
@@ -30,11 +27,9 @@ import org.apache.wicket.markup.html.form.Form;
 import org.apache.wicket.markup.html.form.ListChoice;
 import org.apache.wicket.markup.html.form.ListMultipleChoice;
 import org.apache.wicket.markup.html.panel.FeedbackPanel;
-import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.onehippo.cms7.essentials.components.gui.ComponentsWizard;
 import org.onehippo.cms7.essentials.dashboard.Asset;
-import org.onehippo.cms7.essentials.dashboard.Plugin;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.model.CatalogObject;
 import org.onehippo.cms7.essentials.dashboard.model.hst.HstTemplate;
@@ -46,6 +41,9 @@ import org.onehippo.cms7.essentials.dashboard.utils.ProjectUtils;
 import org.onehippo.cms7.essentials.dashboard.wizard.EssentialsWizardStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableBiMap;
 
 /**
  * @version "$Id$"
@@ -77,14 +75,10 @@ public class ComponentsPanel extends EssentialsWizardStep {
 
             )
             .build();
-
-
     // TODO refactor / make dynamic
     public static final String JSP_FOLDER = File.separator + "essentials" + File.separator + "components" + File.separator;
     private static final long serialVersionUID = 1L;
-
     private static Logger log = LoggerFactory.getLogger(ComponentsPanel.class);
-
     private final ListChoice<String> sitesChoice;
     private final ListMultipleChoice<String> availableTypesListChoice;
     private final ListMultipleChoice<String> addToTypesListChoice;
@@ -116,20 +110,18 @@ public class ComponentsPanel extends EssentialsWizardStep {
 
             @Override
             protected void onEvent(final AjaxRequestTarget target) {
+
                 final String input = sitesChoice.getInput();
                 if (StringUtils.isNotEmpty(input) && StringUtils.isNumeric(input)) {
                     final String site = sitesChoice.getChoices().get(Integer.parseInt(input));
                     selectedSite = site;
-                    try {
-                        final List<String> addedComponents = Util.getAddedComponents(context, site);
+                    final List<String> addedComponents = Util.getAddedComponents(context, site);
 
-                        addToTypesListChoice.setChoices(addedComponents);
-                        availableTypesListChoice.setChoices(Util.getAvailableComponents(COMPONENTS_MAPPING.keySet(), addedComponents));
+                    addToTypesListChoice.setChoices(addedComponents);
+                    availableTypesListChoice.setChoices(Util.getAvailableComponents(COMPONENTS_MAPPING.keySet(), addedComponents));
 
-                        target.add(addToTypesListChoice, availableTypesListChoice);
-                    } catch (RepositoryException e) {
-                        log.error("repository exception while trying to select site", e);
-                    }
+                    target.add(addToTypesListChoice, availableTypesListChoice);
+
                 } else {
                     availableTypesListChoice.setChoices(Collections.<String>emptyList());
                     addToTypesListChoice.setChoices(Collections.<String>emptyList());
@@ -166,17 +158,8 @@ public class ComponentsPanel extends EssentialsWizardStep {
                     @SuppressWarnings("unchecked")
                     final List<String> availableChoices = (List<String>) availableTypesListChoice.getChoices();
                     final String input = availableChoices.get(Integer.parseInt(availableTypesListChoice.getInput()));
-
-
                     final boolean b = addCatalogToSite(context, input, selectedSite);
-
-                    List<String> addedComponents = null;
-                    try {
-                        addedComponents = Util.getAddedComponents(context, selectedSite);
-                    } catch (RepositoryException e) {
-                        log.error("", e);
-                    }
-
+                    final List<String> addedComponents = Util.getAddedComponents(context, selectedSite);
                     addToTypesListChoice.setChoices(addedComponents);
                     availableTypesListChoice.setChoices(Util.getAvailableComponents(COMPONENTS_MAPPING.keySet(), addedComponents));
 
@@ -201,12 +184,8 @@ public class ComponentsPanel extends EssentialsWizardStep {
                     //todo some magic;
                     final boolean b = removeCatalogFromSite(context, input, selectedSite);
 
-                    List<String> addedComponents = null;
-                    try {
-                        addedComponents = Util.getAddedComponents(context, selectedSite);
-                    } catch (RepositoryException e) {
-                        log.error("", e);
-                    }
+                    List<String> addedComponents = Util.getAddedComponents(context, selectedSite);
+
 
                     addToTypesListChoice.setChoices(addedComponents);
                     availableTypesListChoice.setChoices(Util.getAvailableComponents(COMPONENTS_MAPPING.keySet(), addedComponents));
@@ -274,7 +253,6 @@ public class ComponentsPanel extends EssentialsWizardStep {
         return true;
     }
 
-
     private void copyAsset(final File target, final Asset asset) {
         final InputStream resourceAsStream = getClass().getResourceAsStream(asset.getUrl());
         if (resourceAsStream != null) {
@@ -291,7 +269,6 @@ public class ComponentsPanel extends EssentialsWizardStep {
         }
     }
 
-
     /**
      * Component installer utils
      */
@@ -302,24 +279,31 @@ public class ComponentsPanel extends EssentialsWizardStep {
         public static final String HIPPOESSENTIALS_CATALOG = "hippoessentials-catalog";
         public static final String HIPPOESSENTIALS_PREFIX = "Essentials ";
 
-        public static List<String> getAddedComponents(PluginContext context, String siteName) throws RepositoryException {
+        private Util() {
+        }
+
+        public static List<String> getAddedComponents(PluginContext context, String siteName) {
             final List<String> addedComponents = new ArrayList<>();
             final Session session = context.getSession();
-            final Node rootNode = session.getRootNode();
-            final Node node = rootNode.getNode(HST_CONFIG_PATH);
-            if (node.hasNode(siteName + '/' + CATALOG_PATH + '/' + HIPPOESSENTIALS_CATALOG)) {
-                //final Node site = node.getNode(siteName);
-                //todo get parent stuff..
-                final Node essentialsCatalog = node.getNode(siteName + '/' + CATALOG_PATH + '/' + HIPPOESSENTIALS_CATALOG);
-                final NodeIterator it = essentialsCatalog.getNodes();
-                while (it.hasNext()) {
-                    final Node essentialContainerItem = it.nextNode();
-                    final String label = essentialContainerItem.getProperty("hst:label").getString();
-                    final String key = label.replace(HIPPOESSENTIALS_PREFIX, "");
-                    if (COMPONENTS_MAPPING.containsKey(key)) {
-                        addedComponents.add(key);
+            try {
+                final Node rootNode = session.getRootNode();
+                final Node node = rootNode.getNode(HST_CONFIG_PATH);
+                if (node.hasNode(siteName + '/' + CATALOG_PATH + '/' + HIPPOESSENTIALS_CATALOG)) {
+                    //final Node site = node.getNode(siteName);
+                    //todo get parent stuff..
+                    final Node essentialsCatalog = node.getNode(siteName + '/' + CATALOG_PATH + '/' + HIPPOESSENTIALS_CATALOG);
+                    final NodeIterator it = essentialsCatalog.getNodes();
+                    while (it.hasNext()) {
+                        final Node essentialContainerItem = it.nextNode();
+                        final String label = essentialContainerItem.getProperty("hst:label").getString();
+                        final String key = label.replace(HIPPOESSENTIALS_PREFIX, "");
+                        if (COMPONENTS_MAPPING.containsKey(key)) {
+                            addedComponents.add(key);
+                        }
                     }
                 }
+            } catch (RepositoryException e) {
+                log.error("Error fetching components", e);
             }
             return addedComponents;
         }
@@ -328,9 +312,6 @@ public class ComponentsPanel extends EssentialsWizardStep {
             List<String> abv = new ArrayList<>(available);
             abv.removeAll(added);
             return abv;
-        }
-
-        private Util() {
         }
     }
 }

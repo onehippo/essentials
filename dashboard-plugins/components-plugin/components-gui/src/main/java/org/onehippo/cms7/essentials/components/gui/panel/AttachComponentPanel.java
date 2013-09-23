@@ -17,11 +17,14 @@
 package org.onehippo.cms7.essentials.components.gui.panel;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeTypeExistsException;
 
+import org.apache.commons.lang.StringUtils;
+import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.ajax.form.OnChangeAjaxBehavior;
 import org.apache.wicket.markup.html.form.Form;
@@ -35,6 +38,8 @@ import org.onehippo.cms7.essentials.dashboard.utils.ComponentsUtils;
 import org.onehippo.cms7.essentials.dashboard.wizard.EssentialsWizardStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * Attach component to a component container.
@@ -50,12 +55,13 @@ public class AttachComponentPanel extends EssentialsWizardStep {
     private List<String> selectedDocuments;
     private final ListChoice<String> sitesChoice;
     private String selectedSite;
-
+    private final ListMultipleChoice<String> componentsChoice;
+    private  List<String> componentsList;
 
     public AttachComponentPanel(final ComponentsWizard parent, final String id) {
         super(id);
         this.parent = parent;
-        PluginContext context = parent.getContext();
+        final PluginContext context = parent.getContext();
         final Form<?> form = new Form("form");
         //############################################
         // SITES SELECT
@@ -67,11 +73,41 @@ public class AttachComponentPanel extends EssentialsWizardStep {
         sitesChoice.setNullValid(false);
         sitesChoice.setOutputMarkupId(true);
 
+        sitesChoice.add(new AjaxEventBehavior("onchange") {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected void onEvent(final AjaxRequestTarget target) {
+                final String selectedInput = sitesChoice.getInput();
+                if(Strings.isNullOrEmpty(selectedInput)){
+                    log.debug("No site selected");
+                    return;
+                }
+                selectedSite = sitesChoice.getChoices().get(Integer.valueOf(selectedInput));
+                log.info("#selected site: {}", selectedSite);
+                final List<String> addedComponents = ComponentsPanel.Util.getAddedComponents(context, selectedSite);
+                componentsChoice.setChoices(addedComponents);
+                target.add(componentsChoice);
+            }
+        });
+        //############################################
+        // COMPONENTS SELECT
+        //############################################
+
+        // component list is populated on site select:
+        componentsList = new ArrayList<>();
+        final PropertyModel<List<String>> componentModel = new PropertyModel<>(this, "componentsList");
+        componentsChoice = new ListMultipleChoice<>("componentList", componentModel, componentsList);
+
+
         //############################################
         // ADD COMPONENTS
         //############################################
+        componentsChoice.setOutputMarkupId(true);
+
         add(form);
         form.add(sitesChoice);
+        form.add(componentsChoice);
     }
 
 
