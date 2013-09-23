@@ -3,3 +3,5 @@ target/
 *.iml
 hippo-plugins.iws
 .DS_Store
+
+atlassian-ide-plugin.xml
