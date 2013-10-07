@@ -287,8 +287,7 @@ public class ComponentsPanel extends EssentialsWizardStep {
             final List<String> addedComponents = new ArrayList<>();
             final Session session = context.getSession();
             try {
-                final Node rootNode = session.getRootNode();
-                final Node node = rootNode.getNode(HstUtils.HST_CONFIGURATIONS_PATH);
+                final Node node = session.getNode(HstUtils.HST_CONFIGURATIONS_PATH);
                 final String sitePath = siteName + '/' + CATALOG_PATH + '/' + HIPPOESSENTIALS_CATALOG;
                 if (node.hasNode(sitePath)) {
                     //final Node site = node.getNode(siteName);

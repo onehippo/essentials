@@ -162,7 +162,7 @@ public final class HstUtils {
     public static Node getSiteNode(final PluginContext context, final String siteName) {
         final Session session = context.getSession();
         try {
-            return session.getNode('/' + HST_CONFIGURATIONS_PATH + '/' + siteName);
+            return session.getNode(HST_CONFIGURATIONS_PATH + '/' + siteName);
         } catch (RepositoryException e) {
             log.error("Error fetching components", e);
         }
