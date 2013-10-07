@@ -19,6 +19,13 @@
         Choose document types to install (CND only)
     </h3>
     <form wicket:id="form">
+        <div class="control-group">
+            <label class="control-label">Overwrite existing template:</label>
+            <div class="controls">
+                <input type="checkbox" wicket:id="overwrite"/>
+                <label class="lbl">Overwrite</label>
+            </div>
+        </div>
         <fieldset>
             <wicket:panel wicket:id="documentTypes">[DOCUMENT TYPES]</wicket:panel>
         </fieldset>

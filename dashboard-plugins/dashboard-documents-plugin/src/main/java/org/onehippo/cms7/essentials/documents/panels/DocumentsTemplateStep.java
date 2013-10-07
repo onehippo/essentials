@@ -16,17 +16,21 @@
 
 package org.onehippo.cms7.essentials.documents.panels;
 
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.nodetype.NodeTypeExistsException;
 
+import org.apache.wicket.markup.html.form.CheckBox;
 import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.model.PropertyModel;
 import org.onehippo.cms7.essentials.dashboard.DashboardPlugin;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.panels.DoubleSelectBox;
 import org.onehippo.cms7.essentials.dashboard.utils.CndUtils;
+import org.onehippo.cms7.essentials.dashboard.utils.DocumentTemplateUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.wizard.EssentialsWizardStep;
 import org.slf4j.Logger;
@@ -43,6 +47,7 @@ public class DocumentsTemplateStep extends EssentialsWizardStep {
     private static Logger log = LoggerFactory.getLogger(DocumentsTemplateStep.class);
     final DoubleSelectBox selectBox;
     final DashboardPlugin parent;
+    private boolean overwrite;
 
     public DocumentsTemplateStep(final DashboardPlugin owner, final String title) {
         super(title);
@@ -52,6 +57,13 @@ public class DocumentsTemplateStep extends EssentialsWizardStep {
         items.add("newsdocument");
         items.add("eventsdocument");
         selectBox = new DoubleSelectBox("documentTypes", "Select document type(s)", form, items);
+        //############################################
+        // OVERWRITE
+        //############################################
+        final CheckBox overwriteCheckbox = new CheckBox("overwrite", new PropertyModel<Boolean>(this, "overwrite"));
+        form.add(overwriteCheckbox);
+
+
         add(form);
     }
 
@@ -61,35 +73,28 @@ public class DocumentsTemplateStep extends EssentialsWizardStep {
 
     @Override
     public void applyState() {
-        setComplete(false);
         final List<String> selectedDocuments = selectBox.getSelectedLeftItems();
-        log.info("@INSTALLING DOCUMENTS", selectedDocuments);
-        if (selectedDocuments != null && selectedDocuments.size() > 0) {
-            final PluginContext context = parent.getContext();
+        if (selectedDocuments != null) {
             for (String selectedDocument : selectedDocuments) {
+                final String resourceName = String.format("%s%s.xml", '/', selectedDocument);
+                final InputStream stream = getClass().getResourceAsStream(resourceName);
+                if (stream != null) {
+                    final StringBuilder builder = GlobalUtils.readStreamAsText(stream);
+                    final PluginContext context = parent.getContext();
 
-                final String prefix = context.getProjectNamespacePrefix();
-                try {
-                    final String superType = String.format("%s:basedocument", prefix);
-                    log.debug("registering document: {}", selectedDocument);
-                    CndUtils.registerDocumentType(context, prefix, selectedDocument, true, false, superType, "hippostd:relaxed", "hippotranslation:translated");
-                    context.getSession().save();
-                } catch (NodeTypeExistsException e) {
-                    // just add already exiting ones:
-                    GlobalUtils.refreshSession(context.getSession(), false);
-                    // TODO check if we have all mixins:
-                } catch (RepositoryException e) {
-                    log.error(String.format("Error registering document type: %s", selectedDocument), e);
-                    GlobalUtils.refreshSession(context.getSession(), false);
+                    try {
+                        String input = builder.toString();
+                        final String projectNamespacePrefix = context.getProjectNamespacePrefix();
+                        input = GlobalUtils.replacePlaceholders(input, "DOCUMENT_NAME", selectedDocument);
+                        input = GlobalUtils.replacePlaceholders(input, "NAMESPACE", projectNamespacePrefix);
+                        DocumentTemplateUtils.importTemplate(context, input, selectedDocument, projectNamespacePrefix, overwrite);
+                    } catch (RepositoryException e) {
+                        GlobalUtils.refreshSession(context, false);
+                        log.error(String.format("Error registering template: %s", selectedDocument), e);
+                    }
                 }
             }
 
-        } else {
-            // skip installing documents
-            log.info("No selected documents");
         }
-
-        setComplete(true);
-
     }
 }
