@@ -58,7 +58,7 @@ public class ComponentsPanel extends EssentialsWizardStep {
                             .setComponentClassName("org.onehippo.cms7.essentials.components.EssentialsDocumentComponent")
                             .setIconPath("images/essentials/essentials-component-document.png")
                             .setType("HST.Item")
-                            .setTemplate("hippo.essentials.components.document")
+                            .setTemplate("essentials-component-document.jsp")
 
             )
             .put("Events Component",
@@ -66,14 +66,14 @@ public class ComponentsPanel extends EssentialsWizardStep {
                             .setComponentClassName("org.onehippo.cms7.essentials.components.EssentialsEventsComponent")
                             .setIconPath("images/essentials/essentials-component-events.png")
                             .setType("HST.Item")
-                            .setTemplate("hippo.essentials.components.events")
+                            .setTemplate("essentials-component-events.jsp")
 
             ).put("List Component",
                     new CatalogObject("essentials-component-list", "Essentials List Component")
                             .setComponentClassName("org.onehippo.cms7.essentials.components.EssentialsListComponent")
                             .setIconPath("images/essentials/essentials-component-list.png")
                             .setType("HST.Item")
-                            .setTemplate("hippo.essentials.components.list")
+                            .setTemplate("essentials-component-list.jsp")
 
             )
             .build();
@@ -167,7 +167,7 @@ public class ComponentsPanel extends EssentialsWizardStep {
 
                     target.add(availableTypesListChoice, addToTypesListChoice);
                 } else {
-                    error("Please add and/or select a site");
+                    log.error("Please add and/or select a site");
                     target.add(feedbackPanel);
                 }
             }
@@ -194,7 +194,7 @@ public class ComponentsPanel extends EssentialsWizardStep {
 
                     target.add(availableTypesListChoice, addToTypesListChoice);
                 } else {
-                    error("Please add and/or select a site");
+                    log.error("Please add and/or select a site");
                     target.add(feedbackPanel);
                 }
             }
@@ -224,7 +224,7 @@ public class ComponentsPanel extends EssentialsWizardStep {
         }
         // copy JSP:
         final File siteJspFolder = ProjectUtils.getSiteJspFolder();
-        final String templateName = catalogObject.getName() + ".jsp";
+        final String templateName = catalogObject.getTemplate();
         final Asset asset = context.getDescriptor().getAsset(templateName);
         if (asset != null && !Strings.isNullOrEmpty(asset.getUrl())) {
             final File file = new File(siteJspFolder.getAbsoluteFile() + JSP_FOLDER + asset.getUrl());
@@ -242,7 +242,6 @@ public class ComponentsPanel extends EssentialsWizardStep {
             log.error("Error writing template", e);
         } catch (TemplateExistsException e) {
             log.warn("template already exists.", e);
-            error("template already exists.");
             return true;
         }
         return false;
@@ -256,7 +255,8 @@ public class ComponentsPanel extends EssentialsWizardStep {
     }
 
     private void copyAsset(final File target, final Asset asset) {
-        final InputStream resourceAsStream = getClass().getResourceAsStream(asset.getUrl());
+        final String assetName = '/' + asset.getUrl();
+        final InputStream resourceAsStream = getClass().getResourceAsStream(assetName);
         if (resourceAsStream != null) {
             try {
                 if (!target.exists()) {
@@ -268,6 +268,8 @@ public class ComponentsPanel extends EssentialsWizardStep {
             } catch (IOException e) {
                 log.error("Error writing file", e);
             }
+        } else {
+            log.error("Asset not found for name", assetName);
         }
     }
 
@@ -328,8 +330,8 @@ public class ComponentsPanel extends EssentialsWizardStep {
                     final Query query = session.getWorkspace().getQueryManager().createQuery(queryPath, "xpath");
                     final QueryResult queryResult = query.execute();
                     final NodeIterator nodes = queryResult.getNodes();
-                    final int splitAt = replacePart.length() -1;
-                    while(nodes.hasNext()){
+                    final int splitAt = replacePart.length() - 1;
+                    while (nodes.hasNext()) {
                         final Node containerNode = nodes.nextNode();
                         containers.add(containerNode.getPath().substring(splitAt));
                     }
