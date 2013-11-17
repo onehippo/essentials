@@ -22,6 +22,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
+import org.apache.wicket.ajax.AjaxRequestTarget;
+import org.apache.wicket.extensions.ajax.markup.html.IndicatingAjaxLink;
 import org.apache.wicket.markup.html.IHeaderContributor;
 import org.apache.wicket.markup.html.WebPage;
 import org.apache.wicket.protocol.http.WebApplication;
@@ -42,6 +44,7 @@ import org.onehippo.cms7.essentials.dashboard.setup.ProjectSetupPlugin;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.PluginScanner;
 import org.onehippo.cms7.essentials.dashboard.wizard.AjaxWizardPanel;
+import org.onehippo.cms7.essentials.installer.panels.GlobalToolbarPanel;
 import org.onehippo.cms7.essentials.powerpack.BasicPowerpack;
 import org.onehippo.cms7.essentials.powerpack.BasicPowerpackWithSamples;
 import org.onehippo.cms7.essentials.setup.panels.FinalStep;
@@ -49,6 +52,8 @@ import org.onehippo.cms7.essentials.setup.panels.SelectPowerpackStep;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.jcr.Node;
+import javax.jcr.Session;
 import javax.servlet.ServletContext;
 import java.util.Collections;
 import java.util.List;
@@ -58,7 +63,6 @@ import java.util.Set;
  * @version "$Id$"
  */
 public class SetupPage extends WebPage implements IHeaderContributor {
-
 
     private static final long serialVersionUID = 1L;
     private static final Predicate<Plugin> MAIN_PLUGIN = new Predicate<Plugin>() {
@@ -121,6 +125,25 @@ public class SetupPage extends WebPage implements IHeaderContributor {
             dashboardPluginContext.setProjectNamespacePrefix(document.getValue(ProjectSetupPlugin.PROPERTY_NAMESPACE));
         }
 
+        final IndicatingAjaxLink autoExportLink = new IndicatingAjaxLink("autoexportLink") {
+
+            @Override
+            public void onClick(AjaxRequestTarget target) {
+                enableAutoExport();
+                setEnabled(false);
+                setVisible(false);
+                target.add(this);
+            }
+        };
+
+        //Preliminatory checks: is auto-export enabled ?
+        if (!autoExportEnabled()) {
+            warn("Autoexport is not enabled, configuration changes may be lost");
+        } else {
+            autoExportLink.setVisible(false);
+        }
+
+        add(autoExportLink);
 
         //############################################
         // WIZARD & STEPS
@@ -143,7 +166,14 @@ public class SetupPage extends WebPage implements IHeaderContributor {
                         break;
                 }
                 final InstructionStatus status = powerpackPackage.execute(dashboardPluginContext);
-                info("Installation finished with status: " + status);
+                switch (status) {
+                    case SUCCESS:
+                        info("Installation finished successfully (" + status + ")");
+                        break;
+                    case FAILED:
+                        warn("Installation failed");
+
+                }
 
             }
         };
@@ -181,6 +211,37 @@ public class SetupPage extends WebPage implements IHeaderContributor {
 
     public SelectPowerpackStep getSelectStep() {
         return selectStep;
+    }
+
+    private boolean autoExportEnabled() {
+        try {
+            Session session = dashboardPluginContext.getSession();
+            if (session !=null && session.nodeExists(GlobalToolbarPanel.AUTO_EXPORT_PATH)) {
+                final Node autoExportNode = session.getNode(GlobalToolbarPanel.AUTO_EXPORT_PATH);
+                if (autoExportNode.hasProperty(GlobalToolbarPanel.AUTOEXPORT_ENABLED)) {
+                    return autoExportNode.getProperty(GlobalToolbarPanel.AUTOEXPORT_ENABLED).getBoolean();
+                }
+            }
+
+        } catch (Exception e) {
+            log.error("Error checking auto export availability", e);
+        }
+        return false;
+    }
+
+    private void enableAutoExport() {
+        try {
+            Session session = dashboardPluginContext.getSession();
+            if (session !=null && session.nodeExists(GlobalToolbarPanel.AUTO_EXPORT_PATH)) {
+                final Node autoExportNode = session.getNode(GlobalToolbarPanel.AUTO_EXPORT_PATH);
+                if (autoExportNode.hasProperty(GlobalToolbarPanel.AUTOEXPORT_ENABLED)) {
+                    autoExportNode.setProperty(GlobalToolbarPanel.AUTOEXPORT_ENABLED, Boolean.TRUE);
+                    session.save();
+                }
+            }
+        } catch (Exception e) {
+            log.error("Error enabling auto export", e);
+        }
     }
 
     private class EmptyPowerPack implements PowerpackPackage {
