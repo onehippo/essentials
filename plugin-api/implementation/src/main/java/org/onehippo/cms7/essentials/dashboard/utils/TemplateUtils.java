@@ -17,16 +17,18 @@
 package org.onehippo.cms7.essentials.dashboard.utils;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.io.StringWriter;
+import java.io.Writer;
 import java.nio.file.Path;
-import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.WordUtils;
 import org.apache.wicket.util.string.Strings;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -38,12 +40,11 @@ import org.onehippo.cms7.essentials.dashboard.utils.code.ExistingMethodsVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.github.mustachejava.DefaultMustacheFactory;
+import com.github.mustachejava.Mustache;
+import com.github.mustachejava.MustacheFactory;
 import com.google.common.collect.ImmutableSet;
 
-import freemarker.template.Configuration;
-import freemarker.template.Template;
-import freemarker.template.TemplateException;
-import httl.Engine;
 
 /**
  * @version "$Id$"
@@ -127,54 +128,40 @@ public final class TemplateUtils {
         return identifier.startsWith("get") || identifier.startsWith("is");
     }
 
-    public static String replaceTemplateDataHttl(final String resourceUrl, final Map<String, Object> data) {
-
-        final Engine engine = Engine.getEngine();
-        try {
-            final httl.Template template = engine.getTemplate(resourceUrl);
-            final StringWriter out = new StringWriter();
-            template.render(data, out);
-            return out.toString();
-        } catch (IOException | ParseException e) {
-            log.error("", e);
-        }
-
-        return null;
-
-    }
-
     public static String replaceTemplateData(final String content, final Map<String, Object> data) {
         if (Strings.isEmpty(content)) {
             return content;
         }
-        final Configuration config = new Configuration();
+
         try {
-            final Template template = new Template("name", new StringReader(content), config);
-            final StringWriter stringWriter = new StringWriter();
-            template.process(data, stringWriter);
-            return stringWriter.toString();
+            final Writer writer = new StringWriter();
+            final MustacheFactory mf = new DefaultMustacheFactory();
+            final StringReader reader = new StringReader(content);
+            final Mustache mustache = mf.compile(reader, content);
+            mustache.execute(writer, data);
+            writer.flush();
+            return writer.toString();
         } catch (IOException e) {
-            log.error("Error finding template: " + content, e);
-        } catch (TemplateException e) {
-            log.error("Error injecting template: " + content, e);
+            log.error("Error flushing template", e);
         }
-        return null;
+        return content;
     }
 
     public static String injectTemplate(final String templateName, final Map<String, Object> data, final Class<?> clazz) {
-        final Configuration config = new Configuration();
-        config.setClassForTemplateLoading(clazz, "/");
+        final InputStream stream = clazz.getClassLoader().getResourceAsStream(templateName);
+        if (stream == null) {
+            return null;
+        }
         try {
-            final Template template = config.getTemplate(templateName);
-            final StringWriter stringWriter = new StringWriter();
-            template.process(data, stringWriter);
-            return stringWriter.toString();
-        } catch (IOException e) {
-            log.error("Error finding template: " + templateName, e);
-        } catch (TemplateException e) {
-            log.error("Error injecting template: " + templateName, e);
+            final String content = GlobalUtils.readStreamAsText(stream).toString();
+            return replaceTemplateData(content, data);
+        } catch (Exception e) {
+            log.error("Error processing template", e);
+        } finally {
+            IOUtils.closeQuietly(stream);
         }
         return null;
+
     }
 
     public static class PropertyWrapper implements Serializable {

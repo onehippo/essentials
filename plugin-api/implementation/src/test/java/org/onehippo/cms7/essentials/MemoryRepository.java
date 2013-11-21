@@ -5,26 +5,17 @@
 package org.onehippo.cms7.essentials;
 
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import javax.jcr.Repository;
+import javax.jcr.Node;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 import javax.jcr.SimpleCredentials;
-import javax.jcr.Workspace;
-import javax.jcr.nodetype.NoSuchNodeTypeException;
-import javax.jcr.nodetype.NodeTypeManager;
 
 import org.apache.jackrabbit.core.TransientRepository;
 import org.apache.jackrabbit.core.config.RepositoryConfig;
-import org.apache.jackrabbit.core.nodetype.InvalidNodeTypeDefException;
 import org.apache.jackrabbit.core.nodetype.NodeTypeManagerImpl;
-import org.apache.jackrabbit.core.nodetype.NodeTypeRegistry;
-import org.apache.jackrabbit.core.nodetype.xml.NodeTypeReader;
-import org.apache.jackrabbit.spi.QNodeTypeDefinition;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,21 +24,18 @@ import org.slf4j.LoggerFactory;
  */
 public class MemoryRepository {
 
-    public static final String[] CND_FILE_NAMES = {"/test_cnd.cnd", "/test_hippo.cnd", "/test_hippostd.cnd", "/test_hippo_sys_edit.cnd", "/test_hippo_gal.cnd", "/test_hippotranslation.cnd", "/test_hippostdpubwf.cnd", "/mytestproject.cnd", "/test_hst.cnd",};
+    public static final String[] CND_FILE_NAMES = {"/test_cnd.cnd", "/test_hippo.cnd",
+            "/test_hippostd.cnd", "/test_hst.cnd",
+            "/test_hippo_sys_edit.cnd", "/test_hippotranslation.cnd",
+            "/test_hipposys.cnd", "/test_frontend.cnd",
+            "/test_editor.cnd", "/test_hippogallerypicker.cnd",
+            "/test_hippo_gal.cnd", "/mytestproject.cnd", "/testnamespace.cnd"};
     private static Logger log = LoggerFactory.getLogger(MemoryRepository.class);
     private static String configFileName = "repository.xml";
     private static URL resource = MemoryRepository.class.getClassLoader().getResource(configFileName);
     private Session session;
     private File storageDirectory;
     private TransientRepository memoryRepository;
-
-    /** namespace prefix constant */
-   // public static final String OCM_NAMESPACE_PREFIX = "ocm";
-    /**
-     * namespace constant
-     */
-   // public static final String OCM_NAMESPACE = "http://jackrabbit.apache.org/ocm";
-
 
     public MemoryRepository() throws Exception {
         initialize();
@@ -57,6 +45,32 @@ public class MemoryRepository {
             InputStream stream = getClass().getResourceAsStream(fileName);
             mgr.registerNodeTypes(stream, "text/x-jcr-cnd");
         }
+        //add namespace:
+        final Node rootNode = session.getRootNode();
+        final Node namespaceNode = rootNode.addNode("hippo:namespaces", "hipposysedit:namespacefolder");
+        namespaceNode.addNode("testnamespace", "hipposysedit:namespace");
+        // add  hippoconfig
+        final Node config = rootNode.addNode("hippo:configuration", "hipposys:configuration");
+        config.addNode("hippo:workflows", "hipposys:workflowfolder");
+        config.addNode("hippo:documents", "hipposys:ocmqueryfolder");
+
+        Node queryNode;
+        if (!config.hasNode("hippo:queries")) {
+            queryNode = config.addNode("hippo:queries", "hipposys:queryfolder");
+        } else{
+            queryNode = config.getNode("hippo:queries");
+        }
+        if (!queryNode.hasNode("hippo:templates")) {
+            queryNode.addNode("hippo:templates", "hipposys:queryfolder");
+        }
+        // add content:
+        final Node content = rootNode.addNode("content", "hippostd:folder");
+
+        content.addNode("documents", "hippostd:folder").addNode("testnamespace", "hippostd:folder");
+
+        session.save();
+
+
     }
 
     public MemoryRepository(String[] cnds) throws Exception {
@@ -76,9 +90,6 @@ public class MemoryRepository {
         memoryRepository = new TransientRepository(RepositoryConfig.create(resource.toURI(), storageDirectory.getAbsolutePath()));
         // initialize session
         session = getSession();
-        //ocm mapping
-       // registerNamespace(session);
-        //registerNodeTypes(session);
     }
 
     public File getStorageDirectory() {
@@ -123,49 +134,4 @@ public class MemoryRepository {
         session = memoryRepository.login(new SimpleCredentials("admin", "admin".toCharArray()));
         return session;
     }
-
-//    OCM MAPPING
-//    protected void registerNamespace(final Session session) throws javax.jcr.RepositoryException {
-//        log.info("Register namespace");
-//        String[] jcrNamespaces = session.getWorkspace().getNamespaceRegistry().getPrefixes();
-//        boolean createNamespace = true;
-//        for (int i = 0; i < jcrNamespaces.length; i++) {
-//            if (jcrNamespaces[i].equals(OCM_NAMESPACE_PREFIX)) {
-//                createNamespace = false;
-//                log.debug("Jackrabbit OCM namespace exists.");
-//            }
-//        }
-//        if (createNamespace) {
-//            session.getWorkspace().getNamespaceRegistry().registerNamespace(OCM_NAMESPACE_PREFIX, OCM_NAMESPACE);
-//            log.info("Successfully created Jackrabbit OCM namespace.");
-//        }
-//
-//        if (session.getRootNode() != null) {
-//            log.info("Jcr session setup successfull.");
-//        }
-//    }
-//
-//    protected void registerNodeTypes(Session session)
-//            throws InvalidNodeTypeDefException, javax.jcr.RepositoryException, IOException {
-//        InputStream xml = getClass().getResourceAsStream("/custom_nodetypes.xml");
-//
-//        // HINT: throws InvalidNodeTypeDefException, IOException
-//        QNodeTypeDefinition[] types = NodeTypeReader.read(xml);
-//
-//        Workspace workspace = session.getWorkspace();
-//        NodeTypeManager ntMgr = workspace.getNodeTypeManager();
-//        NodeTypeRegistry ntReg = ((NodeTypeManagerImpl) ntMgr).getNodeTypeRegistry();
-//
-//        for (int j = 0; j < types.length; j++) {
-//            QNodeTypeDefinition def = types[j];
-//
-//            try {
-//                ntReg.getNodeTypeDef(def.getName());
-//            } catch (NoSuchNodeTypeException nsne) {
-//                // HINT: if not already registered than register custom node type
-//                ntReg.registerNodeType(def);
-//            }
-//
-//        }
-//    }
 }

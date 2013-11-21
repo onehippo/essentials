@@ -16,13 +16,23 @@
 
 package org.onehippo.cms7.essentials.setup.panels;
 
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.List;
+
 import com.google.common.base.Strings;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
+
 import org.apache.wicket.ajax.AjaxEventBehavior;
 import org.apache.wicket.ajax.AjaxRequestTarget;
 import org.apache.wicket.markup.html.basic.Label;
-import org.apache.wicket.markup.html.form.*;
+import org.apache.wicket.markup.html.form.CheckBox;
+import org.apache.wicket.markup.html.form.DropDownChoice;
+import org.apache.wicket.markup.html.form.Form;
+import org.apache.wicket.markup.html.form.IChoiceRenderer;
+import org.apache.wicket.markup.html.form.Radio;
+import org.apache.wicket.markup.html.form.RadioGroup;
 import org.apache.wicket.model.Model;
 import org.apache.wicket.model.PropertyModel;
 import org.onehippo.cms7.essentials.dashboard.event.DisplayEvent;
@@ -34,20 +44,20 @@ import org.onehippo.cms7.essentials.setup.panels.model.ProjectModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.Serializable;
-import java.util.ArrayList;
-import java.util.List;
-
 /**
  * @version "$Id$"
  */
 public class SelectPowerpackStep extends EssentialsWizardStep {
 
     private static final long serialVersionUID = 1L;
+    public static final String POWERPACK_NEWS_AND_EVENT_LABEL = "powerpack.news.and.event.label";
+    public static final String POWERPACK_REST_LABEL = "powerpack.rest.label";
+    public static final String POWERPACK_NONE_LABEL = "powerpack.none.label";
     private static Logger log = LoggerFactory.getLogger(SelectPowerpackStep.class);
     private final DropDownChoice<String> powerpackDropdown;
     private final SetupPage myParent;
     private String selectedPowerpack;
+    private boolean installSampleContent = true;
     private String selectedTemplatesType;
     @Inject
     private EventBus eventBus;
@@ -74,12 +84,31 @@ public class SelectPowerpackStep extends EssentialsWizardStep {
         packDescription.setOutputMarkupId(true);
         form.add(packDescription);
 
-        final List<String> powerpackList = new ArrayList<>();
-        powerpackList.add("powerpack.news.and.event.label");
-        powerpackList.add("powerpack.none.label");
+        final List<String> selectOptionList = new ArrayList<>();
+        selectOptionList.add(POWERPACK_NEWS_AND_EVENT_LABEL);
+        selectOptionList.add(POWERPACK_REST_LABEL);
+        selectOptionList.add(POWERPACK_NONE_LABEL);
 
         final PropertyModel<String> powerpackModel = new PropertyModel<>(this, "selectedPowerpack");
-        powerpackDropdown = new DropDownChoice<String>("powerpackDropdown", powerpackModel, powerpackList);
+        powerpackDropdown = new DropDownChoice<String>("powerpackDropdown", powerpackModel, selectOptionList) {
+            private static final long serialVersionUID = 1L;
+
+            @Override
+            protected boolean isDisabled(String object, int index, String selected) {
+                switch (object) {
+                    case POWERPACK_NEWS_AND_EVENT_LABEL:
+                        return false;
+                    case POWERPACK_REST_LABEL:
+                        return true;
+                    case POWERPACK_NONE_LABEL:
+                        return true;
+                    default:
+                        return false;
+                }
+
+            }
+        };
+
         powerpackDropdown.setNullValid(false);
         powerpackDropdown.add(new AjaxEventBehavior("onchange") {
             private static final long serialVersionUID = 1L;
@@ -88,7 +117,7 @@ public class SelectPowerpackStep extends EssentialsWizardStep {
             protected void onEvent(final AjaxRequestTarget target) {
                 final String selectedInput = powerpackDropdown.getInput();
 
-                if (!(selectedInput == null && selectedInput.isEmpty())) {
+                if (!(selectedInput == null || selectedInput.isEmpty())) {
                     selectedPowerpack = powerpackDropdown.getChoices().get(Integer.valueOf(selectedInput));
                     log.debug("#selected powerpack: {}", selectedPowerpack);
                     setComplete(true);
@@ -119,20 +148,19 @@ public class SelectPowerpackStep extends EssentialsWizardStep {
 
         form.add(powerpackDropdown);
 
-        CheckBox sampleContentCheckBox = new CheckBox("sampleContentCheckbox", Model.of(Boolean.TRUE));
-        sampleContentCheckBox.setEnabled(false);
+        CheckBox sampleContentCheckBox = new CheckBox("sampleContentCheckbox", new PropertyModel<Boolean>(this, "installSampleContent"));
         form.add(sampleContentCheckBox);
 
         RadioGroup<String> radioGroup = new RadioGroup<String>("templatesRadioGroup", new PropertyModel<String>(this, "selectedTemplatesType"));
         radioGroup.setRequired(true);
 
-        radioGroup.add(new Radio<Boolean>("jspFilesystemRadio", Model.of(Boolean.TRUE)));
-        radioGroup.add(new Radio<Boolean>("freemarkerFilesystemRadio", Model.of(Boolean.FALSE)).
+        radioGroup.add(new Radio<>("jspFilesystemRadio", Model.of(Boolean.TRUE)));
+        radioGroup.add(new Radio<>("freemarkerFilesystemRadio", Model.of(Boolean.FALSE)).
 
                 setEnabled(false)
 
         );
-        radioGroup.add(new Radio<Boolean>("freemarkerRepositoryRadio", Model.of(Boolean.FALSE)).
+        radioGroup.add(new Radio<>("freemarkerRepositoryRadio", Model.of(Boolean.FALSE)).
 
                 setEnabled(false)
 
@@ -154,11 +182,15 @@ public class SelectPowerpackStep extends EssentialsWizardStep {
             eventBus.post(new DisplayEvent(getString("powerpack.news.and.event.description")));
         }
 
-        final FinalStep finalStep = myParent.getFinalStep();
-        finalStep.displayEvents(target);
+        final ExecutionStep executionStep = myParent.getExecutionStep();
+        executionStep.displayEvents(target);
     }
 
     public String getSelectedPowerpack() {
         return selectedPowerpack;
+    }
+
+    public boolean isInstallSampleContentChecked() {
+        return installSampleContent;
     }
 }

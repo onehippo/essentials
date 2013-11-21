@@ -86,13 +86,14 @@ public class FileInstruction extends PluginInstruction {
     @Override
     public InstructionStatus process(final PluginContext context, final InstructionStatus previousStatus) {
         log.debug("executing FILE Instruction {}", this);
+        processPlaceholders(context.getPlaceholderData());
         this.context = context;
         if (!valid()) {
             eventBus.post(new MessageEvent("Invalid instruction descriptor: " + toString()));
             eventBus.post(new InstructionEvent(this));
             return InstructionStatus.FAILED;
         }
-        processPlaceholders(context.getPlaceholderData());
+
         // check action:
         if (action.equals(COPY)) {
             return copy();
@@ -136,9 +137,14 @@ public class FileInstruction extends PluginInstruction {
 
                         Files.createFile(destination.toPath());
                     }
-                    // replace file placeholders:
-                    final String replacedData = TemplateUtils.replaceTemplateDataHttl(source, context.getPlaceholderData());
-                    FileUtils.copyInputStreamToFile(IOUtils.toInputStream(replacedData), destination);
+                    // replace file placeholders if needed:
+                    if (isBinary()) {
+                        FileUtils.copyInputStreamToFile(stream, destination);
+                    } else {
+                        final String replacedData = TemplateUtils.injectTemplate(source, context.getPlaceholderData(), getClass());
+                        FileUtils.copyInputStreamToFile(IOUtils.toInputStream(replacedData), destination);
+                    }
+
                     sendEvents();
                     return InstructionStatus.SUCCESS;
                 } catch (IOException e) {
@@ -162,6 +168,10 @@ public class FileInstruction extends PluginInstruction {
         eventBus.post(new InstructionEvent(this));
         return InstructionStatus.FAILED;
 
+    }
+
+    private boolean isBinary() {
+        return source.endsWith(".png") || source.endsWith(".jpeg");
     }
 
     private InstructionStatus delete() {

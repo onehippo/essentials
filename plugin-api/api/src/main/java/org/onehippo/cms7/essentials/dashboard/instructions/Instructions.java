@@ -27,6 +27,10 @@ import javax.xml.bind.annotation.XmlTransient;
 public interface Instructions {
 
 
+    int totalInstructions();
+
+    int totalInstructionSets();
+
     Set<InstructionSet> getInstructionSets();
 
     void setInstructionSets(Set<InstructionSet> instructionSets);

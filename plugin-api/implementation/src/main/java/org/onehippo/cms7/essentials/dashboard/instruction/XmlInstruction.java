@@ -18,6 +18,7 @@ package org.onehippo.cms7.essentials.dashboard.instruction;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.StringWriter;
 import java.util.Map;
 import java.util.Set;
 
@@ -77,12 +78,13 @@ public class XmlInstruction extends PluginInstruction {
     @Override
     public InstructionStatus process(final PluginContext context, final InstructionStatus previousStatus) {
         this.context = context;
+        processPlaceholders(context.getPlaceholderData());
         log.debug("executing XML Instruction {}", this);
         if (!valid()) {
             eventBus.post(new MessageEvent("Invalid instruction descriptor: " + toString()));
             return InstructionStatus.FAILED;
         }
-        processPlaceholders(context.getPlaceholderData());
+        /*processPlaceholders(context.getPlaceholderData());*/
         // check action:
         if (action.equals(COPY)) {
             return copy();
@@ -111,7 +113,10 @@ public class XmlInstruction extends PluginInstruction {
                 eventBus.post(new InstructionEvent(this));
                 return InstructionStatus.FAILED;
             }
-            session.importXML(destination.getPath(), stream, ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
+
+            // Import XML with replaced NAMESPACE placeholder
+            final String myData = TemplateUtils.replaceTemplateData(GlobalUtils.readStreamAsText(stream).toString(), context.getPlaceholderData());
+            session.importXML(destination.getPath(), IOUtils.toInputStream(myData), ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
             session.save();
             log.info("Added node to: {}", destination.getPath());
             sendEvents();
@@ -125,6 +130,8 @@ public class XmlInstruction extends PluginInstruction {
         return InstructionStatus.FAILED;
 
     }
+
+
 
 
 
