@@ -13,8 +13,5 @@
     "angular": "1.2.0-rc.2",
     "hippo-theme": "git@github.com:onehippo/hippo-theme.git#ab78d66c8286e8a5eeed702b6a3547563093016f"
   },
-  "devDependencies": {},
-  "resolutions": {
-    "angular": "1.2.0-rc.2"
-  }
+  "devDependencies": {}
 }

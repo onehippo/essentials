@@ -10,7 +10,7 @@ module.exports = {
 
     // directories
     source: 'js/src',
-    target: 'target/plugin-dashboard',
+    target: 'target/essentials',
     bowerComponents: 'vendors',
     components: 'components'
 

@@ -165,7 +165,7 @@
         </configuration>
       </plugin>
     </plugins>
-    <finalName>dashboard</finalName>
+    <finalName>essentials</finalName>
     <resources>
       <resource>
         <filtering>false</filtering>

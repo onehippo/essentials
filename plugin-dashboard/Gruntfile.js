@@ -354,7 +354,6 @@ module.exports = function (grunt) {
     grunt.registerTask('build', function (target) {
         var tasks = [
             'declutter',
-            'ngdocs',
             'clean:target',
             'copy:dist',
             'copy:components',
