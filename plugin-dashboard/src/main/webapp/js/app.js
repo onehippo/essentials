@@ -1,4 +1,3 @@
-'use strict';
 /**
  * needed for dynamic loading of controllers
  * @type object {{$controllerProvider: $controllerProvider,
@@ -6,24 +5,15 @@
         $provide: $provide}}
  * @global
  */
-var _PROVIDERS = {};
+(function () {
+    "use strict";
 
-
-var app;
-(function (APP) {
-    'use strict';
-    // expose as global
-    app = APP;
+    angular.module('hippo.essentials', ['ngCookies', 'ui.router', 'ui.bootstrap', 'hippo.theme',  'ngRoute', 'localytics.directives'])
 
 //############################################
 // GLOBAL LOADING
 //############################################
-    APP.config(function ($provide, $httpProvider, $controllerProvider, $compileProvider) {
-        _PROVIDERS = {
-            $controllerProvider: $controllerProvider,
-            $compileProvider: $compileProvider,
-            $provide: $provide
-        };
+    .config(function ($provide, $httpProvider, $controllerProvider, $compileProvider) {
 
         $provide.factory('MyHttpInterceptor', function ($q, $rootScope, $log) {
             return {
@@ -132,8 +122,6 @@ var app;
             compounds: root + '/documenttypes/compounds',
             compoundsCreate: root + '/documenttypes/compounds/create/' ,
             contentblocksCreate: root + '/documenttypes/compounds/contentblocks/create/'
-
-
         };
 
         $rootScope.initData = function () {
@@ -157,12 +145,12 @@ var app;
 
 
         $rootScope.initData();
-    });
+    })
 
 //############################################
 // FILTERS
 //############################################
-    APP.filter('startsWith', function () {
+    .filter('startsWith', function () {
         return function (inputCollection, inputString) {
             var collection = [];
             if (inputCollection && inputString) {
@@ -176,20 +164,6 @@ var app;
             return collection;
         }
     });
-})(angular.module('Essentials', ['ngRoute','localytics.directives']));
-
-/*
-
- define([
- 'angular',
- 'angular-route',
- 'controllers',
- 'routes'
- ], function (angular) {
- 'use strict';
-
-
- });
- */
+})();
 
 
