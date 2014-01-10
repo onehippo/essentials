@@ -33,7 +33,6 @@ module.exports = function (grunt) {
                 cwd: 'js/src/',
                 src: [
                     'app/**/*.less',
-                    'app/mock.less',
                     '<%= hippo.components %>/**/*.less',
                     '!**/_*.less'
                 ],
@@ -161,37 +160,6 @@ module.exports = function (grunt) {
                     }
                 ]
             },
-
-            mock: {
-                files: [
-                    {
-                        expand: true,
-                        dot: true,
-                        cwd: '<%= hippo.source %>/app/modules/shared/mocked-data',
-                        dest: '<%= hippo.target %>/app/modules/shared/mocked-data',
-                        src: [
-                            'prevent-mocked-data.js',
-                            'mocked-data-empty.js'
-                        ],
-                        rename: function (dest, src) {
-                            if (grunt.option('mock')) {
-                                return dest + '/' + src;
-                            }
-
-                            if (!grunt.option('mock') && !grunt.option('mock-empty') && (src == 'prevent-mocked-data.js')) {
-                                return dest + '/mocked-data.js';
-                            }
-
-                            if (grunt.option('mock-empty') && (src == 'mocked-data-empty.js')) {
-                                return dest + '/mocked-data.js';
-                            }
-
-                            return dest + '/' + src;
-                        }
-                    }
-                ]
-            },
-
             bowerComponents: {
                 files: [
                     {
