@@ -1,0 +1,69 @@
+{
+
+    "includes": {
+
+        "libraries": {
+            "prefix": "components",
+            "items": [
+                "angular-route",
+                {
+                    "component": "angular-ui-router",
+                    "file": "release/angular-ui-router.js"
+                },
+                {
+                    "component": "angular-bootstrap",
+                    "file": "ui-bootstrap-tpls.js"
+                },
+                {
+                    "component": "bootstrap",
+                    "file": "dist/js/bootstrap.js"
+                },
+                {
+                    "component": "chosen",
+                    "file": ["dist/chosen.jquery.js"]
+                }
+            ]
+        },
+        "files": [
+            "app/modules/pages/pages.js",
+        ],
+        "hippo-theme-module": {
+            "prefix": "components/hippo-theme/dist/js",
+            "items": [{
+                "file": "hippo-theme.js"
+            }]
+        },
+        "hippo-theme": {
+            "prefix": "components/hippo-theme/dist/shared",
+            "items": [
+                "divider",
+                "responsive",
+                "urlparser",
+                "chart",
+                "map",
+                "panel-default",
+                "focus-me",
+                "select-box"
+            ]
+        },
+        "pages": {
+            "prefix": "app/modules/pages",
+            "items": [
+                {
+                    "component": "index",
+                    "file": [ "index.js"]
+                }            ]
+        },
+        "plugins": {
+            "prefix": "app/modules/plugins",
+            "items": [
+                {
+                    "component": "gallery-plugin",
+                    "file": "gallery.js"
+                }
+            ]
+        }
+    },
+
+    "application": "hippo.essentials"
+}

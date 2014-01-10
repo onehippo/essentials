@@ -152,7 +152,6 @@ module.exports = function (grunt) {
                             'app/**/*.html',
                             'app/**/assets/fonts/*.{eot,woff,ttf,svg}',
                             'app/**/assets/images/**/*.{png,jpg,gif,jpeg}',
-                            'app/**/i18n/*.json',
                             'app/**/*.{css,js}'
                         ]
                     },
