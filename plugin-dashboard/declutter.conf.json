@@ -1,0 +1,11 @@
+{
+    "angular": ["angular.js"],
+    "angular-route": ["angular-route.js"],
+    "angular-bootstrap": ["ui-bootstrap-tpls.js"],
+    "bootstrap": ["dist/css/bootstrap.css", "dist/css/bootstrap-theme.css", "dist/js/bootstrap.js"],
+    "jquery": ["jquery.js"],
+    "font-awesome": ["fonts/*"],
+    "angular-ui-router": ["release/angular-ui-router.js"],
+    "json3": ["lib/json3.js"],
+    "hippo-theme": ["dist/**/*"]
+}

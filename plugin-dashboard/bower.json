@@ -1,0 +1,20 @@
+{
+  "name": "essentials",
+  "version": "0.0.1",
+  "private": true,
+  "dependencies": {
+    "jquery": "1.10.2",
+    "angular-bootstrap": "0.6.0",
+    "angular-route": "1.2.0-rc.2",
+    "bootstrap": "3.0.0",
+    "font-awesome": "4.0.3",
+    "angular-ui-router": "https://github.com/onehippo/ui-router.git#89e7b7238f850ba8121979a693e3f44aab277d4d",
+    "json3": "~3.2.6",
+    "angular": "1.2.0-rc.2",
+    "hippo-theme": "git@github.com:onehippo/hippo-theme.git#ab78d66c8286e8a5eeed702b6a3547563093016f"
+  },
+  "devDependencies": {},
+  "resolutions": {
+    "angular": "1.2.0-rc.2"
+  }
+}
