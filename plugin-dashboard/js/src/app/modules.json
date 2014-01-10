@@ -17,15 +17,11 @@
                 {
                     "component": "bootstrap",
                     "file": "dist/js/bootstrap.js"
-                },
-                {
-                    "component": "chosen",
-                    "file": ["dist/chosen.jquery.js"]
                 }
             ]
         },
         "files": [
-            "app/modules/pages/pages.js",
+            "app/modules/pages/index.js"
         ],
         "hippo-theme-module": {
             "prefix": "components/hippo-theme/dist/js",

@@ -1,23 +1,65 @@
+// Source Directories
+@appModulesPath: '../../modules';
+@vendorsPath: "../../../vendors";
+@bootstrapPath: "@{vendorsPath}/bootstrap";
+@bootstrapLessPath: "@{bootstrapPath}/less";
+@hippoThemePath: "@{vendorsPath}/hippo-theme";
+@hippoLessPath: "@{hippoThemePath}/src/less";
+
+// Core variables and mixins
+@import "@{bootstrapLessPath}/variables.less";
+@import "@{hippoLessPath}/_variables.less";
+
+@brand-primary: #428bca;
+@brand-success: #5cb85c;
+@brand-warning: #f0ad4e;
+@brand-danger: #E7484C;
+@brand-info: #45B3E3;
+@brand-steel: #4F5E67;
+
+@color-hippo-footer: #35363A;
+@color-hippo-footer-text: #C6C6C6;
+@body-bg: #FFF;
+@font-size-base: 16px;
+
+// Links
+// -------------------------
+
+@link-color: @brand-primary;
+@link-hover-color: darken(@link-color, 15%);
+
+// Typography
+// -------------------------
+
 /*@font-family-sans-serif: "ralewaymedium", Helvetica, Arial, sans-serif;
 @font-family-serif: Georgia, "Times New Roman", Times, serif;
 @font-family-monospace: Monaco, Menlo, Consolas, "Courier New", monospace;
 @font-family-base: @font-family-sans-serif;*/
+
 /*
 //############################################
 // HIPPO SPECIFIC  CSS
 //############################################
 */
+
+@footer-border: #eee;
+
+//
+//
+//
 .footer {
-  border-top: 1px solid #eeeeee;
+  border-top: 1px solid @footer-border;
   margin-top: 400px;
   padding-top: 10px;
   padding-bottom: 10px;
-  background-color: #35363a;
+  background-color: @color-hippo-footer;
   text-align: center;
-  color: #c6c6c6;
+  color: @color-hippo-footer-text;
   font-size: 13px;
   min-height: 600px;
+
 }
+
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
   /* Remove the padding we set earlier */
@@ -28,34 +70,42 @@
     padding-right: 0;
   }
 }
+
 .masthead {
   margin-bottom: 30px;
   text-align: center;
-  min-width: 768px;
+  min-width: @screen-sm;
   margin-left: auto;
   margin-right: auto;
 }
+
 @font-face {
   font-family: 'ralewaybold';
   src: url('../fonts/raleway-bold-webfont.eot');
   src: url('../fonts/raleway-bold-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/raleway-bold-webfont.woff') format('woff'), url('../fonts/raleway-bold-webfont.ttf') format('truetype'), url('../fonts/raleway-bold-webfont.svg#ralewaybold') format('svg');
   font-weight: normal;
   font-style: normal;
+
 }
+
 @font-face {
   font-family: 'ralewaymedium';
   src: url('../fonts/raleway-medium-webfont.eot');
   src: url('../fonts/raleway-medium-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/raleway-medium-webfont.woff') format('woff'), url('../fonts/raleway-medium-webfont.ttf') format('truetype'), url('../fonts/raleway-medium-webfont.svg#ralewaymedium') format('svg');
   font-weight: normal;
   font-style: normal;
+
 }
+
 @font-face {
   font-family: 'ralewayregular';
   src: url('../fonts/raleway-regular-webfont.eot');
   src: url('../fonts/raleway-regular-webfont.eot?#iefix') format('embedded-opentype'), url('../fonts/raleway-regular-webfont.woff') format('woff'), url('../fonts/raleway-regular-webfont.ttf') format('truetype'), url('../fonts/raleway-regular-webfont.svg#ralewayregular') format('svg');
   font-weight: normal;
   font-style: normal;
+
 }
+
 /*
 //############################################
 // WIZARD STEPS
@@ -71,11 +121,13 @@
   margin: 12px 0 0;
   position: relative;
 }
+
 .wizard-steps li {
   display: block;
   text-align: center;
   float: left;
 }
+
 .wizard-steps li .step {
   text-align: center;
   border: 5px solid #CED1D6;
@@ -89,8 +141,10 @@
   z-index: 2;
   display: inline;
 }
+
 .wizard-steps li:before {
   /* the line running through each step*/
+
   display: block;
   content: "";
   width: 100%;
@@ -102,20 +156,24 @@
   top: 12px;
   z-index: 1;
 }
+
 .wizard-steps li:last-child:before {
   max-width: 50%;
   width: 50%;
 }
+
 .wizard-steps li:first-child:before {
   max-width: 50%;
   left: 50%;
 }
+
 .wizard-steps li.active:before,
 .wizard-steps li.complete:before,
 .wizard-steps li.active .step,
 .wizard-steps li.complete .step {
-  border-color: #428bca;
+  border-color: @brand-primary;
 }
+
 .wizard-steps li.complete .step:before {
   display: block;
   position: absolute;
@@ -129,13 +187,14 @@
   background-color: #FFF;
   z-index: 103;
   font-size: 20px;
-  color: #5cb85c;
+  color: @brand-success;
 }
+
 .wizard-steps li .title {
   display: block;
   margin-top: 12px;
   max-width: 100%;
-  color: #4f5e67;
+  color: @brand-steel;
   font-size: 14px;
   z-index: 104;
   text-align: center;
@@ -143,21 +202,30 @@
   word-wrap: break-word;
   min-width: 200px;
 }
+
 .wizard-steps li.complete .title,
 .wizard-steps li.active .title {
-  color: #4f5e67;
+  color: @brand-steel;
 }
+
 .step-content .step-pane {
   display: none;
   min-height: 200px;
   padding: 4px 8px 12px;
 }
+
 .step-content .active {
   display: block;
 }
+
 .wizard-actions {
   text-align: right;
 }
+
+//############################################
+// HEADER
+//############################################
+
 .hippo-header {
   width: 100%;
   height: 80px;
@@ -168,53 +236,63 @@
   font-size: 20px;
   font-weight: bold;
   /*background: url("../images/top-back.png") repeat;*/
-  color: #4f5e67;
+  color: @brand-steel;
 }
-.hippo-header-logo,
-.hippo-header-text {
+
+.hippo-header-logo, .hippo-header-text {
   display: inline;
   text-align: center;
   vertical-align: middle;
   height: 80px;
 }
+
 .hippo-header-logo {
   float: left;
   padding: 5px;
   padding-left: 20px;
 }
+
 .hippo-header-text {
   padding-top: 30px;
 }
+
 body {
   padding-top: 0px;
   padding-bottom: 0px;
-  background-color: #ffffff;
+  background-color: @body-bg;
   font-size: 14px;
   font-family: 'ralewaymedium', sans-serif;
+
 }
+
 form {
   width: 100%;
   max-width: 100%;
 }
+
 /* menu stuff*/
 .nav-stacked li {
   margin-bottom: 10px;
   font-size: 16px;
   font-weight: bold;
 }
+
+
 .plugin-introduction {
-  padding: 20px;
+   padding:20px;
 }
+
 .busy-loader {
   position: absolute;
   z-index: 100;
   margin: 0 0 0 -12px;
   left: 50%;
 }
-.tabs li {
+.tabs li{
   min-width: 120px;
   width: 160px;
 }
-.tabs {
+
+.tabs{
   width: 160px;
 }
