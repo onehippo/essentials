@@ -372,7 +372,7 @@ module.exports = function (grunt) {
         }
 
         if (target === 'docs') {
-            return grunt.task.run(['clean:docs', 'ngdocs', 'copy:docs', 'connect:docs:keepalive' ]);
+            return grunt.task.run(['clean:docs', 'copy:docs', 'connect:docs:keepalive' ]);
         }
 
         return grunt.task.run(['build', 'connect:dist:keepalive']);
