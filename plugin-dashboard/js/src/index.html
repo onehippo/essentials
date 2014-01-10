@@ -9,15 +9,16 @@
     <!-- Force IE to NOT run in compatibility mode -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
 
-    <link rel="stylesheet" href="components/hippo-theme/dist/css/hippo-theme.css"/>
+    <link rel="stylesheet" href="components/hippo-theme/dist/css/main.css"/>
     <link rel="stylesheet" href="app/assets/styling/hippo-essentials.css"/>
 
 </head>
+
 <!-- TODO: create container (div) -->
 <body id="container">
 <!-- LOADER ON HTTP REQUESTS -->
 <div class="busy-loader" ng-show="busyLoading">
-    <img src="../app/assets/images/loader.gif"/>
+    <img src="app/assets/images/loader.gif"/>
 </div>
 <!-- ERROR MESSAGES -->
 <div class="alert-danger" ng-show="globalError.length > 0">
@@ -55,10 +56,10 @@
 
 
 
-<script src="../components/jquery/jquery.js"></script>
-<script src="../components/angular/angular.js"></script>
+<script src="components/jquery/jquery.js"></script>
+<script src="components/angular/angular.js"></script>
 
-<script src="../components/hippo-theme/dist/js/loader.js" data-modules="modules.json"></script>
+<script src="components/hippo-plugins/dist/js/loader.js" data-modules="modules.json"></script>
 
 
 

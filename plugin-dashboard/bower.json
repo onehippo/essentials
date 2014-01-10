@@ -11,7 +11,8 @@
     "angular-ui-router": "https://github.com/onehippo/ui-router.git#89e7b7238f850ba8121979a693e3f44aab277d4d",
     "json3": "~3.2.6",
     "angular": "1.2.0-rc.2",
-    "hippo-theme": "git@github.com:onehippo/hippo-theme.git#ab78d66c8286e8a5eeed702b6a3547563093016f"
+    "hippo-theme": "git@github.com:onehippo/hippo-theme.git#84bb7e83b1f890b2239f0262495d2038fbc0f567",
+    "hippo-plugins": "git@github.com:onehippo/hippo-plugins.git#e19d26dea87d05ec52a371739b1e5cf229ab06f3"
   },
   "devDependencies": {}
 }

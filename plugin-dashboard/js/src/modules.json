@@ -23,23 +23,18 @@
         "files": [
             "app/modules/pages/index.js"
         ],
-        "hippo-theme-module": {
+        "hippo-theme": {
             "prefix": "components/hippo-theme/dist/js",
             "items": [{
-                "file": "hippo-theme.js"
+                "file": "main.js"
             }]
         },
-        "hippo-theme": {
-            "prefix": "components/hippo-theme/dist/shared",
+        "hippo-plugins": {
+            "prefix": "components/hippo-plugin/dist/js",
             "items": [
-                "divider",
-                "responsive",
-                "urlparser",
-                "chart",
-                "map",
-                "panel-default",
-                "focus-me",
-                "select-box"
+                {
+                    "file": "main.js"
+                }
             ]
         },
         "pages": {

@@ -30,5 +30,6 @@
     "fastclick": ["lib/fastclick.js"],
     "chosen": ["dist/chosen.css", "dist/chosen.jquery.js", "dist/chosen-sprite.png"],
     "bootstrap-chosen": ["bootstrap-chosen.less", "bootstrap-chosen-variables.less", "chosen-sprite.png"],
-    "hippo-theme": ["dist/**/*"]
+    "hippo-theme": ["dist/**/*"],
+    "hippo-plugins": ["dist/**/*"]
 }
