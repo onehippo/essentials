@@ -21,7 +21,9 @@
             ]
         },
         "files": [
-            "app/modules/pages/index.js"
+            "app/modules/app.js",
+            "app/modules/controllers.js",
+            "app/modules/routes.js"
         ],
         "hippo-theme": {
             "prefix": "components/hippo-theme/dist/js",
@@ -30,27 +32,19 @@
             }]
         },
         "hippo-plugins": {
-            "prefix": "components/hippo-plugin/dist/js",
+            "prefix": "components/hippo-plugins/dist/js",
             "items": [
                 {
                     "file": "main.js"
                 }
             ]
         },
-        "pages": {
-            "prefix": "app/modules/pages",
-            "items": [
-                {
-                    "component": "index",
-                    "file": [ "index.js"]
-                }            ]
-        },
         "plugins": {
             "prefix": "app/modules/plugins",
             "items": [
                 {
-                    "component": "gallery-plugin",
-                    "file": "gallery.js"
+                    "component": "galleryPlugin",
+                    "file": "galleryPlugin.js"
                 }
             ]
         }
