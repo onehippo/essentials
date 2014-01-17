@@ -28,8 +28,12 @@ import java.util.Set;
 
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
+import javax.jcr.NodeIterator;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.query.Query;
+import javax.jcr.query.QueryManager;
+import javax.jcr.query.QueryResult;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -42,10 +46,9 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
 
-import com.google.common.eventbus.EventBus;
-import com.google.inject.Inject;
-
 import org.apache.commons.io.IOUtils;
+import org.apache.commons.lang.StringUtils;
+import org.hippoecm.editor.repository.EditmodelWorkflow;
 import org.hippoecm.editor.repository.NamespaceWorkflow;
 import org.hippoecm.repository.api.HippoSession;
 import org.hippoecm.repository.api.HippoWorkspace;
@@ -55,28 +58,33 @@ import org.hippoecm.repository.api.StringCodecFactory;
 import org.hippoecm.repository.api.Workflow;
 import org.hippoecm.repository.api.WorkflowException;
 import org.hippoecm.repository.api.WorkflowManager;
-import org.onehippo.cms7.essentials.dashboard.contentblocks.ContentBlocksPlugin;
 import org.onehippo.cms7.essentials.dashboard.contentblocks.matcher.HasProviderMatcher;
-import org.onehippo.cms7.essentials.dashboard.contentblocks.model.ContentBlockModel;
-import org.onehippo.cms7.essentials.dashboard.ctx.DashboardPluginContext;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.HippoNodeUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TemplateUtils;
 import org.onehippo.cms7.essentials.rest.model.KeyValueRestful;
 import org.onehippo.cms7.essentials.rest.model.RestfulList;
+import org.onehippo.cms7.essentials.rest.model.contentblocks.AllDocumentMatcher;
 import org.onehippo.cms7.essentials.rest.model.contentblocks.CBPayload;
 import org.onehippo.cms7.essentials.rest.model.contentblocks.Compounds;
+import org.onehippo.cms7.essentials.rest.model.contentblocks.ContentBlockModel;
 import org.onehippo.cms7.essentials.rest.model.contentblocks.DocumentTypes;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.eventbus.EventBus;
+import com.google.inject.Inject;
+
 /**
- * @version "$Id$"
+ * @version "$Id$"        TODO change, this is too content blocks specific.
  */
+
+// TODO mm: check with kenan what's going on here
 @Produces({MediaType.APPLICATION_JSON})
 @Consumes({MediaType.APPLICATION_JSON, MediaType.APPLICATION_FORM_URLENCODED})
-@Path("/documenttypes/")
+@Path("/deprecated/")
+@Deprecated
 public class DocumentTypeResource extends BaseResource {
 
     @Inject
@@ -88,33 +96,61 @@ public class DocumentTypeResource extends BaseResource {
     @Path("/")
     public RestfulList<DocumentTypes> getControllers(@Context ServletContext servletContext) {
         final RestfulList<DocumentTypes> types = new RestfulList<>();
-        // TODO implement
 
         final Session session = GlobalUtils.createSession();
+        final PluginContext context = getContext(servletContext);
+        final String projectNamespacePrefix = context.getProjectNamespacePrefix();
+        String nameSpace = "hippo:namespaces/" + projectNamespacePrefix;
+        String prefix = projectNamespacePrefix + ':';
+
         try {
-            final List<String> primaryTypes = HippoNodeUtils.getPrimaryTypes(session, new HasProviderMatcher(), "new-document");
+            final List<String> primaryTypes = HippoNodeUtils.getPrimaryTypes(session, new AllDocumentMatcher(), "new-document");
+            final Map<String, Compounds> compoundMap = getCompoundMap(servletContext);
+
             for (String primaryType : primaryTypes) {
-                final RestfulList<KeyValueRestful> keyValueRestfulRestfulList = new RestfulList();
+                final RestfulList<KeyValueRestful> keyValueRestfulRestfulList = new RestfulList<>();
+                final NodeIterator it = executeQuery(nameSpace + "//element(*, frontend:plugin)[@contentPickerType]");
+                while (it.hasNext()) {
+                    final String name = it.nextNode().getName();
+                    String namespaceName = prefix + name;
+                    if (compoundMap.containsKey(namespaceName)) {
+                        final Compounds compounds = compoundMap.get(namespaceName);
+                        keyValueRestfulRestfulList.add(compounds);
+                    }
+                }
+
                 types.add(new DocumentTypes(HippoNodeUtils.getDisplayValue(session, primaryType), primaryType, keyValueRestfulRestfulList));
             }
         } catch (RepositoryException e) {
             log.error("Exception while trying to retrieve document types from repository {}", e);
         }
 
-        //example  if empty
-        final RestfulList<KeyValueRestful> keyValueRestfulRestfulList = new RestfulList();
-        keyValueRestfulRestfulList.add(new KeyValueRestful("Provider 1", "Provider 1"));
-        keyValueRestfulRestfulList.add(new KeyValueRestful("Provider 2", "Provider 2"));
-        types.add(new DocumentTypes("News document", "namespace:news", keyValueRestfulRestfulList));
         return types;
+    }
+
+    private NodeIterator executeQuery(String queryString) throws RepositoryException {
+        final Session session = GlobalUtils.createSession();
+        final QueryManager queryManager = session.getWorkspace().getQueryManager();
+        final Query query = queryManager.createQuery(queryString, Query.XPATH);
+        final QueryResult execute = query.execute();
+        final NodeIterator nodes = execute.getNodes();
+        return nodes;
+
+    }
+
+    private Map<String, Compounds> getCompoundMap(final ServletContext servletContext) {
+        final RestfulList<Compounds> compounds = getCompounds(servletContext);
+        Map<String, Compounds> compoundMap = new HashMap<>();
+        for (Compounds compound : compounds.getItems()) {
+            compoundMap.put(compound.getValue(), compound);
+        }
+        return compoundMap;
     }
 
     @GET
     @Path("/compounds")
     public RestfulList<Compounds> getCompounds(@Context ServletContext servletContext) {
         final RestfulList<Compounds> types = new RestfulList<>();
-        // TODO implement
-
         final Session session = GlobalUtils.createSession();
         try {
             final Set<String> primaryTypes = HippoNodeUtils.getCompounds(session, new HasProviderMatcher());
@@ -124,52 +160,58 @@ public class DocumentTypeResource extends BaseResource {
         } catch (RepositoryException e) {
             log.error("Exception while trying to retrieve document types from repository {}", e);
         }
-
         //example if empty
-        types.add(new Compounds("Events document", "namespace:events", "test/test/test"));
         return types;
     }
 
     @PUT
     @Path("/compounds/create/{name}")
     public KeyValueRestful createCompound(@PathParam("name") String name, @Context ServletContext servletContext) {
-        KeyValueRestful keyValueRestful = new KeyValueRestful(name, "path" + name);
-
         final Session session = GlobalUtils.createSession();
-        //GlobalUtils
-        final PluginContext context = new DashboardPluginContext(GlobalUtils.createSession(), null);
+        final PluginContext context = getContext(servletContext);
         final String projectNamespacePrefix = context.getProjectNamespacePrefix();
-        boolean success = false;
-        //todo rg.apache.cxf.interceptor.Fault: com.sun.proxy.$Proxy32 cannot be cast to org.hippoecm.editor.repository.impl.NamespaceWorkflowImpl
+
+        String nameSpace = "/hippo:namespaces/" + projectNamespacePrefix;
+        String item = "/hippo:namespaces/" + projectNamespacePrefix + '/' + name;
+
         try {
-            if (session.itemExists("/hippo:namespaces/mydemoessentials")) {
-                final Node namespace = session.getNode("/hippo:namespaces/mydemoessentials");
+            if (session.itemExists(item)) {
+                throw new RuntimeException("Item exists already");
+            }
+
+            if (StringUtils.isNotEmpty(projectNamespacePrefix) && session.itemExists(nameSpace)) {
+                final Node namespace = session.getNode(nameSpace);
                 final WorkflowManager workflowManager = ((HippoWorkspace) session.getWorkspace()).getWorkflowManager();
+
                 final Workflow editor = workflowManager.getWorkflow("editor", namespace);
-                //if (editor instanceof NamespaceWorkflow) { todo something doesnt work here
-                //System.out.println(editor.getClass().getMethods());
-                //System.out.println(editor);
+
                 if (editor instanceof NamespaceWorkflow) {
                     final NamespaceWorkflow namespaceWorkflowI = (NamespaceWorkflow) editor;
                     namespaceWorkflowI.addCompoundType(name);
-                    if (session.itemExists("/hippo:namespaces/mydemoessentials/" + name)) {
-                        success = true;
+                }
+                if (session.nodeExists(item)) {
+                    final Node node = session.getNode(item);
+                    final Workflow workflow = workflowManager.getWorkflow("default", node);
+                    if (workflow instanceof EditmodelWorkflow) {
+                        EditmodelWorkflow editmodelWorkflow = (EditmodelWorkflow) workflow;
+                        editmodelWorkflow.edit();
+                        editmodelWorkflow.commit();
+                        final Node protoType = node.getNode("hipposysedit:prototypes/hipposysedit:prototype");
+                        protoType.setProperty("cbitem", true);
+                        session.save();
                     }
                 }
-
-
-                //}
+            } else {
+                throw new RuntimeException("Namespace doesn't exist");
             }
-        } catch (RepositoryException e) {
-            log.error("", e);
-        } catch (RemoteException e) {
-            log.error("", e);
-        } catch (WorkflowException e) {
-            log.error("", e);
+        } catch (RepositoryException | RemoteException | WorkflowException e) {
+            log.error("Exception happened while trying to access the namespace workflow {}", e);
         }
-
-        return keyValueRestful;
+        return new KeyValueRestful(name, item);
     }
+
+
+
 
     //see org.hippoecm.hst.pagecomposer.jaxrs.services.ContainerComponentResource.updateContainer()
     @POST
@@ -179,7 +221,7 @@ public class DocumentTypeResource extends BaseResource {
         final List<DocumentTypes> docTypes = body.getItems().getItems();
         for (DocumentTypes documentType : docTypes) {
             for (KeyValueRestful item : documentType.getProviders().getItems()) {
-                ContentBlockModel model = new ContentBlockModel(item.getValue(), ContentBlocksPlugin.Prefer.LEFT, ContentBlocksPlugin.Type.LINKS, item.getKey(), documentType.getValue());
+                ContentBlockModel model = new ContentBlockModel(item.getValue(), ContentBlockModel.Prefer.LEFT, ContentBlockModel.Type.LINKS, item.getKey(), documentType.getValue());
                 addContentBlockToType(model);
             }
         }
@@ -317,13 +359,5 @@ public class DocumentTypeResource extends BaseResource {
     }
 
 
-    @POST
-    @Path("/compounds/contentblocks/save")
-//    @Consumes("application/json")
-    public Response saveContentBlocks(CBPayload body, @Context ServletContext servletContext) {
-        log.debug(body.toString());
-        //new Gson().fromJson(json, type);
-        return Response.status(201).build();
-    }
 
 }

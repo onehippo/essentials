@@ -25,18 +25,29 @@ var app;
             $provide: $provide
         };
 
+
         $provide.factory('MyHttpInterceptor', function ($q, $rootScope, $log) {
             return {
                 //############################################
                 // REQUEST
                 //############################################
                 request: function (config) {
+                    if(!$rootScope.FEEDBACK_TIMER){
+                        $rootScope.FEEDBACK_TIMER = new Date();
+                    }
                     $rootScope.busyLoading = true;
+                    var date = new Date();
+                    // keep success messages for 5 seconds
+                    if((date.getTime() - $rootScope.FEEDBACK_TIMER.getTime())> 5000){
+                        $rootScope.FEEDBACK_TIMER = new Date();
+                        $rootScope.feedbackMessages = [];
+                    }
                     return config || $q.when(config);
                 },
                 requestError: function (error) {
                     $rootScope.busyLoading = true;
                     $rootScope.globalError = [];
+                    $rootScope.feedbackMessages = [];
                     if (error.data) {
                         $rootScope.globalError.push(error.data);
                     }
@@ -52,12 +63,19 @@ var app;
                 response: function (data) {
                     $rootScope.busyLoading = false;
                     $rootScope.globalError = [];
+                    // show success message:
+                    if(data.data.successMessage){
+                        $rootScope.globalError = [];
+                        $rootScope.feedbackMessages = [];
+                        $rootScope.feedbackMessages.push(data.data.value);
+                    }
                     $log.info(data);
                     return data || $q.when(data);
                 },
                 responseError: function (error) {
                     $rootScope.busyLoading = false;
                     $rootScope.globalError = [];
+                    $rootScope.feedbackMessages = [];
                     if (error.data) {
                         $rootScope.globalError.push(error.data);
                     }
@@ -100,8 +118,9 @@ var app;
             menus: root + '/menus/',
             /**
              * Returns list of all plugins
+             * //TODO: change this once we have marketplace up and running
              */
-            plugins: root + '/plugins/',
+            plugins: root +"/plugins/",
             /**
              * Returns list of all plugins that need configuration
              */
@@ -131,12 +150,13 @@ var app;
 
             compounds: root + '/documenttypes/compounds',
             compoundsCreate: root + '/documenttypes/compounds/create/' ,
+            compoundsDelete: root + '/documenttypes/compounds/delete/' ,
             contentblocksCreate: root + '/documenttypes/compounds/contentblocks/create/',
 
-          galleryProcessor: root + '/imagegallery/',
-          imageSets: root + '/imagegallery/imagesets/',
-          galleryProcessorSave: root + '/imagegallery/save',
-          imageSetsSave: root + '/imagegallery/imagesets/save'
+            galleryProcessor: root + '/imagegallery/',
+            imageSets: root + '/imagegallery/imagesets/',
+            galleryProcessorSave: root + '/imagegallery/save',
+            imageSetsSave: root + '/imagegallery/imagesets/save'
 
         };
 
@@ -166,6 +186,17 @@ var app;
 //############################################
 // FILTERS
 //############################################
+
+    APP.filter('splitString', function () {
+        return function (input, splitOn, idx) {
+            if(input){
+                var split = input.split(splitOn);
+                if(split.length >= idx){
+                    return split[idx];
+                }
+            }
+            return "";
+        }});
     APP.filter('startsWith', function () {
         return function (inputCollection, inputString) {
             var collection = [];

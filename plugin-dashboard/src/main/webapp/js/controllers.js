@@ -26,7 +26,12 @@ app.controller('pluginCtrl', function ($scope, $location, $sce, $log, $rootScope
             method: 'GET',
             url: $rootScope.REST.plugins
         }).success(function (data) {
-                    $scope.plugins = data;
+            var content = data.files['gistfile1.json'].content;
+               $scope.plugins = JSON.parse(content).items;
+
+
+                // TODO enable once marketplace is in place
+                    //$scope.plugins = data.items;
                 });
 
     };
