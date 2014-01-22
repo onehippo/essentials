@@ -46,6 +46,7 @@ import com.google.inject.Inject;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.hippoecm.repository.api.HippoNodeType;
 import org.hippoecm.repository.gallery.HippoGalleryNodeType;
 import org.hippoecm.repository.util.JcrUtils;
 import org.onehippo.cms7.essentials.dashboard.ctx.DashboardPluginContext;
@@ -318,14 +319,14 @@ public class ImageGalleryResource extends BaseResource {
             variantRestful.setCompression(compressionProperty);
 
             if (variantTranslationsMap.get(variantName) != null) {
-                log.debug("Translations for " + variantName + ": " + variantTranslationsMap.get(variantName).size());
+                log.debug("Translations for {} : ", variantName, variantTranslationsMap.get(variantName).size());
                 variantRestful.addTranslations(variantTranslationsMap.get(variantName).values());
             } else {
-                log.debug("No translations for " + variantName);
+                log.debug("No translations for {}", variantName);
             }
             if (log.isTraceEnabled()) {
                 for (final String key : variantTranslationsMap.keySet()) {
-                    log.debug("Has translation for " + key);
+                    log.debug("Has translation for {}", key);
                 }
             }
 
@@ -347,10 +348,10 @@ public class ImageGalleryResource extends BaseResource {
 
             final String propertyName = TranslationUtils.getHippoProperty(node);
             if (StringUtils.isBlank(propertyName)) {
-                log.debug("Skipping translation: " + node.getPath());
+                log.debug("Skipping translation: {}", node.getPath());
                 continue;
             } else {
-                log.debug("Adding translation: " + node.getPath());
+                log.debug("Adding translation: {}", node.getPath());
             }
             if (!map.containsKey(propertyName)) {
                 map.put(propertyName, new HashMap<String, TranslationRestful>());
@@ -363,87 +364,117 @@ public class ImageGalleryResource extends BaseResource {
     @PUT
     @Path("/imagesets/save")
     public ImageSetsRestful saveImageSets(final ImageSetsRestful imageSets) throws RepositoryException {
-        log.error("Image sets");
-
-/*
-        try {
-            final JAXBContext context = JAXBContext.newInstance(ImageProcessorRestful.class);
-            final Unmarshaller unmarshaller = context.createUnmarshaller();
-            unmarshaller.setProperty(UnmarshallerProperties.MEDIA_TYPE, "application/json");
-            //unmarshaller.setProperty(UnmarshallerProperties.JSON_INCLUDE_ROOT, false);
-            final Object object = unmarshaller.unmarshal(request.getInputStream());
-            if (object instanceof ImageSetsRestful) {
-                ImageSetsRestful imageSets = (ImageSetsRestful) object;
-
-                final PluginContext pluginContext = getPluginContext();
-                final Session session = pluginContext.getSession();
-                for (final ImageSetRestful imageSet : imageSets.getImageSets()) {
-                    try {
-                        saveImageSet(pluginContext, session, imageSet);
-                    } catch (RepositoryException e) {
-                        e.printStackTrace();  //To change body of catch statement use File | Settings | File Templates.
-                        // TODO
-                    }
-                }
-                session.save();
-                return imageSets;
-            }
-        } catch (JAXBException e) {
-            log.error("Error parsing JSON", e);
-        } catch (IOException e) {
-            log.error("Error parsing JSON", e);
+        if(imageSets == null) {
+            log.error("Unable to process image sets");
+            return null;
         }
-*/
-        return null;
+
+        final PluginContext pluginContext = getPluginContext();
+        final Session session = pluginContext.getSession();
+        try {
+            for(final ImageSetRestful imageSet : imageSets.getImageSets()) {
+                saveImageSet(pluginContext, session, imageSet);
+            }
+            session.save();
+        } catch (RepositoryException e) {
+            log.error("Error while trying to update image sets", e);
+            throw new RestException("Error while trying to update image processor", Response.Status.INTERNAL_SERVER_ERROR);
+        }
+        // TODO determine return type
+        return imageSets;
     }
 
     private boolean saveImageSet(final PluginContext pluginContext, final Session session, final ImageSetRestful imageSet) throws RepositoryException {
+        log.error("Updating image set {}", imageSet.getType());
 
         final Node namespaceNode;
 
         // Check namespace registry
         if (!CndUtils.existsNamespacePrefix(pluginContext, imageSet.getNamespace())) {
             // TODO non existing namespace not supported
+            log.error("Unexisting namespace {} not supported", imageSet.getNamespace());
             return false;
         }
-        if (CndUtils.isNodeType(pluginContext, imageSet.getType(), HippoGalleryNodeType.IMAGE_SET)) {
+        if (!CndUtils.existsNodeType(pluginContext, imageSet.getType())) {
+            // register node type and add namespace node
+            log.info("Create namespace node for {}", imageSet.getNamespace());
+            namespaceNode = CndUtils.createHippoNamespace(pluginContext, imageSet.getNamespace());
+            CndUtils.registerDocumentType(pluginContext, imageSet.getNamespace(), imageSet.getName(), false, false, GalleryUtils.HIPPOGALLERY_IMAGE_SET, GalleryUtils.HIPPOGALLERY_RELAXED);
+        } else if (!CndUtils.isNodeType(pluginContext, imageSet.getType(), HippoGalleryNodeType.IMAGE_SET)) {
             // TODO incorrect node type
+            log.error("Incorrect node type {}; not of type imageset", imageSet.getType());
             return false;
         } else if (!CndUtils.existsNodeType(pluginContext, imageSet.getType())) {
             // register node type and add namespace node
+            log.info("Create namespace node for {}", imageSet.getNamespace());
             namespaceNode = CndUtils.createHippoNamespace(pluginContext, imageSet.getNamespace());
             CndUtils.registerDocumentType(pluginContext, imageSet.getNamespace(), imageSet.getName(), false, false, GalleryUtils.HIPPOGALLERY_IMAGE_SET, GalleryUtils.HIPPOGALLERY_RELAXED);
         } else {
-            //namespaceNode = get namespace node ..gedit /et..;
+            namespaceNode = CndUtils.getHippoNamespaceNode(pluginContext, imageSet.getNamespace());
+            log.debug("Retrieved namespace node {}", namespaceNode.getPath());
         }
 
         // Check namespace node
+        final Node imageSetNode;
+        if(namespaceNode.hasNode(imageSet.getName())) {
+            imageSetNode = namespaceNode.getNode(imageSet.getName());
+            log.debug("Fetched existing image set namespace node {}", imageSetNode.getPath());
+        } else {
+            log.debug("Create new image set namespace node for image set {}", imageSet.getType());
+            imageSetNode = GalleryUtils.createImagesetNamespace(session, imageSet.getNamespace(), imageSet.getName());
+        }
 
-        /*if() {
+        //GalleryUtils.getFieldVariantsFromTemplate();
+        //GalleryUtils.get
 
-        }*/
-
-        final Node imageSetNode = session.getNode(imageSet.getPath());
 
         // Remove all old non used variants
         final List<Node> nodes = fetchFieldsFromNamespaceNode(imageSetNode, "hippogallery:image");
         for (final Node variantFieldNode : nodes) {
+            log.debug("Check variant {}", variantFieldNode.getName());
             //final String documentType = JcrUtils.getStringProperty(node, "hipposysedit:path", null);
-            // TODO deteremine whether to check on id or on namespace/name combination
-            final ImageVariantRestful variant = imageSet.getVariant(variantFieldNode.getIdentifier());
+            final ImageVariantRestful variant = imageSet.getVariantByName(variantFieldNode.getName());
             if (variant == null) {
                 // TODO or add to list of nodes to delete
                 //variantFieldNode.remove();
-                log.debug("Remove " + variantFieldNode.getPath());
-            }
-            if (imageSetNode.hasNode("editor:templates/_default_/" + variant.getName())) {
-                final Node templateNode = imageSetNode.getNode("editor:templates/_default_/" + variantFieldNode.getName());
-                //templateNode.remove();
-                log.debug("Remove " + templateNode.getPath());
+                log.debug("Remove {}", variantFieldNode.getPath());
+
+                if (imageSetNode.hasNode("editor:templates/_default_/" + variantFieldNode.getName())) {
+                    final Node templateNode = imageSetNode.getNode("editor:templates/_default_/" + variantFieldNode.getName());
+                    //templateNode.remove();
+                    log.debug("Remove {}", templateNode.getPath());
+                }
             }
         }
 
+        if(!imageSetNode.hasNode("hipposysedit:nodetype/hipposysedit:nodetype")) {
+            log.error("Node type node not available for {}", imageSetNode.getPath());
+            return false;
+        }
+        final Node imageSetNodeTypeNode = imageSetNode.getNode("hipposysedit:nodetype/hipposysedit:nodetype");
+
         // save all variants
+        for(final ImageVariantRestful variant : imageSet.getVariants()) {
+            if(variant.getName() == null) {
+                log.debug("Unable to process variant without name");
+                continue;
+            }
+            if(imageSetNodeTypeNode.hasNode(variant.getName())) {
+                log.debug("Variant {} already defined in node type", imageSetNode.getName());
+                continue;
+            }
+            setTemplateNodeTypeForVariant(session, imageSetNode, variant);
+            setTemplateFieldForVariant(session, imageSetNode, variant);
+
+            for (final TranslationRestful translation : variant.getTranslations()) {
+                TranslationUtils.setTranslationForNode(imageSetNode, variant.getNodeType(), translation.getLocale(), translation.getMessage());
+            }
+        }
+
+        for (final TranslationRestful translation : imageSet.getTranslations()) {
+            TranslationUtils.setTranslationForNode(imageSetNode, null, translation.getLocale(), translation.getMessage());
+        }
+
 /*
         for(final ImageVariantRestful variant : imageSet.getVariants()) {
             final Node fieldNode;
@@ -463,9 +494,30 @@ public class ImageGalleryResource extends BaseResource {
 */
         // TODO check
         // TODO save translations
-        session.save();
+        //session.save();
         return true;
     }
+
+    private void setTemplateNodeTypeForVariant(final Session session, final Node imagesetTemplate, final ImageVariantRestful variant) throws RepositoryException {
+        // TODO only required to retrieve node when copy is required
+        final Node original = imagesetTemplate.getNode("hipposysedit:nodetype").getNode("hipposysedit:nodetype").getNode("original");
+        final String sysPath = original.getParent().getPath() + '/' + variant.getName();
+        final Node copy = HippoNodeUtils.retrieveExistingNodeOrCreateCopy(session, sysPath, original);
+        copy.setProperty(HippoNodeUtils.HIPPOSYSEDIT_PATH, variant.getNodeType());
+        copy.setProperty(HippoNodeType.HIPPOSYSEDIT_TYPE, HippoGalleryNodeType.IMAGE);
+    }
+
+    private void setTemplateFieldForVariant(final Session session, final Node imagesetTemplate, final ImageVariantRestful variant) throws RepositoryException {
+        // TODO only required to retrieve node when copy is required
+        final Node original = imagesetTemplate.getNode("editor:templates").getNode("_default_").getNode("original");
+        final String sysPath = original.getParent().getPath() + '/' + variant.getName();
+        final Node copy = HippoNodeUtils.retrieveExistingNodeOrCreateCopy(session, sysPath, original);
+        copy.setProperty("caption", variant.getName());
+        copy.setProperty("field", variant.getName());
+
+    }
+
+
 
     protected void storeImageSetTranslations(final Node imageSetNode, final ImageSetRestful imageSet) {
         // TODO
@@ -475,7 +527,7 @@ public class ImageGalleryResource extends BaseResource {
 
     @GET
     @Path("/imagesets/")
-    public List<ImageSetRestful> fetchImageSets() throws RepositoryException {
+    public ImageSetsRestful fetchImageSets() throws RepositoryException {
 
         final ImageProcessorRestful processorRestful = new ImageProcessorRestful();
         // TODO verify the use and creation of the plugin context
@@ -488,7 +540,7 @@ public class ImageGalleryResource extends BaseResource {
         final List<ImageSetRestful> imageSets = fetchImageSets(session);
         populateVariantsInImageSets(session, imageSets, processorNode);
 
-        return imageSets;
+        return new ImageSetsRestful(imageSets);
     }
 
     private void populateImageSetsInVariants(final Session session, final Collection<ImageVariantRestful> variants) throws RepositoryException {
@@ -520,7 +572,9 @@ public class ImageGalleryResource extends BaseResource {
         final List<ImageVariantRestful> variants = new ArrayList<>();
         for (final ImageVariantRestful tempVariant : imageSet.getVariants()) {
             final ImageVariantRestful variant = availableVariants.get(tempVariant.getNodeType());
-            variants.add(variant);
+            if(variant != null) {
+                variants.add(variant);
+            }
         }
         imageSet.setVariants(variants);
     }
@@ -554,10 +608,10 @@ public class ImageGalleryResource extends BaseResource {
 
             final String propertyName = TranslationUtils.getHippoProperty(node);
             if (!StringUtils.isBlank(propertyName)) {
-                log.trace("Skipping translation: " + node.getPath());
+                log.trace("Skipping translation: {}", node.getPath());
                 continue;
             } else {
-                log.trace("Adding translation: " + node.getPath());
+                log.trace("Adding translation: {}", node.getPath());
             }
             translations.add(translation);
         }
@@ -606,9 +660,9 @@ public class ImageGalleryResource extends BaseResource {
         final List<Node> variantTranslations = new ArrayList<>();
         final PluginContext pluginContext = getPluginContext();
         final List<Node> nodes = fetchImageSetNamespaceNodes(session, listImageSetTypes(pluginContext));
-        log.debug("Image set nodes: " + nodes.size());
+        log.debug("Image set nodes: {}", nodes.size());
         for (final Node imageSetNSNode : nodes) {
-            log.debug("Image set node: " + imageSetNSNode.getPath());
+            log.debug("Image set node: {}", imageSetNSNode.getPath());
             variantTranslations.addAll(TranslationUtils.getTranslationsFromNode(imageSetNSNode));
         }
         return variantTranslations;
@@ -617,7 +671,7 @@ public class ImageGalleryResource extends BaseResource {
     private List<Node> fetchImageSetNamespaceNodes(final Session session, final List<String> imageSets) throws RepositoryException {
         final List<Node> nodes = new ArrayList<>();
         for (final String imageSet : imageSets) {
-            log.debug("Fetch Image set NS node for: " + imageSet);
+            log.debug("Fetch Image set NS node for: {}", imageSet);
             nodes.add(fetchImageSetNamespaceNode(session, imageSet));
         }
         return nodes;

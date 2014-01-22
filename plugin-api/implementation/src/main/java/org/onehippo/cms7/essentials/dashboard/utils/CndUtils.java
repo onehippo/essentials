@@ -157,9 +157,24 @@ public final class CndUtils {
         final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
         if (namespaces.hasNode(prefix)) {
             log.info("Namespace '{}' already registered", prefix);
-            return null;
+            return namespaces.getNode(prefix);
         }
         return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
+    }
+
+    // TODO merge with above
+    public static Node getHippoNamespaceNode(final PluginContext context, final String prefix) throws RepositoryException {
+        if (StringUtils.isBlank(prefix)) {
+            throw new RepositoryException("Unable to fetch namespace for empty prefix");
+        }
+
+        final Session session = context.getSession();
+        final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
+        if (namespaces.hasNode(prefix)) {
+            return namespaces.getNode(prefix);
+        }
+        log.info("Namespace node '{}' not available", prefix);
+        return null;
     }
 
     /**

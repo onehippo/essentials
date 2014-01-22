@@ -29,7 +29,7 @@ import org.onehippo.cms7.essentials.rest.model.TranslationRestful;
 /**
  * @version "$Id$"
  */
-@XmlRootElement(name = "imageSets")
+@XmlRootElement(name = "imageSet")
 public class ImageSetRestful implements Restful {
 
     private static final long serialVersionUID = 1L;
@@ -128,18 +128,18 @@ public class ImageSetRestful implements Restful {
         return false;
     }
 
-    public ImageVariantRestful getVariant(final String id) {
+    public ImageVariantRestful getVariantByName(final String name) {
         for(final ImageVariantRestful variant : this.variants) {
-            if(StringUtils.equals(variant.getId(), id)) {
+            if(StringUtils.equals(variant.getName(), name)) {
                 return variant;
             }
         }
         return null;
     }
 
-    public ImageVariantRestful getVariant(final String namaspace, final String name) {
+    public ImageVariantRestful getVariant(final String namespace, final String name) {
         for(final ImageVariantRestful variant : this.variants) {
-            if(StringUtils.equals(variant.getNamespace(), namaspace) && StringUtils.equals(variant.getName(), name)) {
+            if(StringUtils.equals(variant.getNamespace(), namespace) && StringUtils.equals(variant.getName(), name)) {
                 return variant;
             }
         }

@@ -23,7 +23,7 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
     url: $rootScope.REST.imageSets
   }).success(function (data) {
       $scope.imageSetsData = data;
-      $scope.imageSets = $scope.imageSetsData.imageSets;
+//      $scope.imageSets = $scope.imageSetsData.imageSets;
     });
 
 /*
@@ -51,7 +51,7 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
     $http({
       method: 'PUT',
       url: $rootScope.REST.imageSetsSave,
-      data: $scope.imageSetsData
+      data: {"imageSetsList": $scope.imageSetsData}
     }).success(function (data) {
         $log.info(data);
     });
@@ -221,13 +221,13 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
     var newImageSet = angular.copy($scope.newImageSetTemplate);
     newImageSet.namespace = $scope.projectGalleryNamespace;
     newImageSet.id = $scope.generateUUID();
-    $scope.imageSets.push(newImageSet);
+    $scope.imageSetsData.imageSets.push(newImageSet);
   }
 
   $scope.removeImageSet = function(imageSet) {
-    var index = $scope.imageSets.indexOf(imageSet)
+    var index = $scope.imageSetsData.imageSets.indexOf(imageSet)
     if(index >= 0) {
-      $scope.imageSets.splice(index,1);
+      $scope.imageSetsData.imageSets.splice(index,1);
     }
   }
 
@@ -280,8 +280,8 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
 
 
   $scope.updateImageSetsForVariant = function (variant) {
-    for (var i = 0, length = $scope.imageSets.length; i < length; ++i) {
-      var imageSet = $scope.imageSets[i];
+    for (var i = 0, length = $scope.imageSetsData.imageSets.length; i < length; ++i) {
+      var imageSet = $scope.imageSetsData.imageSets[i];
       $scope.updateImageSetForVariant(imageSet, variant);
     }
   };
@@ -374,8 +374,8 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
   }
 
   $scope.validateImageSets = function() {
-    for (var i = 0, length = $scope.imageSets.length; i < length; ++i) {
-      var imageSet = $scope.imageSets[i];
+    for (var i = 0, length = $scope.imageSetsData.imageSets.length; i < length; ++i) {
+      var imageSet = $scope.imageSetsData.imageSets[i];
       if(imageSet.name === "") {
         return false;
       }

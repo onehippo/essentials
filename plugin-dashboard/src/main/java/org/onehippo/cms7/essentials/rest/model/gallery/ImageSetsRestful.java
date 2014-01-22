@@ -29,7 +29,7 @@ import org.onehippo.cms7.essentials.rest.model.TranslationRestful;
 /**
  * @version "$Id$"
  */
-@XmlRootElement(name = "imageSets")
+@XmlRootElement(name = "imageSetsList")
 public class ImageSetsRestful implements Restful {
 
     private static final long serialVersionUID = 1L;
