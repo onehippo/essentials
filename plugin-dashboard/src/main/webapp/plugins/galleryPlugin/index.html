@@ -92,13 +92,13 @@
           <!-- Variant height -->
           <div class="form-group">
             <label for="variant{{$index}}Height">Height</label>
-            <input type="text" placeholder="0" id="variant{{$index}}Height" class="form-control" style="width: 60px;">
+            <input type="text" placeholder="0" id="variant{{$index}}Height" class="form-control" ng-model="variant.height" style="width: 60px;">
           </div>
 
           <!-- Variant width -->
           <div class="form-group">
             <label for="variant{{$index}}Width">Width</label>
-            <input type="text" placeholder="0" id="variant{{$index}}Width" class="form-control" style="width: 60px;">
+            <input type="text" placeholder="0" id="variant{{$index}}Width" class="form-control" ng-model="variant.width" style="width: 60px;">
           </div>
 
           <!-- Attached image sets -->
@@ -124,8 +124,8 @@
             <div class="input-group">
               <span class="input-group-addon" style="width: 140px;">Upscale</span>
               <select id="variant{{$index}}Upscale" class="form-control"
-                      ng-model="upscalingValue"
-                      ng-options="v.description for v in upscalingValues"
+                      ng-model="variant.upscaling"
+                      ng-options="v as v.description for v in upscalingValues track by booleanPropertyValueToString(v)"
                       style="width: 240px;"
                   >
               </select>
@@ -134,8 +134,8 @@
             <div class="input-group">
               <span class="input-group-addon" style="width: 140px;">Speed vs Quality</span>
               <select id="variant{{$index}}Optimize" class="form-control"
-                      ng-model="optimizeValue"
-                      ng-options="o.description for o in optimizeValues"
+                      ng-model="variant.optimization"
+                      ng-options="o as o.description for o in optimizeValues track by o.value"
                       style="width: 240px;"
                   >
               </select>
@@ -144,8 +144,8 @@
             <div class="input-group">
               <span class="input-group-addon" style="width: 140px;">JPEG Quality</span>
               <select id="variant{{$index}}Compression" class="form-control"
-                      ng-model="compressionValue"
-                      ng-options="c.description for c in compressionValues"
+                      ng-model="variant.compression"
+                      ng-options="c as c.description for c in compressionValues track by c.value"
                       style="width: 240px;"
                   >
               </select>

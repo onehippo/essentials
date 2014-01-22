@@ -39,7 +39,7 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
 
     $http({
       method: 'PUT',
-      url: $rootScope.REST.galleryProcessorSave + '2',
+      url: $rootScope.REST.galleryProcessorSave,
       data: $scope.imageProcessor
     }).success(function (data) {
         $log.info(data);
@@ -261,6 +261,10 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
     return imageSet.id;
   }
 
+  $scope.booleanPropertyValueToString = function(property) {
+    return "" + property.value;
+  }
+
   $scope.generateUUID = function() {
     var d = new Date().getTime();
     var uuid = 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
@@ -455,11 +459,15 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
 
   $scope.upscalingValues = [
     {
+      name: "upscaling",
+      type: "BOOLEAN",
       value: false,
       description: "default (off)",
       default: true
     },
     {
+      name: "upscaling",
+      type: "BOOLEAN",
       value: true,
       description: "on"
     }
@@ -472,23 +480,33 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
 
   $scope.optimizeValues = [
     {
+      name: "optimize",
+      type: "STRING",
       value: "quality",
       description: "default (quality)",
       default: true
     },
     {
+      name: "optimize",
+      type: "STRING",
       value: "speed",
       description: "speed"
     },
     {
+      name: "optimize",
+      type: "STRING",
       value: "speed.and.quality",
       description: "speed and quality"
     },
     {
+      name: "optimize",
+      type: "STRING",
       value: "best.quality",
       description: "best quality"
     },
     {
+      name: "optimize",
+      type: "STRING",
       value: "auto",
       description: "auto"
     }
@@ -498,27 +516,39 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
 
   $scope.compressionValues = [
     {
+      name: "compression",
+      type: "STRING",
       value: 1,
       description: "default (uncompressed)",
       default: true
     },
     {
+      name: "compression",
+      type: "STRING",
       value: 0.95,
       description: "best"
     },
     {
+      name: "compression",
+      type: "STRING",
       value: 0.9,
       description: "very good"
     },
     {
+      name: "compression",
+      type: "STRING",
       value: 0.8,
       description: "good"
     },
     {
+      name: "compression",
+      type: "STRING",
       value: 0.7,
       description: "medium"
     },
     {
+      name: "compression",
+      type: "STRING",
       value: 0.5,
       description: "low"
     }
