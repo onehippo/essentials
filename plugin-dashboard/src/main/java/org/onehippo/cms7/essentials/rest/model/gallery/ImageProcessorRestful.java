@@ -107,9 +107,9 @@ public class ImageProcessorRestful implements Restful {
         this.variants.add(variant);
     }
 
-    public ImageVariantRestful getVariant(final String id) {
+    public ImageVariantRestful getVariantForNodeType(final String nodeType) {
         for(final ImageVariantRestful variant : this.variants) {
-            if(StringUtils.equals(variant.getId(), id)) {
+            if(StringUtils.equals(variant.getNodeType(), nodeType)) {
                 return variant;
             }
         }

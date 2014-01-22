@@ -180,8 +180,13 @@ public class ImageGalleryResource extends BaseResource {
         while (variantIterator.hasNext()) {
             final Node variantNode = variantIterator.nextNode();
             // TODO deteremine whether to check on id or on namespace/name combination
-            final ImageVariantRestful variant = imageProcessor.getVariant(variantNode.getIdentifier());
+            final ImageVariantRestful variant = imageProcessor.getVariantForNodeType(variantNode.getName());
             if (variant == null) {
+                // TODO check for hippogallery namespace
+                if("hippogallery".equals(HippoNodeUtils.getPrefixFromType(variantNode.getName()))) {
+                    log.error("Shouldn't delete variants which belong to hippogallery namespace");
+                    continue;
+                }
                 nodesToDelete.add(variantNode);
             }
         }
@@ -357,7 +362,9 @@ public class ImageGalleryResource extends BaseResource {
 
     @PUT
     @Path("/imagesets/save")
-    public ImageSetsRestful saveImageSets(@Context HttpServletRequest request) throws RepositoryException {
+    public ImageSetsRestful saveImageSets(final ImageSetsRestful imageSets) throws RepositoryException {
+        log.error("Image sets");
+
 /*
         try {
             final JAXBContext context = JAXBContext.newInstance(ImageProcessorRestful.class);
