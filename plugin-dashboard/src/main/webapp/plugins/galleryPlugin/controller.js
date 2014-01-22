@@ -107,6 +107,9 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
     "width": 0,
     "height": 0,
     "properties": [],
+    "upscaling": {"name": "upscaling"},
+    "optimize": {"name": "optimize"},
+    "compression": {"name": "compression"},
     "imageSets": []
   };
 
@@ -407,40 +410,6 @@ app.controller('galleryPluginCtrl', function ($scope, $sce, $log, $rootScope, $h
 
 
 
-
-
-
-
-
-
-
-  $scope.imageSetVariants2 = [
-    {
-      "name": "projectgallery:large",
-      "translations": [
-        {
-          "locale": "",
-          "message": "Large"
-        },
-        {
-          "locale": "en",
-          "message": "Large"
-        },
-        {
-          "locale": "nl",
-          "message": "Groot"
-        }
-      ],
-      "width": 400,
-      "height": 400,
-      "properties": [
-        {
-          "name": "upscaling",
-          "value": "false"
-        }
-      ]
-    }
-  ];
 
 
 
