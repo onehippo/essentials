@@ -145,9 +145,10 @@ public final class CndUtils {
      *
      * @param context the plugin context
      * @param prefix  the namespace prefix
+     * @return the node representing the namespace
      * @throws RepositoryException when hippo namespace can't be created
      */
-    public static void createHippoNamespace(final PluginContext context, final String prefix) throws RepositoryException {
+    public static Node createHippoNamespace(final PluginContext context, final String prefix) throws RepositoryException {
         if (StringUtils.isBlank(prefix)) {
             throw new RepositoryException("Unable to create namespace for empty prefix");
         }
@@ -156,9 +157,9 @@ public final class CndUtils {
         final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
         if (namespaces.hasNode(prefix)) {
             log.info("Namespace '{}' already registered", prefix);
-            return;
+            return null;
         }
-        namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
+        return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
     }
 
     /**
