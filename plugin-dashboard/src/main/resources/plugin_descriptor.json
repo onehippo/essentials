@@ -53,5 +53,23 @@
             "name": "Hippo",
             "url": "http://www.onehippo.com"
         }
+    },
+    {
+        "needsInstallation": false,
+        "artifacts": [],
+        "assets": [],
+        "introduction": "Hippo cms release plugin provides the web administrator the possibility to inspect the current Hippo Cms Release version",
+        "name": "Hippo Cms Release",
+        "pluginClass": "org.onehippo.cms7.essentials.dashboard.hippocmsrelease.HippoCmsReleasePlugin",
+        "pluginLink": "hippoCmsReleasePlugin",
+        "screenshots": [],
+        "type": null,
+        "vendor": {
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "dependencies": [
+
+        ]
     }
 ]}

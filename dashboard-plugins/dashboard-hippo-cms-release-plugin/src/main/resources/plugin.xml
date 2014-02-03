@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://www.onehippo.org/essentials /plugin.xsd" xmlns="http://www.onehippo.org/essentials">
+  <name>Hippo Cms Release Plugin</name>
+  <plugin-class>org.onehippo.cms7.essentials.dashboard.hippocmsrelease.HippoCmsReleasePlugin</plugin-class>
+  <type>plugin</type>
+  <vendor>Hippo</vendor>
+  <description>
+    <![CDATA[
+    <p>Hippo cms release plugin provides the web administrator the possibility to inspect the current Hippo Cms Release version</p>
+    <a href="http://www.onehippo.org/">Detailed documentation</a>
+    ]]>
+  </description>
+  <pluginLink>hippoCmsReleasePlugin</pluginLink>
+
+</plugin>
