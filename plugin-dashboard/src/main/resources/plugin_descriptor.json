@@ -21,6 +21,15 @@
                 "scope": "compile",
                 "type": "cms"
             }
+        ],
+        "libraries": [
+            {
+                "items": [{
+                        "component": "contentBlocks",
+                        "file": "contentBlocks.js"
+                    }
+                ]
+            }
         ]
     },
     {
@@ -37,7 +46,17 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "xinhaPlugin",
+                        "file": "xinhaPlugin.js"
+                    }
+                ]
+            }
+        ]
     },
     {
 
@@ -53,7 +72,18 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "carouselPlugin",
+                        "file": "carouselPlugin.js"
+                    }
+                ]
+            }
+        ]
+
     },
     {
         "needsInstallation": false,
@@ -92,6 +122,16 @@
                 "scope": "compile",
                 "type": "cms"
             }
+        ],
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "blogPlugin",
+                        "file": "blogPlugin.js"
+                    }
+                ]
+            }
         ]
     },
     {
@@ -107,7 +147,17 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "galleryPlugin",
+                        "file": "galleryPlugin.js"
+                    }
+                ]
+            }
+        ]
     },
     {
         "needsInstallation": false,
@@ -123,7 +173,17 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "beanwriter",
+                        "file": "beanwriter.js"
+                    }
+                ]
+            }
+        ]
     },
     {
         "needsInstallation": false,
@@ -138,7 +198,17 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "restServices",
+                        "file": "restServices.js"
+                    }
+                ]
+            }
+        ]
     },
     {
         "needsInstallation": false,
@@ -154,7 +224,18 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "freemarkersync",
+                        "file": "freemarkersync.js"
+                    }
+                ]
+            }
+        ]
+
     },
     {
         "needsInstallation": false,
@@ -171,7 +252,18 @@
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "newsEventsPowerpack",
+                        "file": "newsEventsPowerpack.js"
+                    }
+                ]
+            }
+        ]
+
     },
     {
         "needsInstallation": false,
