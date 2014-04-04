@@ -37,8 +37,8 @@ public class DefaultDocumentManager implements DocumentManager {
     private final JcrPersistenceReader reader;
     private final Session session;
 
-    public DefaultDocumentManager(final PluginContext context) {
-        this.session = context.createSession();
+    public DefaultDocumentManager(final Session session, final PluginContext context) {
+        this.session = session;
         this.writer = new JcrPersistenceWriter(session, context);
         this.reader = new JcrPersistenceReader(session, context);
     }
@@ -74,4 +74,8 @@ public class DefaultDocumentManager implements DocumentManager {
     }
 
 
+    @Override
+    public void close() throws Exception {
+        writer.close();
+    }
 }

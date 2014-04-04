@@ -111,43 +111,45 @@ public class PluginResource extends BaseResource {
             response = RestfulList.class)
     @GET
     @Path("/")
-    public RestfulList<PluginRestful> getPluginList(@Context ServletContext servletContext) {
+    public RestfulList<PluginRestful> getPluginList(@Context ServletContext servletContext) throws Exception {
         final RestfulList<PluginRestful> plugins = new RestList<>();
 
 
         final List<PluginRestful> items = getPlugins(servletContext);
 
         final Collection<String> restClasses = new ArrayList<>();
-        final DocumentManager manager = new DefaultDocumentManager(getContext(servletContext));
-        for (PluginRestful item : items) {
-            plugins.add(item);
-            final String pluginId = item.getPluginId();
-            if (item.isNeedsInstallation() && isInstalled(item)) {
-                item.setNeedsInstallation(false);
-            }
-            //############################################
-            // collect endpoints
-            //############################################
-            final List<String> pluginRestClasses = item.getRestClasses();
-            if (pluginRestClasses != null) {
-                for (String clazz : pluginRestClasses) {
-                    restClasses.add(clazz);
+        final PluginContext context = getContext(servletContext);
+        try (DocumentManager manager = new DefaultDocumentManager(context.createSession(), context)) {
+            for (PluginRestful item : items) {
+                plugins.add(item);
+                final String pluginId = item.getPluginId();
+                if (item.isNeedsInstallation() && isInstalled(item)) {
+                    item.setNeedsInstallation(false);
                 }
-            }
-
-
-            // check if recently installed:
-            // TODO: move to client?
-            final InstallerDocument document = manager.fetchDocument(GlobalUtils.getFullConfigPath(pluginId), InstallerDocument.class);
-            if (document != null && document.getDateInstalled() != null) {
-                final Calendar dateInstalled = document.getDateInstalled();
-                final Calendar lastWeek = Calendar.getInstance();
-                lastWeek.add(Calendar.DAY_OF_MONTH, WEEK_OLD);
-                if (dateInstalled.after(lastWeek)) {
-                    item.setDateInstalled(dateInstalled);
+                //############################################
+                // collect endpoints
+                //############################################
+                final List<String> pluginRestClasses = item.getRestClasses();
+                if (pluginRestClasses != null) {
+                    for (String clazz : pluginRestClasses) {
+                        restClasses.add(clazz);
+                    }
                 }
-            }
 
+
+                // check if recently installed:
+                // TODO: move to client?
+                final InstallerDocument document = manager.fetchDocument(GlobalUtils.getFullConfigPath(pluginId), InstallerDocument.class);
+                if (document != null && document.getDateInstalled() != null) {
+                    final Calendar dateInstalled = document.getDateInstalled();
+                    final Calendar lastWeek = Calendar.getInstance();
+                    lastWeek.add(Calendar.DAY_OF_MONTH, WEEK_OLD);
+                    if (dateInstalled.after(lastWeek)) {
+                        item.setDateInstalled(dateInstalled);
+                    }
+                }
+
+            }
         }
         //############################################
         // Register endpoints:
@@ -188,7 +190,7 @@ public class PluginResource extends BaseResource {
             response = RestfulList.class)
     @POST
     @Path("/install/powerpack")
-    public RestfulList<MessageRestful> installPowerpack(final PostPayloadRestful payloadRestful, @Context ServletContext servletContext) {
+    public RestfulList<MessageRestful> installPowerpack(final PostPayloadRestful payloadRestful, @Context ServletContext servletContext) throws Exception {
         final RestfulList<MessageRestful> messageRestfulRestfulList = new RestList<>();
         final Map<String, String> values = payloadRestful.getValues();
         final String pluginId = String.valueOf(values.get(PLUGIN_ID));
@@ -203,42 +205,44 @@ public class PluginResource extends BaseResource {
         final String className = ProjectSetupPlugin.class.getName();
         final PluginContext context = new DefaultPluginContext(new PluginRestful(className));
         // inject project settings:
-        final PluginConfigService service = context.getConfigService();
-
-        final ProjectSettingsBean document = service.read(className, ProjectSettingsBean.class);
-        if (document != null) {
-            context.setBeansPackageName(document.getSelectedBeansPackage());
-            context.setComponentsPackageName(document.getSelectedComponentsPackage());
-            context.setRestPackageName(document.getSelectedRestPackage());
-            context.setProjectNamespacePrefix(document.getProjectNamespace());
-        }
-        //############################################
-        // EXECUTE SKELETON:
-        //############################################
-        final PowerpackPackage commonsPack = new CommonsPowerpack();
-        getInjector().autowireBean(commonsPack);
-        commonsPack.setProperties(new HashMap<String, Object>(values));
-        commonsPack.execute(context);
-
-        final PowerpackPackage powerpackPackage = GlobalUtils.newInstance(myPlugin.getPowerpackClass());
-        powerpackPackage.setProperties(new HashMap<String, Object>(values));
-        getInjector().autowireBean(powerpackPackage);
+        final PluginConfigService service;
+        try (PluginConfigService configService = context.getConfigService()) {
+            service = configService;
 
 
+            final ProjectSettingsBean document = service.read(className, ProjectSettingsBean.class);
+            if (document != null) {
+                context.setBeansPackageName(document.getSelectedBeansPackage());
+                context.setComponentsPackageName(document.getSelectedComponentsPackage());
+                context.setRestPackageName(document.getSelectedRestPackage());
+                context.setProjectNamespacePrefix(document.getProjectNamespace());
+            }
+            //############################################
+            // EXECUTE SKELETON:
+            //############################################
+            final PowerpackPackage commonsPack = new CommonsPowerpack();
+            getInjector().autowireBean(commonsPack);
+            commonsPack.setProperties(new HashMap<String, Object>(values));
+            commonsPack.execute(context);
+
+            final PowerpackPackage powerpackPackage = GlobalUtils.newInstance(myPlugin.getPowerpackClass());
+            powerpackPackage.setProperties(new HashMap<String, Object>(values));
+            getInjector().autowireBean(powerpackPackage);
 
 
-        final InstructionStatus status = powerpackPackage.execute(context);
-        log.info("status {}", status);
-        // save status:
-        if (document != null) {
-            document.setSetupDone(true);
-            final boolean written = service.write(document);
-            log.info("Config saved: {}", written);
-        }
-        addRestartInformation(eventBus);
-        final List<DisplayEvent> displayEvents = listener.consumeEvents();
-        for (DisplayEvent displayEvent : displayEvents) {
-            messageRestfulRestfulList.add(new MessageRestful(displayEvent.getMessage(), displayEvent.getDisplayType()));
+            final InstructionStatus status = powerpackPackage.execute(context);
+            log.info("status {}", status);
+            // save status:
+            if (document != null) {
+                document.setSetupDone(true);
+                final boolean written = service.write(document);
+                log.info("Config saved: {}", written);
+            }
+            addRestartInformation(eventBus);
+            final List<DisplayEvent> displayEvents = listener.consumeEvents();
+            for (DisplayEvent displayEvent : displayEvents) {
+                messageRestfulRestfulList.add(new MessageRestful(displayEvent.getMessage(), displayEvent.getDisplayType()));
+            }
         }
         return messageRestfulRestfulList;
     }
@@ -348,7 +352,7 @@ public static List<PluginRestful> parseGist() {
     @ApiParam(name = PLUGIN_ID, value = "Plugin  id", required = true)
     @POST
     @Path("/install/{pluginId}")
-    public MessageRestful installPlugin(@Context ServletContext servletContext, @PathParam(PLUGIN_ID) String pluginId) {
+    public MessageRestful installPlugin(@Context ServletContext servletContext, @PathParam(PLUGIN_ID) String pluginId) throws Exception {
 
         final MessageRestful message = new MessageRestful();
         final RestfulList<PluginRestful> pluginList = getPluginList(servletContext);
@@ -374,13 +378,15 @@ public static List<PluginRestful> parseGist() {
                 }
 
                 if (notInstalled.size() == 0) {
-                    final DocumentManager manager = new DefaultDocumentManager(getContext(servletContext));
-                    final InstallerDocument document = new InstallerDocument();
-                    document.setName(id);
-                    document.setParentPath(GlobalUtils.getParentConfigPath(id));
-                    document.setDateInstalled(Calendar.getInstance());
+                    final PluginContext context = getContext(servletContext);
+                    try (DocumentManager manager = new DefaultDocumentManager(context.createSession(), context)) {
+                        final InstallerDocument document = new InstallerDocument();
+                        document.setName(id);
+                        document.setParentPath(GlobalUtils.getParentConfigPath(id));
+                        document.setDateInstalled(Calendar.getInstance());
 
-                    manager.saveDocument(document);
+                        manager.saveDocument(document);
+                    }
                     message.setValue("Plugin successfully installed. Please rebuild and restart your application");
                     return message;
                 } else {
@@ -456,12 +462,14 @@ public static List<PluginRestful> parseGist() {
         try {
             final Plugin plugin = getPluginById(ProjectSetupPlugin.class.getName(), servletContext);
             final PluginContext context = new DefaultPluginContext(plugin);
-            final ProjectSettingsBean document = context.getConfigService().read(ProjectSetupPlugin.class.getName(), ProjectSettingsBean.class);
-
-            if (document != null && document.getSetupDone()) {
-                status.setStatus(true);
-                return status;
+            try (PluginConfigService configService = context.getConfigService()) {
+                final ProjectSettingsBean document = configService.read(ProjectSetupPlugin.class.getName(), ProjectSettingsBean.class);
+                if (document != null && document.getSetupDone()) {
+                    status.setStatus(true);
+                    return status;
+                }
             }
+
 
         } catch (Exception e) {
 

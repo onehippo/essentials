@@ -13,15 +13,17 @@ import org.hippoecm.repository.HippoRepositoryFactory;
 import org.junit.After;
 import org.junit.Before;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
- * @version "$Id: BaseRepositoryTest.java 172679 2013-08-02 14:21:12Z mmilicevic $"
+ * @version "$Id$"
  */
 public abstract class BaseRepositoryTest extends BaseTest {
 
 
+    private static final Logger log = LoggerFactory.getLogger(BaseRepositoryTest.class);
     protected MemoryRepository repository;
-    protected Session session;
     protected Session hippoSession;
 
     @Override
@@ -36,16 +38,19 @@ public abstract class BaseRepositoryTest extends BaseTest {
     @Override
     @Before
     public void setUp() throws Exception {
+        log.info("======================================");
+        log.info("setUp()");
+        log.info("======================================");
         super.setUp();
         repository = new MemoryRepository();
-        session = repository.getSession();
-
     }
 
     @Override
     @After
     public void tearDown() throws Exception {
-
+        log.info("======================================");
+        log.info("tearDown()");
+        log.info("======================================");
         super.tearDown();
         if (repository != null) {
             repository.shutDown();
@@ -59,6 +64,7 @@ public abstract class BaseRepositoryTest extends BaseTest {
     // UTILITY METHODS
     //############################################
     public void createHstRootConfig() throws RepositoryException {
+        final Session session = repository.getSession();
         final Node rootNode = session.getRootNode();
         final Node siteRootNode = rootNode.addNode("hst:hst", "hst:hst");
         final Node configs = siteRootNode.addNode("hst:configurations", "hst:configurations");
@@ -70,6 +76,7 @@ public abstract class BaseRepositoryTest extends BaseTest {
         siteNode.addNode("hst:sitemenus", "hst:sitemenus");
         siteNode.addNode("hst:templates", "hst:templates");
         session.save();
+        session.logout();
     }
 
     /**
@@ -85,6 +92,15 @@ public abstract class BaseRepositoryTest extends BaseTest {
         }
         return hippoSession;
 
+    }
+
+    public Session getSession(){
+        try {
+            return repository.getSession();
+        } catch (RepositoryException e) {
+           // ignore
+        }
+        return null;
     }
 
 }
