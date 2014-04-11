@@ -26,7 +26,7 @@ import com.google.common.collect.Collections2;
 
 
 @XmlRootElement(name = "node", namespace = EssentialConst.URI_JCR_NAMESPACE)
-public class XmlNode implements NodeOrProperty {
+public final class XmlNode implements NodeOrProperty {
 
     public static final String SV_TYPE_STRING = "String";
     public static final String HIPPOSYSEDIT_NODETYPE = "hipposysedit:nodetype";
@@ -71,14 +71,14 @@ public class XmlNode implements NodeOrProperty {
         return Collections.emptyList();
     }
 
-    public XmlProperty getSupertypeProperty(){
+    public XmlProperty getSupertypeProperty() {
 
         XmlNode editNode = getEditNode();
-        if(editNode == null){
+        if (editNode == null) {
             return null;
         }
         final Collection<XmlNode> editNodes = editNode.getChildNodesByName(HIPPOSYSEDIT_NODETYPE);
-        if(editNodes.isEmpty()){
+        if (editNodes.isEmpty()) {
             return null;
         }
         editNode = editNodes.iterator().next();
@@ -88,9 +88,10 @@ public class XmlNode implements NodeOrProperty {
         return editNode.getXmlPropertyByName(HIPPOSYSEDIT_SUPERTYPE);
 
     }
+
     private XmlNode getEditType() {
 
-        final XmlNode myNode =  getEditNode();
+        final XmlNode myNode = getEditNode();
         final Collection<XmlNode> editTypes = myNode.getChildNodesByName(HIPPOSYSEDIT_NODETYPE);
         if (editTypes.size() == 1) {
             return editTypes.iterator().next();
@@ -107,6 +108,32 @@ public class XmlNode implements NodeOrProperty {
         }
         return myNodes.iterator().next();
     }
+
+
+    @Override
+    public XmlProperty getPropertyForName(final String propertyName) {
+        final Collection<XmlProperty> myProps = getProperties();
+        for (XmlProperty myProp : myProps) {
+            if(myProp.getName().equals(propertyName)){
+                return myProp;
+            }
+        }
+
+        return null;
+    }
+
+
+    public Collection<XmlNode> getNodeTypes() {
+
+        final XmlNode editNode = getEditNode();
+        if (editNode == null) {
+            return Collections.emptyList();
+        }
+        final Collection<XmlNode> myChildNodes = editNode.getChildNodes();
+        final XmlNode fieldNode = myChildNodes.iterator().next();
+        return fieldNode.getChildNodes();
+    }
+
 
     @Override
     public String getType() {
@@ -199,6 +226,7 @@ public class XmlNode implements NodeOrProperty {
         return null;
     }
 
+
     @XmlAttribute(name = "merge", namespace = EssentialConst.URI_AUTOEXPORT_NAMESPACE, required = false)
     @XmlJavaTypeAdapter(CollapsedStringAdapter.class)
     public String getMerge() {
@@ -228,12 +256,14 @@ public class XmlNode implements NodeOrProperty {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("XmlNode{");
+        sb.append("name='").append(name).append('\'');
+        sb.append(", merge='").append(merge).append('\'');
         sb.append("nodeOrProperty=").append(nodeOrProperty);
         sb.append(", childNodes=").append(childNodes);
         sb.append(", properties=").append(properties);
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", merge='").append(merge).append('\'');
         sb.append('}');
         return sb.toString();
     }
+
+
 }

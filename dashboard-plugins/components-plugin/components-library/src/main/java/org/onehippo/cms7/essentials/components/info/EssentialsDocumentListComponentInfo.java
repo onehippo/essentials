@@ -4,8 +4,7 @@
 
 package org.onehippo.cms7.essentials.components.info;
 
-import org.hippoecm.hst.core.parameters.DocumentLink;
-import org.hippoecm.hst.core.parameters.DropDownList;
+import org.hippoecm.hst.core.parameters.JcrPath;
 import org.hippoecm.hst.core.parameters.Parameter;
 
 /**
@@ -21,11 +20,16 @@ import org.hippoecm.hst.core.parameters.Parameter;
                 value = {"pageSize"}
         )
 })*/
-public interface EssentialsDocumentListComponentInfo {
+public interface EssentialsDocumentListComponentInfo extends EssentialsPageable, EssentialsSortable {
 
 
     @Parameter(name = "path", required = false, displayName = "Documents path")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippostd:folder")
+    @JcrPath(
+            isRelative = true,
+            pickerConfiguration = "cms-pickers/documents",
+            pickerSelectableNodeTypes = {"hippostd:folder"},
+            pickerInitialPath = "/content/documents"
+    )
     String getPath();
 
 
@@ -36,25 +40,6 @@ public interface EssentialsDocumentListComponentInfo {
     @Parameter(name = "documentTypes", required = true, displayName = "Document types (comma separated)")
     String getDocumentTypes();
 
-    /*
-    @Parameter(name = "listType", required = false, defaultValue = "search", displayName = "List type", description = "Repository or search type of list")
-    @DropDownList(value = {"search", "repository"})
-    String getListType();
-    */
-
-    @Parameter(name = "sortField", required = false, displayName = "Sort field")
-    String getSortField();
-
-    @Parameter(name = "sortOrder", required = false, defaultValue = "desc", displayName = "Sort order", description = "Order results ascending or descending")
-    @DropDownList(value = {"asc", "desc"})
-    String getSortOrder();
-
-
-    @Parameter(name = "pageSize", required = true, defaultValue = "10", displayName = "Page size", description = "Nr of items per page")
-    int getPageSize();
-
-    @Parameter(name = "showPagination", required = false, displayName = "Show pagination")
-    Boolean getShowPagination();
 
 
 }

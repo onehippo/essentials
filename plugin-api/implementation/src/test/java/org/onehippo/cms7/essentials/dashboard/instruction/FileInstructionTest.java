@@ -16,45 +16,73 @@
 
 package org.onehippo.cms7.essentials.dashboard.instruction;
 
+import java.io.File;
+
+import javax.inject.Inject;
+
 import org.junit.Test;
+import org.onehippo.cms7.essentials.BaseResourceTest;
 import org.onehippo.cms7.essentials.BaseTest;
 import org.onehippo.cms7.essentials.dashboard.instructions.InstructionExecutor;
 import org.onehippo.cms7.essentials.dashboard.instructions.InstructionSet;
 import org.onehippo.cms7.essentials.dashboard.instructions.InstructionStatus;
 import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
-
-import com.google.inject.Inject;
+import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 
 import static org.junit.Assert.assertTrue;
 
 /**
  * @version "$Id$"
  */
-public class FileInstructionTest extends BaseTest {
+public class FileInstructionTest extends BaseResourceTest {
+
 
     public static final String SOURCE = createPlaceHolder(EssentialConst.PLACEHOLDER_PROJECT_ROOT) + "/instruction_file.txt";
     public static final String TARGET = createPlaceHolder(EssentialConst.PLACEHOLDER_PROJECT_ROOT) + "/instruction_file_copy.txt";
     @Inject
     private InstructionExecutor executor;
     @Inject
+    @Qualifier("fileInstruction")
     private FileInstruction copyInstruction;
     @Inject
+    @Qualifier("fileInstruction")
     private FileInstruction deleteInstruction;
 
     private static String createPlaceHolder(final String placeholderProjectRoot) {
-        return "{{" + placeholderProjectRoot +"}}";
+        return "{{" + placeholderProjectRoot + "}}";
     }
 
     @Test
     public void testProcess() throws Exception {
-        copyInstruction.setAction(PluginInstruction.COPY);
-        copyInstruction.setSource(SOURCE);
-        copyInstruction.setTarget(TARGET);
+
         final InstructionSet set = new PluginInstructionSet();
         set.addInstruction(copyInstruction);
         InstructionStatus status = executor.execute(set, getContext());
+        // invalid instruction:
+        assertTrue(status == InstructionStatus.FAILED);
+        copyInstruction.setAction(PluginInstruction.COPY);
+        copyInstruction.setSource(SOURCE);
+        copyInstruction.setTarget(TARGET);
+        copyInstruction.setOverwrite(true);
+        status = executor.execute(set, getContext());
         assertTrue(status == InstructionStatus.SUCCESS || status == InstructionStatus.SKIPPED);
         assertTrue(!copyInstruction.getMessage().contains("{{"));
+        File file = new File(copyInstruction.getTarget());
+        assertTrue(file.exists());
+        StringBuilder textFile = GlobalUtils.readTextFile(file.toPath());
+        assertTrue(textFile.toString().contains(BaseTest.PROJECT_NAMESPACE_TEST));
+        //############################################
+        // BINARY TEST (no replacements):
+        //############################################
+        copyInstruction.setOverwrite(true);
+        copyInstruction.setBinary(true);
+        executor.execute(set, getContext());
+        file = new File(copyInstruction.getTarget());
+        assertTrue(file.exists());
+        textFile = GlobalUtils.readTextFile(file.toPath());
+        assertTrue(textFile.toString().contains("{{namespace}}"));
+
         //############################################
         // DELETE
         //############################################

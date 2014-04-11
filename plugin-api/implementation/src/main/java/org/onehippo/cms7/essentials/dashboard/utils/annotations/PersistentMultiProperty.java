@@ -21,20 +21,30 @@ import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
+import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Collection;
 import java.util.List;
 
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
+import javax.jcr.Value;
 
 import org.apache.commons.lang.NotImplementedException;
-import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
-import org.onehippo.cms7.essentials.dashboard.model.JcrModel;
+import org.apache.jackrabbit.value.BooleanValue;
+import org.apache.jackrabbit.value.DateValue;
+import org.apache.jackrabbit.value.DoubleValue;
+import org.apache.jackrabbit.value.LongValue;
+import org.onehippo.cms7.essentials.dashboard.config.Document;
 import org.onehippo.cms7.essentials.dashboard.model.PersistentHandler;
 import org.onehippo.cms7.essentials.dashboard.model.hst.SimplePropertyModel;
+import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * Processes JCR multi property item
@@ -48,19 +58,42 @@ public @interface PersistentMultiProperty {
 
     String name();
 
-    Class<?> type() default String[].class;
+    Class<?> type() default String.class;
 
     enum ProcessAnnotation implements PersistentHandler<PersistentMultiProperty, Property> {
-        MULTI_PROPERTY_WRITER;
+        MULTI_PROPERTY {
+            @Override
+            public Property read(final Session session, final Node parent, final String path, final PersistentMultiProperty annotation) {
+                try {
+                    if (parent == null) {
+                        log.error("Parent node was null for path: {}", path);
+                        return null;
+                    }
+                    if (Strings.isNullOrEmpty(path)) {
+                        log.error("Path was null for parent: {}", parent.getPath());
+                        return null;
+                    }
+                    if (!parent.hasProperty(path)) {
+                        return null;
+                    }
+                    return parent.getProperty(path);
+                } catch (RepositoryException | IllegalArgumentException e) {
+                    log.error("Error loading property", e);
+                }
+                return null;
+            }
+
+        };
         private static final Logger log = LoggerFactory.getLogger(ProcessAnnotation.class);
+        public static final String UNCHECKED = "unchecked";
 
         @Override
-        public Property execute(final PluginContext context, final JcrModel model, final PersistentMultiProperty annotation) {
+        public Property execute(final Session session, final Document model, final PersistentMultiProperty annotation) {
 
             final SimplePropertyModel ourModel = (SimplePropertyModel) model;
             final Object value = ourModel.getValue();
             final String name = ourModel.getName();
-            final Session session = context.getSession();
+
             try {
                 final String parentPath = ourModel.getParentPath();
                 if (session.itemExists(parentPath)) {
@@ -69,12 +102,65 @@ public @interface PersistentMultiProperty {
                         node.setProperty(name, (String[]) value);
                     } else if (value instanceof List) {
                         final Class<?> type = annotation.type();
-                        if (type.equals(String[].class)) {
-                            @SuppressWarnings("unchecked")
+                        if (type.equals(String.class)) {
+                            @SuppressWarnings(UNCHECKED)
                             final List<String> values = (List<String>) value;
                             final String[] stringValues = values.toArray(new String[values.size()]);
                             node.setProperty(name, stringValues);
+                        } else if (type.equals(int.class) || type.equals(Integer.class)) {
+                            @SuppressWarnings(UNCHECKED)
+                            final Collection<Integer> values = (Collection<Integer>) value;
+                            final List<Value> jcrValues = new ArrayList<>();
+                            for (Integer integer : values) {
+                                final Value val = new LongValue(integer);
+                                jcrValues.add(val);
+                            }
+                            final Value[] valArray = jcrValues.toArray(new Value[values.size()]);
+                            node.setProperty(name, valArray);
+                        } else if (type.equals(long.class) || type.equals(Long.class)) {
+                            @SuppressWarnings(UNCHECKED)
+                            final Collection<Long> values = (Collection<Long>) value;
+                            final List<Value> jcrValues = new ArrayList<>();
+                            for (Long l : values) {
+                                final Value val = new LongValue(l);
+                                jcrValues.add(val);
+                            }
+                            final Value[] valArray = jcrValues.toArray(new Value[values.size()]);
+                            node.setProperty(name, valArray);
+                        } else if (type.equals(boolean.class) || type.equals(Boolean.class)) {
+                            @SuppressWarnings(UNCHECKED)
+                            final Collection<Boolean> values = (Collection<Boolean>) value;
+                            final List<Value> jcrValues = new ArrayList<>();
+                            for (Boolean b : values) {
+                                final Value val = new BooleanValue(b);
+                                jcrValues.add(val);
+                            }
+                            final Value[] valArray = jcrValues.toArray(new Value[values.size()]);
+                            node.setProperty(name, valArray);
+                        } else if (type.equals(double.class) || type.equals(Double.class)) {
+                            @SuppressWarnings(UNCHECKED)
+                            final Collection<Double> values = (Collection<Double>) value;
+                            final List<Value> jcrValues = new ArrayList<>();
+                            for (Double d : values) {
+                                final Value val = new DoubleValue(d);
+                                jcrValues.add(val);
+                            }
+                            final Value[] valArray = jcrValues.toArray(new Value[values.size()]);
+                            node.setProperty(name, valArray);
+                        } else if (type.equals(Calendar.class)) {
+                            @SuppressWarnings(UNCHECKED)
+                            final Collection<Calendar> values = (Collection<Calendar>) value;
+                            final List<Value> jcrValues = new ArrayList<>();
+                            for (Calendar c : values) {
+                                final Value val = new DateValue(c);
+                                jcrValues.add(val);
+                            }
+                            final Value[] valArray = jcrValues.toArray(new Value[values.size()]);
+                            node.setProperty(name, valArray);
+                        } else {
+                            throw new NotImplementedException("Property writer not implemented for: " + type);
                         }
+                        session.save();
                     } else {
                         throw new NotImplementedException("Property writer not implemented for: " + value.getClass());
                     }
@@ -84,7 +170,9 @@ public @interface PersistentMultiProperty {
                 }
             } catch (RepositoryException e) {
                 log.error("Error writing property", e);
+                GlobalUtils.refreshSession(session, false);
             }
+
             return null;
         }
     }

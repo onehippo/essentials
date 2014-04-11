@@ -27,10 +27,12 @@ import org.slf4j.LoggerFactory;
 
 /**
  * IterablePagination: a Pageable with HippoBean items.
+ *
  * @version $Id$
  */
 public class IterablePagination<T extends HippoBean> extends Pageable<T> {
 
+    public static final String UNCHECKED = "unchecked";
     private static Logger log = LoggerFactory.getLogger(IterablePagination.class);
 
 
@@ -39,7 +41,7 @@ public class IterablePagination<T extends HippoBean> extends Pageable<T> {
     /**
      * Constructor to be used when the paging has been done beforehand (for example in HST query).
      * The beans iterator size should be the same as pageSize (except maybe for the last page).
-     *
+     * <p/>
      * E.g. when HstQuery is used to get the beans, both HstQuery#setLimit and HstQuery#setOffset has been used.
      */
     public IterablePagination(final HippoBeanIterator beans, final int totalSize, final int pageSize, final int currentPage) {
@@ -61,7 +63,7 @@ public class IterablePagination<T extends HippoBean> extends Pageable<T> {
      * Constructor to be used when the paging is not done beforehand (for example in HST query), but has to be done by
      * this class, for instance paging on facet navigation results.
      */
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({UNCHECKED})
     public IterablePagination(final HippoBeanIterator beans, final int currentPage) {
         super(beans.getSize(), currentPage);
         processOffset(beans);
@@ -94,7 +96,7 @@ public class IterablePagination<T extends HippoBean> extends Pageable<T> {
                 this.items = items.subList(fromIndex, toIndex);
             } catch (IndexOutOfBoundsException iobe) {
                 log.error("Sublist out of bounds: fromIndex=" + fromIndex + ", toIndex=" + toIndex + ", list size=" +
-                    items.size(), iobe);
+                        items.size(), iobe);
             }
         }
     }
@@ -128,7 +130,7 @@ public class IterablePagination<T extends HippoBean> extends Pageable<T> {
         return items;
     }
 
-    @SuppressWarnings({"unchecked"})
+    @SuppressWarnings({UNCHECKED})
     public void setItems(List<? extends HippoBean> items) {
         this.items = (List<T>) items;
     }
@@ -153,8 +155,8 @@ public class IterablePagination<T extends HippoBean> extends Pageable<T> {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    protected void processOffset(HippoBeanIterator beans) {
+    @SuppressWarnings(UNCHECKED)
+    protected final void processOffset(HippoBeanIterator beans) {
         items = new ArrayList<>();
         int startAt = getStartOffset();
         if (startAt < getTotal()) {
@@ -179,7 +181,7 @@ public class IterablePagination<T extends HippoBean> extends Pageable<T> {
     protected void processItems(HippoBeanIterator beans) {
         items = new ArrayList<>();
         while (beans.hasNext()) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings(UNCHECKED)
             T bean = (T) beans.nextHippoBean();
             if (bean != null) {
                 items.add(bean);

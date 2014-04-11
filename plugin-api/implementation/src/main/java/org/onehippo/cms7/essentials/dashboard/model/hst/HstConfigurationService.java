@@ -18,6 +18,8 @@ package org.onehippo.cms7.essentials.dashboard.model.hst;
 
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.utils.JcrPersistenceWriter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @version "$Id$"
@@ -25,7 +27,8 @@ import org.onehippo.cms7.essentials.dashboard.utils.JcrPersistenceWriter;
 public class HstConfigurationService {
 
 
-    final HstConfiguration config;
+    private static final Logger log = LoggerFactory.getLogger(HstConfigurationService.class);
+    private final HstConfiguration config;
     private final PluginContext context;
 
     public HstConfigurationService(final String name, final PluginContext context) {
@@ -34,9 +37,12 @@ public class HstConfigurationService {
     }
 
 
-    public HstConfiguration build() {
-        JcrPersistenceWriter writer = new JcrPersistenceWriter(context);
-        writer.write(config);
+    public HstConfiguration build(final PluginContext context) {
+        try (JcrPersistenceWriter writer = new JcrPersistenceWriter(context.createSession(), this.context)) {
+            writer.write(config);
+        } catch (Exception e) {
+            log.error("Error ", e);
+        }
         return config;
     }
 

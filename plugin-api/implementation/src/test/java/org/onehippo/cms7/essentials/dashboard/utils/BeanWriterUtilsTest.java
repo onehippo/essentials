@@ -1,5 +1,6 @@
 package org.onehippo.cms7.essentials.dashboard.utils;
 
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -7,24 +8,27 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.onehippo.cms7.essentials.BaseTest;
+import org.onehippo.cms7.essentials.BaseResourceTest;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.utils.beansmodel.HippoEssentialsGeneratedObject;
 import org.onehippo.cms7.essentials.dashboard.utils.beansmodel.MemoryBean;
 import org.onehippo.cms7.essentials.dashboard.utils.code.ExistingMethodsVisitor;
 import org.onehippo.cms7.essentials.dashboard.utils.code.NoAnnotationMethodVisitor;
+import org.onehippo.cms7.essentials.dashboard.utils.xml.XmlNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @version "$Id: BeanWriterUtilsTest.java 174288 2013-08-19 16:21:19Z mmilicevic $"
+ * @version "$Id$"
  */
-public class BeanWriterUtilsTest extends BaseTest {
+public class BeanWriterUtilsTest extends BaseResourceTest {
 
 
+    public static final String MY_TEST_NS = "mytestnamespace";
     private static Logger log = LoggerFactory.getLogger(BeanWriterUtilsTest.class);
 
     @Override
@@ -32,6 +36,18 @@ public class BeanWriterUtilsTest extends BaseTest {
     public void setUp() throws Exception {
         super.setUp();
         buildExisting();
+    }
+
+
+    @Test
+    public void testGeneratingBean() throws Exception {
+        final InputStream resourceAsStream = getClass().getResourceAsStream("/test_document_type.xml");
+        final XmlNode documentNode = XmlUtils.parseXml(resourceAsStream);
+        assertNotNull(documentNode);
+        final MemoryBean memoryBean = BeanWriterUtils.processXmlTemplate(documentNode, MY_TEST_NS);
+        final int size = memoryBean.getProperties().size();
+        log.info("memoryBean {}", size);
+        assertEquals(4, size);
     }
 
     @Test
@@ -91,11 +107,15 @@ public class BeanWriterUtilsTest extends BaseTest {
         final PluginContext context = getContext();
         context.setProjectNamespacePrefix(HIPPOPLUGINS_NAMESPACE);
         final List<MemoryBean> memoryBeans = BeanWriterUtils.buildBeansGraph(getProjectRoot(), context, "txt");
-        assertEquals(NAMESPACES_TEST_SET.size(), memoryBeans.size());
+        // NOTE: one bean is not mapped within XML (only java {@code DuplicateAnnotation.txt})
+        assertEquals(NAMESPACES_TEST_SET.size() - 1, memoryBeans.size());
         for (MemoryBean memoryBean : memoryBeans) {
             final String namespaced = String.format("%s:%s", memoryBean.getNamespace(), memoryBean.getName());
             assertTrue("expected " + namespaced, NAMESPACES_TEST_SET.contains(namespaced));
             if (!namespaced.contains("extend")) {
+                if (memoryBean.getBeanPath() == null) {
+                    log.info("memoryBean {}", memoryBean);
+                }
                 assertTrue("Expected bean path to be none null:" + namespaced, memoryBean.getBeanPath() != null);
             }
         }

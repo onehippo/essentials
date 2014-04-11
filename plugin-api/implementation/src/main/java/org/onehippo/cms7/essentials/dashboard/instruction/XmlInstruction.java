@@ -18,10 +18,10 @@ package org.onehippo.cms7.essentials.dashboard.instruction;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.StringWriter;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.jcr.ImportUUIDBehavior;
 import javax.jcr.Node;
 import javax.jcr.RepositoryException;
@@ -37,18 +37,22 @@ import org.onehippo.cms7.essentials.dashboard.instructions.InstructionStatus;
 import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TemplateUtils;
+import org.onehippo.cms7.essentials.dashboard.utils.XmlUtils;
+import org.onehippo.cms7.essentials.dashboard.utils.xml.XmlNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+
 
 /**
  * @version "$Id$"
  */
+@Component
 @XmlRootElement(name = "xml", namespace = EssentialConst.URI_ESSENTIALS_INSTRUCTIONS)
 public class XmlInstruction extends PluginInstruction {
 
@@ -64,14 +68,14 @@ public class XmlInstruction extends PluginInstruction {
     private String action;
     @Inject
     private EventBus eventBus;
-    @Inject(optional = true)
-    @Named("instruction.message.xml.delete")
+
+    @Value("${instruction.message.xml.delete}")
     private String messageDelete;
-    @Inject(optional = true)
-    @Named("instruction.message.xml.copy")
+
+    @Value("${instruction.message.xml.copy}")
     private String messageCopy;
-    @Inject(optional = true)
-    @Named("instruction.message.xml.copy.error")
+
+    @Value("${instruction.message.xml.copy.error}")
     private String messageCopyError;
     private PluginContext context;
 
@@ -97,8 +101,8 @@ public class XmlInstruction extends PluginInstruction {
     }
 
     private InstructionStatus copy() {
-        final Session session = context.getSession();
-        InputStream stream = null;
+        final Session session = context.createSession();
+        InputStream stream = getClass().getClassLoader().getResourceAsStream(source);
         try {
             if (!session.itemExists(target)) {
                 log.error("Target node doesn't exist {}", target);
@@ -106,7 +110,7 @@ public class XmlInstruction extends PluginInstruction {
             }
             final Node destination = session.getNode(target);
 
-            stream = getClass().getClassLoader().getResourceAsStream(source);
+
             if (stream == null) {
                 log.error("Source file not found {}", source);
                 message = messageCopyError;
@@ -114,8 +118,15 @@ public class XmlInstruction extends PluginInstruction {
                 return InstructionStatus.FAILED;
             }
 
+            // first check if node exists:
+            if (!isOverwrite() && nodeExists(session, source, destination.getPath())) {
+                eventBus.post(new InstructionEvent(this));
+                return InstructionStatus.SKIPPED;
+            }
+
+
             // Import XML with replaced NAMESPACE placeholder
-            final String myData = TemplateUtils.replaceTemplateData(GlobalUtils.readStreamAsText(stream).toString(), context.getPlaceholderData());
+            final String myData = TemplateUtils.replaceTemplateData(GlobalUtils.readStreamAsText(stream), context.getPlaceholderData());
             session.importXML(destination.getPath(), IOUtils.toInputStream(myData), ImportUUIDBehavior.IMPORT_UUID_COLLISION_REPLACE_EXISTING);
             session.save();
             log.info("Added node to: {}", destination.getPath());
@@ -125,18 +136,37 @@ public class XmlInstruction extends PluginInstruction {
             log.error("Error on copy node", e);
         } finally {
             IOUtils.closeQuietly(stream);
-            GlobalUtils.refreshSession(session, false);
+            GlobalUtils.cleanupSession(session);
         }
         return InstructionStatus.FAILED;
 
     }
 
+    private boolean nodeExists(final Session session, final String source, final String parentPath) throws RepositoryException {
+
+        final InputStream stream = getClass().getClassLoader().getResourceAsStream(source);
+        try {
+            final XmlNode xmlNode = XmlUtils.parseXml(stream);
+            final String name = xmlNode.getName();
+            if (!Strings.isNullOrEmpty(name) && session.itemExists(parentPath)) {
+
+                final String absPath = parentPath.endsWith("/") ? parentPath + name : parentPath + '/' + name;
+                if (session.itemExists(absPath)) {
+                    log.debug("Node already exists: {}", absPath);
+                    return true;
+                }
+            }
+        } finally {
+            IOUtils.closeQuietly(stream);
+        }
 
 
+        return false;
+    }
 
 
     private InstructionStatus delete() {
-        final Session session = context.getSession();
+        final Session session = context.createSession();
         try {
             if (!session.itemExists(target)) {
                 log.error("Target node doesn't exist: {}", target);
@@ -147,11 +177,11 @@ public class XmlInstruction extends PluginInstruction {
             session.save();
             sendEvents();
             log.info("Deleted node: {}", target);
-            return   InstructionStatus.SUCCESS;
+            return InstructionStatus.SUCCESS;
         } catch (RepositoryException e) {
             log.error("Error deleting node", e);
         } finally {
-            GlobalUtils.refreshSession(session, false);
+            GlobalUtils.cleanupSession(session);
         }
         return InstructionStatus.FAILED;
     }

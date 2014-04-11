@@ -4,7 +4,7 @@
 
 package org.onehippo.cms7.essentials.components;
 
-import java.util.Date;
+import java.util.Calendar;
 
 import javax.jcr.RepositoryException;
 import javax.jcr.Session;
@@ -21,9 +21,13 @@ import org.hippoecm.repository.util.DateTools;
 import org.onehippo.cms7.essentials.components.info.EssentialsDocumentListComponentInfo;
 import org.onehippo.cms7.essentials.components.info.EssentialsNewsComponentInfo;
 import org.onehippo.cms7.essentials.components.paging.Pageable;
+import org.onehippo.cms7.essentials.components.utils.SiteUtils;
 import org.onehippo.cms7.essentials.components.utils.query.HstQueryBuilder;
+import org.onehippo.cms7.essentials.components.utils.query.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * HST component used for listing of News document types
@@ -40,7 +44,7 @@ public class EssentialsNewsComponent extends EssentialsListComponent {
         final EssentialsNewsComponentInfo paramInfo = getComponentParametersInfo(request);
         final String path = getScopePath(paramInfo);
         log.debug("Calling EssentialsNewsComponentInfo for documents path:  [{}]", path);
-        final HippoBean scope = getScopeBean(request, path);
+        final HippoBean scope = getScopeBean(path);
         if (scope == null) {
             log.warn("Search scope was null");
             handleInvalidScope(request, response);
@@ -49,26 +53,25 @@ public class EssentialsNewsComponent extends EssentialsListComponent {
 
         final Pageable<HippoBean> pageable = doSearch(request, paramInfo, scope);
         request.setAttribute(REQUEST_ATTR_PAGEABLE, pageable);
+        populateRequest(request, paramInfo, pageable);
     }
 
     @Override
     protected <T extends EssentialsDocumentListComponentInfo> HstQuery buildQuery(final HstRequest request, final T paramInfo, final HippoBean scope) {
-        final HstQueryBuilder builder = new HstQueryBuilder(this, request);
+        final QueryBuilder builder = new HstQueryBuilder(this, request);
         EssentialsNewsComponentInfo newsComponentInfo = (EssentialsNewsComponentInfo) paramInfo;
         final String documentTypes = paramInfo.getDocumentTypes();
-        final String[] types = parseDocumentTypes(documentTypes);
+        final String[] types = SiteUtils.parseCommaSeparatedValue(documentTypes);
 
         builder.scope(scope).documents(types).includeSubtypes();
-
-        if(newsComponentInfo.isHideFutureItems()) {
+        final String documentDateField = newsComponentInfo.getDocumentDateField();
+        if (newsComponentInfo.getHideFutureItems() && !Strings.isNullOrEmpty(documentDateField)) {
             try {
                 final Session session = request.getRequestContext().getSession();
                 Filter filter = new FilterImpl(session, DateTools.Resolution.DAY);
-                filter.addLessOrEqualThan(newsComponentInfo.getDocumentDateField(),new Date());
+                filter.addLessOrEqualThan(documentDateField, Calendar.getInstance(), DateTools.Resolution.DAY);
                 builder.addFilter(filter);
-            } catch (RepositoryException e) {
-                log.error("An exception occurred while trying to create a query filter for hiding future items: {}", e);
-            } catch (FilterException e) {
+            } catch (RepositoryException | FilterException e) {
                 log.error("An exception occurred while trying to create a query filter for hiding future items: {}", e);
             }
         }

@@ -16,6 +16,9 @@
 
 package org.onehippo.cms7.essentials.dashboard.instruction;
 
+import javax.inject.Inject;
+import javax.jcr.Session;
+
 import org.hippoecm.repository.api.HippoNodeType;
 import org.junit.Test;
 import org.onehippo.cms7.essentials.BaseRepositoryTest;
@@ -23,8 +26,6 @@ import org.onehippo.cms7.essentials.dashboard.instructions.InstructionExecutor;
 import org.onehippo.cms7.essentials.dashboard.instructions.InstructionSet;
 import org.onehippo.cms7.essentials.dashboard.instructions.InstructionStatus;
 import org.onehippo.cms7.essentials.dashboard.utils.CndUtils;
-
-import com.google.inject.Inject;
 
 import static org.junit.Assert.assertTrue;
 
@@ -44,20 +45,25 @@ public class CndInstructionTest extends BaseRepositoryTest {
     @Test
     public void testProcess() throws Exception {
 
+        final Session session = getSession();
         session.getRootNode().addNode(HippoNodeType.NAMESPACES_PATH);
         session.save();
         CndUtils.registerNamespace(getContext(), TEST_PREFIX, TEST_URI);
         assertTrue("CndUtils.registerNamespaceUri", true);
         CndUtils.createHippoNamespace(getContext(), TEST_PREFIX);
         assertTrue("CndUtils.createHippoNamespace", true);
-        boolean exists = CndUtils.existsNamespaceUri(getContext(), TEST_URI);
+        boolean exists = CndUtils.namespaceUriExists(getContext(), TEST_URI);
         assertTrue(exists);
 
         cndInstruction.setDocumentType("newsdocument");
         getContext().setProjectNamespacePrefix(TEST_PREFIX);
         final InstructionSet instructionSet = new PluginInstructionSet();
         instructionSet.addInstruction(cndInstruction);
-        final InstructionStatus status = executor.execute(instructionSet, getContext());
+        InstructionStatus status = executor.execute(instructionSet, getContext());
         assertTrue("Expected success but got: " + status, status == InstructionStatus.SUCCESS);
+        // this should node throw exists exception
+        status = executor.execute(instructionSet, getContext());
+        assertTrue("Expected success but got: " + status, status == InstructionStatus.FAILED);
+        session.logout();
     }
 }

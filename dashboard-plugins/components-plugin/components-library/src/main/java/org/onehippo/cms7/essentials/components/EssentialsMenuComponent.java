@@ -42,8 +42,13 @@ public class EssentialsMenuComponent extends CommonComponent {
         final EssentialsMenuComponentInfo info = getComponentParametersInfo(request);
         String siteMenu = info.getSiteMenu();
         if (Strings.isNullOrEmpty(siteMenu)) {
-            log.warn("No site menu is selected within EssentialsMenuComponent");
-            return;
+            // check if set as component parameter:
+            siteMenu = getComponentParameter("menuName");
+            if (Strings.isNullOrEmpty(siteMenu)) {
+                log.warn("No site menu is selected within EssentialsMenuComponent nor set as a component parameter (menuName)");
+                return;
+            }
+
         }
         siteMenu = CharMatcher.WHITESPACE.trimFrom(siteMenu);
         final HstSiteMenu menu = request.getRequestContext().getHstSiteMenus().getSiteMenu(siteMenu);
@@ -51,7 +56,7 @@ public class EssentialsMenuComponent extends CommonComponent {
             log.warn("Invalid site menu is selected within EssentialsMenuComponent: {}", siteMenu);
             return;
         }
-        log.debug("Using site menu: [{}]", siteMenu);
-        request.setAttribute(siteMenu, menu);
+        log.debug("Using site menu:[{}]", siteMenu);
+        request.setAttribute("menu", menu);
     }
 }

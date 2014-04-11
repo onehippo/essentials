@@ -20,12 +20,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 import javax.jcr.Item;
-import javax.jcr.Session;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.onehippo.cms7.essentials.BaseRepositoryTest;
-import org.onehippo.cms7.essentials.TestPluginContext;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.model.hst.HstConfiguration;
 import org.onehippo.cms7.essentials.dashboard.model.hst.HstSiteMenu;
@@ -40,49 +38,41 @@ import static org.junit.Assert.assertNotNull;
 public class JcrPersistenceWriterTest extends BaseRepositoryTest {
 
 
-    private Session session;
-
-    private final boolean useHippoSesson = false;
-
     @Override
     @Before
     public void setUp() throws Exception {
         super.setUp();
         createHstRootConfig();
-
-
     }
 
     @Test
     public void testWrite() throws Exception {
         final PluginContext context = getContext();
 
-        if (useHippoSesson) {
-            ((TestPluginContext) context).setSession(getHippoSession());
+
+        try (JcrPersistenceWriter writer = new JcrPersistenceWriter(getContext().createSession(), context)) {
+            //############################################
+            // POPULATE TREE:
+            //############################################
+            final HstConfiguration config = new HstConfiguration("mytestconfiguration", "/hst:hst/hst:configurations");
+            // template
+            final HstTemplate template = config.addTemplate("main.test", "/JSP/somepath.jsp");
+            final List<String> containers = new ArrayList<>();
+            containers.add("foo");
+            containers.add("bar");
+            template.setContainers(containers);
+
+            // menu
+            final HstSiteMenu myMenu = config.addMenu("myMenu");
+            final HstSiteMenuItem menuItem = new HstSiteMenuItem("HOME", "home");
+            myMenu.addMenuItem(menuItem);
+
+
+            //############################################
+            //
+            //############################################
+            final Item item = writer.write(config);
+            assertNotNull("Expected saved object", item);
         }
-        JcrPersistenceWriter writer = new JcrPersistenceWriter(context);
-        //############################################
-        // POPULATE TREE:
-        //############################################
-        final HstConfiguration config = new HstConfiguration("mytestconfiguration", "/hst:hst/hst:configurations");
-        // template
-        final HstTemplate template = config.addTemplate("main.test", "/JSP/somepath.jsp");
-        final List<String> containers = new ArrayList<>();
-        containers.add("foo");
-        containers.add("bar");
-        template.setContainers(containers);
-
-        // menu
-        final HstSiteMenu myMenu = config.addMenu("myMenu");
-        final HstSiteMenuItem menuItem = new HstSiteMenuItem("HOME","home");
-        myMenu.addMenuItem(menuItem);
-
-
-
-        //############################################
-        //
-        //############################################
-        final Item item = writer.write(config);
-        assertNotNull("Expected saved object", item);
     }
 }

@@ -36,13 +36,11 @@ $ mvn clean install
 ```
 
 ### run archetype
-```
-mvn archetype:generate \
--DarchetypeGroupId=org.onehippo.cms7 \
--DarchetypeArtifactId=essentials-archetype-website \
--DarchetypeVersion=1.01.00-SNAPSHOT
 
+```shell
+mvn archetype:generate -D "archetypeGroupId=org.onehippo.cms7" -D "archetypeArtifactId=essentials-archetype-website" -D "archetypeVersion=1.01.02-SNAPSHOT"
 ```
+
 ## Working with Git
 
 Create local working branch to work on:
@@ -93,7 +91,7 @@ The following URLs are available from this project:
 
  * CMS at http://localhost:8080/cms
  * Website at http://localhost:8080/site 
- * Essentials dashboard at http://localhost:8080/dashboard
+ * Essentials dashboard at http://localhost:8080/essentials
 
 Logs are located in `target/tomcat6x/logs`
 

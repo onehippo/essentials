@@ -1,11 +1,12 @@
 package org.onehippo.cms7.essentials.dashboard.utils;
 
+import java.io.InputStream;
 import java.util.Collection;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.onehippo.cms7.essentials.BaseTest;
+import org.onehippo.cms7.essentials.BaseResourceTest;
 import org.onehippo.cms7.essentials.dashboard.utils.xml.XmlNode;
 import org.onehippo.cms7.essentials.dashboard.utils.xml.XmlProperty;
 import org.slf4j.Logger;
@@ -17,17 +18,30 @@ import static org.junit.Assert.assertTrue;
 
 
 /**
- * @version "$Id: XmlUtilsTest.java 174288 2013-08-19 16:21:19Z mmilicevic $"
+ * @version "$Id$"
  */
-public class XmlUtilsTest extends BaseTest {
+public class XmlUtilsTest extends BaseResourceTest {
 
     private static Logger log = LoggerFactory.getLogger(XmlUtilsTest.class);
+
+    @Test
+    public void testParsingProperties() throws Exception {
+
+        final InputStream resourceAsStream = getClass().getResourceAsStream("/test_document_type.xml");
+        final XmlNode documentNode = XmlUtils.parseXml(resourceAsStream);
+        assertNotNull(documentNode);
+        final Collection<XmlNode> templates = documentNode.getTemplates();
+        assertEquals(4, templates.size());
+
+    }
 
     @Test
     public void testFindingDocuments() throws Exception {
 
         final List<XmlNode> templateDocuments = XmlUtils.findTemplateDocuments(getProjectRoot(), getContext());
-        assertEquals("expected " + NAMESPACES_TEST_SET.size() + " templates", NAMESPACES_TEST_SET.size(), templateDocuments.size());
+        // NOTE: one ben is not mapped
+        final int expected = NAMESPACES_TEST_SET.size() - 1;
+        assertEquals("expected " + expected + " templates", expected, templateDocuments.size());
     }
 
     @Test

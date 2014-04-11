@@ -16,9 +16,9 @@
 
 package org.onehippo.cms7.essentials.rest.model;
 
-import java.io.Serializable;
-
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.onehippo.cms7.essentials.dashboard.model.Restful;
 
 /**
  * @version "$Id$"

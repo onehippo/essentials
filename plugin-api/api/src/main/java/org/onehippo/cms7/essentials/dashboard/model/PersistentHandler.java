@@ -17,16 +17,28 @@
 package org.onehippo.cms7.essentials.dashboard.model;
 
 import javax.jcr.Item;
+import javax.jcr.Node;
+import javax.jcr.Session;
 
-import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.onehippo.cms7.essentials.dashboard.config.Document;
 
 /**
  * Persists JcrModel objects
  *
  * @version "$Id$"
- * @see org.onehippo.cms7.essentials.dashboard.model.JcrModel
+ * @see org.onehippo.cms7.essentials.dashboard.config.Document
  */
 public interface PersistentHandler<T, E extends Item> {
 
-    E execute(final PluginContext context, JcrModel model, T annotation);
+    E execute(Session session, Document model, T annotation);
+
+    /**
+     * NOTE: session is left open
+     * @param session
+     * @param parent
+     * @param path
+     * @param annotation
+     * @return
+     */
+    E read(Session session, Node parent, String path, T annotation);
 }

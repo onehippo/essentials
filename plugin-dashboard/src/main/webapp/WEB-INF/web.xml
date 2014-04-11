@@ -1,50 +1,37 @@
 <?xml version="1.0" encoding="ISO-8859-1"?>
-<web-app xmlns="http://java.sun.com/xml/ns/javaee" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd"
-         version="2.5">
-  <display-name>essentials-webapp</display-name>
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xmlns="http://java.sun.com/xml/ns/javaee"
+         xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd"
+         id="essentials-webapp" metadata-complete="true" version="3.0">
+<display-name>essentials-webapp</display-name>
   <listener>
     <listener-class>org.onehippo.cms7.essentials.rest.config.RestServletListener</listener-class>
   </listener>
+  <context-param>
+    <param-name>contextConfigLocation</param-name>
+    <param-value>classpath:applicationContext.xml</param-value>
+  </context-param>
+  <listener>
+    <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
+  </listener>
   <servlet>
+    <display-name>REST</display-name>
     <servlet-name>REST</servlet-name>
-    <servlet-class>org.onehippo.cms7.essentials.rest.config.RestServlet</servlet-class>
-<!--    <init-param>
-      <param-name>jaxrs.providers</param-name>
-      <param-value>
-        org.apache.cxf.jaxrs.provider.JSONProvider(unwrapped=true dropRootElement=true)
-      </param-value>
-    </init-param>
--->
-    <init-param>
-      <param-name>javax.ws.rs.Application</param-name>
-      <param-value>
-        org.onehippo.cms7.essentials.rest.config.RestApplication
-      </param-value>
-    </init-param>
+    <servlet-class>org.onehippo.cms7.essentials.servlet.RestServlet</servlet-class>
     <load-on-startup>1</load-on-startup>
   </servlet>
   <servlet-mapping>
     <servlet-name>REST</servlet-name>
     <url-pattern>/rest/*</url-pattern>
   </servlet-mapping>
-  <!--
-    //############################################
-    // PLUGIN RESOURCES LOADER
-    //############################################
-  -->
-<!--
-<servlet>
-    <servlet-name>PLUGINS</servlet-name>
-    <servlet-class>org.onehippo.cms7.essentials.servlet.JarResourceServlet</servlet-class>
-    <load-on-startup>1</load-on-startup>
-  </servlet>
-  <servlet-mapping>
-    <servlet-name>PLUGINS</servlet-name>
-    <url-pattern>/plugins/*</url-pattern>
-  </servlet-mapping>
-  -->
-
+  <error-page>
+    <error-code>404</error-code>
+    <location>/WEB-INF/jsp/errors/404.jsp</location>
+  </error-page>
+  <error-page>
+    <error-code>500</error-code>
+    <location>/WEB-INF/jsp/errors/500.jsp</location>
+  </error-page>
 
   <welcome-file-list>
     <welcome-file>/WEB-INF/jsp/index.jsp</welcome-file>

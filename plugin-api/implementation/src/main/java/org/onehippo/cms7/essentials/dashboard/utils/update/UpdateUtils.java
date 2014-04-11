@@ -14,6 +14,7 @@ import org.hippoecm.repository.api.HippoSession;
 import org.hippoecm.repository.api.ImportMergeBehavior;
 import org.hippoecm.repository.api.ImportReferenceBehavior;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +25,10 @@ import org.slf4j.LoggerFactory;
  *
  * @version "$Id$"
  */
-public class UpdateUtils {
+public final class UpdateUtils {
+
+    private UpdateUtils() {
+    }
 
     private static Logger log = LoggerFactory.getLogger(UpdateUtils.class);
 
@@ -32,11 +36,12 @@ public class UpdateUtils {
 
     /**
      * Copies an entry from registry directly to the queue so it can immediately be executed.
+     *
      * @param context
      * @param name
      */
     public static void copyFromRegistryToQueue(final PluginContext context, final String name) {
-        final Session session = context.getSession();
+        final Session session = context.createSession();
         try {
             if (session.itemExists(UPDATE_UTIL_PATH + UpdateType.REGISTRY.getPath() + '/' + name)) {
                 session.getWorkspace().copy(UPDATE_UTIL_PATH + UpdateType.REGISTRY.getPath() + '/' + name, UPDATE_UTIL_PATH + UpdateType.QUEUE.getPath() + '/' + name);
@@ -46,6 +51,8 @@ public class UpdateUtils {
             }
         } catch (RepositoryException e) {
             log.error("", e);
+        }finally {
+            GlobalUtils.cleanupSession(session);
         }
     }
 
@@ -80,12 +87,13 @@ public class UpdateUtils {
 
     /**
      * Uses the updater model to create a new queue or registry entry in the updater engine api
+     *
      * @param context
      * @param type
      * @param config
      */
     private static void addToUpdaterInfo(PluginContext context, UpdateType type, UpdateConfig config) {
-        final Session session = context.getSession();
+        final Session session = context.createSession();
         try {
             if (session.itemExists(UPDATE_UTIL_PATH + type.getPath())) {
                 final Node updateTypeNode = session.getNode(UPDATE_UTIL_PATH + type.getPath());
@@ -99,19 +107,22 @@ public class UpdateUtils {
                 session.save();
             }
         } catch (RepositoryException e) {
-            log.error("Repository Exception occured while trying to save Updater log info", e);
+            log.error("Repository Exception occurred while trying to save Updater log info", e);
+        }finally {
+            GlobalUtils.cleanupSession(session);
         }
 
     }
 
     /**
      * uses an inputstream to create a new queue or registry entry in the updater engine api. the inpustream is the jcr s:node xml
+     *
      * @param context
      * @param type
      * @param in
      */
     private static void addToUpdaterInfo(final PluginContext context, final UpdateType type, final InputStream in) {
-        final Session session = context.getSession();
+        final Session session = context.createSession();
         try {
             if (session.itemExists(UPDATE_UTIL_PATH + type.getPath())) {
                 if (session instanceof HippoSession) {
@@ -131,6 +142,7 @@ public class UpdateUtils {
             log.error("", e);
         } finally {
             IOUtils.closeQuietly(in);
+            GlobalUtils.cleanupSession(session);
         }
     }
 
@@ -156,33 +168,39 @@ public class UpdateUtils {
      */
     public static class UpdateConfig {
 
+        public static final int DEFAULT_BATCH_SIZE = 10;
+        public static final int DEFAULT_THROTTLE_TIME = 1000;
+        public static final boolean DEFAULT_DRY_RUN = true;
         private String name;
         private String script = "package org.hippoecm.frontend.plugins.cms.dev.updater\n" +
-                "\n" +
+                '\n' +
                 "import org.onehippo.repository.update.BaseNodeUpdateVisitor\n" +
                 "import javax.jcr.Node\n" +
-                "\n" +
+                '\n' +
                 "class UpdaterTemplate extends BaseNodeUpdateVisitor {\n" +
-                "\n" +
+                '\n' +
                 "  boolean doUpdate(Node node) {\n" +
                 "    log.debug \"Updating node ${node.path}\"\n" +
                 "    return false\n" +
                 "  }\n" +
-                "\n" +
+                '\n' +
                 "  boolean undoUpdate(Node node) {\n" +
                 "    throw new UnsupportedOperationException('Updater does not implement undoUpdate method')\n" +
                 "  }\n" +
-                "\n" +
-                "}";
+                '\n' +
+                '}';
         private String query;
-        private long batchSize = 10;
-        private long throttle = 1000;
-        private boolean dryRun = true;
+        private long batchSize = DEFAULT_BATCH_SIZE;
+        private long throttle = DEFAULT_THROTTLE_TIME;
+        private boolean dryRun = DEFAULT_DRY_RUN;
 
         public UpdateConfig() {
         }
 
         public UpdateConfig(final String name, final String script, final String query, final long batchSize, final long throttle, final boolean dryRun) {
+            if (StringUtils.isEmpty(name)) {
+                throw new IllegalArgumentException("Name is mandatory");
+            }
             this.name = name;
             this.script = script;
             this.query = query;
@@ -237,9 +255,6 @@ public class UpdateUtils {
         }
 
         public String getName() {
-            if (StringUtils.isEmpty(name)) {
-                throw new IllegalArgumentException("Name is mandatory");
-            }
             return name;
         }
 

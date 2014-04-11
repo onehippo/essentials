@@ -5,23 +5,30 @@
 package org.onehippo.cms7.essentials.components;
 
 import java.io.IOException;
+import java.util.Collection;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
 import org.hippoecm.hst.component.support.bean.BaseHstComponent;
+import org.hippoecm.hst.container.RequestContextProvider;
 import org.hippoecm.hst.content.beans.standard.HippoBean;
+import org.hippoecm.hst.content.beans.standard.HippoDocument;
 import org.hippoecm.hst.core.component.HstRequest;
 import org.hippoecm.hst.core.component.HstResponse;
 import org.hippoecm.hst.core.linking.HstLink;
 import org.hippoecm.hst.core.linking.HstLinkCreator;
+import org.hippoecm.hst.core.request.HstRequestContext;
 import org.hippoecm.hst.util.PathUtils;
+import org.hippoecm.hst.util.SearchInputParsingUtils;
+import org.onehippo.cms7.essentials.components.utils.SiteUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
 
 /**
- * Base HST component, containing default values and methods
+ * Base HST component, containing default values and utility methods
  *
  * @version "$Id$"
  */
@@ -34,7 +41,29 @@ public class CommonComponent extends BaseHstComponent {
     /**
      * Attributes  names used within Essentials
      */
-    public static final String ATTRIBUTE_DOCUMENTS = "documents";
+
+    /**
+     * Request parameter to set the current page.
+     */
+    protected static final String REQUEST_ATTR_PAGE = "page";
+    protected static final String REQUEST_ATTR_PAGE_SIZE = "pageSize";
+    protected static final String REQUEST_ATTR_PAGE_PAGINATION = "showPagination";
+
+    protected static final String REQUEST_ATTR_PAGEABLE = "pageable";
+    /**
+     * Request attribute to store pageable result in.
+     */
+    protected static final String REQUEST_ATTR_FACETS = "facets";
+    protected static final String REQUEST_ATTR_DOCUMENT = "document";
+    protected static final String REQUEST_ATTR_QUERY = "query";
+
+    /**
+     * Request parameters (as submitted in HTTP-GET request.
+     */
+    protected static final String REQUEST_PARAM_QUERY = REQUEST_ATTR_QUERY;
+    protected static final String REQUEST_PARAM_PAGE = REQUEST_ATTR_PAGE;
+
+
     private static Logger log = LoggerFactory.getLogger(CommonComponent.class);
 
     @Override
@@ -42,112 +71,113 @@ public class CommonComponent extends BaseHstComponent {
         // do nothing
     }
 
-    public <T extends HippoBean> T getHippoBeanForPath(final String documentPath, Class<T> beanMappingClass, final HstRequest request) {
+    public <T extends HippoBean> T getHippoBeanForPath(final String documentPath, Class<T> beanMappingClass) {
         if (!Strings.isNullOrEmpty(documentPath)) {
-            final HippoBean root = getSiteContentBaseBean(request);
+            final HstRequestContext context = RequestContextProvider.get();
+            final HippoBean root = context.getSiteContentBaseBean();
             return root.getBean(documentPath, beanMappingClass);
         }
+
         return null;
     }
 
     /**
-     * Sets content bean onto request. If no bean is found, 404 response will be set.
+     * Sets content bean onto request. If no bean is found, *no* 404 response will be set.
      * NOTE: we first check if document is set through component interface,
      * otherwise we try o fetch mapped (sitemap) bean
      *
      * @param documentPath
      * @param request      HstRequest
      * @param response     HstResponse
-     * @see #pageNotFound(org.hippoecm.hst.core.component.HstRequest, org.hippoecm.hst.core.component.HstResponse)
+     * @see #pageNotFound(org.hippoecm.hst.core.component.HstResponse)
      */
     public void setContentBean(final String documentPath, HstRequest request, final HstResponse response) {
-
+        final HstRequestContext context = request.getRequestContext();
         HippoBean bean;
+
         if (!Strings.isNullOrEmpty(documentPath)) {
-            final HippoBean root = getSiteContentBaseBean(request);
+            final HippoBean root = context.getSiteContentBaseBean();
             bean = root.getBean(documentPath);
-            request.setAttribute("document", bean);
+        } else {
+            bean = context.getContentBean();
+        }
+
+        request.setAttribute(REQUEST_ATTR_DOCUMENT, bean);
+    }
+
+
+
+    /**
+     * Sets content bean onto request. If no bean is found, 404 response will be set.
+     *
+     * @param request  HstRequest
+     * @param response HstResponse
+     */
+    public void setContentBeanWith404(final HstRequest request, final HstResponse response) {
+        final HstRequestContext context = request.getRequestContext();
+        final HippoBean bean = context.getContentBean();
+
+        if (bean == null) {
+            pageNotFound(response);
             return;
         }
-        bean = getContentBean(request);
-        request.setAttribute("document", bean);
-        if (bean == null) {
-            pageNotFound(request, response);
-        }
+
+        request.setAttribute(REQUEST_ATTR_DOCUMENT, bean);
     }
 
     /**
      * Sets {@code HttpServletResponse.SC_NOT_FOUND} error code onto request.
      *
-     * @param request
      * @param response
      * @see javax.servlet.http.HttpServletResponse#SC_NOT_FOUND
      */
-    public void pageNotFound(HstRequest request, HstResponse response) {
+    public void pageNotFound(HstResponse response) {
+        final HstRequestContext context = RequestContextProvider.get();
         String pageNotFoundPath = getComponentParameter(PAGE_404);
         if (Strings.isNullOrEmpty(pageNotFoundPath)) {
             pageNotFoundPath = PAGE_404;
         }
-        final HippoBean bean = this.getSiteContentBaseBean(request).getBean(pageNotFoundPath, HippoBean.class);
+        final HippoBean bean = context.getSiteContentBaseBean().getBean(pageNotFoundPath, HippoBean.class);
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
         if (bean != null) {
-            final HstLinkCreator hstLinkCreator = request.getRequestContext().getHstLinkCreator();
-            final HstLink hstLink = hstLinkCreator.create(bean.getNode(), request.getRequestContext());
+            final HstLinkCreator hstLinkCreator = context.getHstLinkCreator();
+            final HstLink hstLink = hstLinkCreator.create(bean.getNode(), context);
             try {
-                response.sendRedirect(hstLink.toUrlForm(request.getRequestContext(), false));
+                response.sendRedirect(hstLink.toUrlForm(context, false));
             } catch (IOException e) {
                 log.warn("Error redirecting to 404 page: [{}]", PAGE_404);
             }
         }
     }
 
-    //############################################
-    // UTILS
-    //############################################
-
     /**
      * Find HippoBean for given path. If path is null or empty, site root bean will be returned
      *
-     * @param request HstRequest
-     * @param path    document (or folder) path
-     * @return null if document of folder exists
+     * @param path    document (or folder) path relative to site-root
+     * @return bean identified by path. Site root bean if path empty or no corresponding bean.
      */
-    public HippoBean getScopeBean(final HstRequest request, String path) {
-        HippoBean scope;
-        final HippoBean siteBean = getSiteContentBaseBean(request);
-        if (Strings.isNullOrEmpty(path)) {
-            scope = siteBean;
-        } else {
-            path = PathUtils.normalizePath(path);
-            log.debug("Looking for bean {}", path);
-            scope = siteBean.getBean(path);
-            if (scope == null) {
-                log.warn("Bean was null for selected path:  {}", path);
-                scope = siteBean;
+    public static HippoBean getScopeBean(final String path) {
+        final HstRequestContext context = RequestContextProvider.get();
+        final HippoBean siteBean = context.getSiteContentBaseBean();
+
+        if (!Strings.isNullOrEmpty(path)) {
+            final String myPath = PathUtils.normalizePath(path);
+            log.debug("Looking for bean {}", myPath);
+            HippoBean scope = siteBean.getBean(myPath);
+            if (scope != null) {
+                return scope;
             }
+            log.warn("Bean was null for selected path:  {}", myPath);
         }
-        return scope;
+        return siteBean;
     }
 
-    public int getIntParameter(HstRequest request, String parameter, int defaultValue) {
-        final String p = getAnyParameter(request, parameter);
-        if (p == null) {
-            return defaultValue;
-        }
-        try {
-            return Integer.parseInt(p);
-        } catch (NumberFormatException ignore) {
-            // ignore exception
-        }
-        return defaultValue;
+    public int getAnyIntParameter(HstRequest request, String parameter, int defaultValue) {
+        return SiteUtils.getAnyIntParameter(request, parameter, defaultValue, this);
     }
 
-    public boolean getBooleanParam(HstRequest request, String parameter, boolean defaultValue) {
-        final String p = getAnyParameter(request, parameter);
-        if (p == null) {
-            return defaultValue;
-        }
-        return Boolean.valueOf(p);
+    public boolean getAnyBooleanParam(HstRequest request, String parameter, boolean defaultValue) {
+        return SiteUtils.getAnyBooleanParam(request, parameter, defaultValue, this);
     }
 
     /**
@@ -161,16 +191,32 @@ public class CommonComponent extends BaseHstComponent {
      * @return null if empty or undefined
      */
     public String getAnyParameter(HstRequest request, String parameter) {
+        return SiteUtils.getAnyParameter(parameter, request, this);
+    }
 
-        String p = request.getParameter(parameter);
-        if (Strings.isNullOrEmpty(p)) {
-            p = getPublicRequestParameter(request, parameter);
-        }
 
-        if (Strings.isNullOrEmpty(p)) {
-            p = getComponentParameter(parameter);
+    /**
+     * Adds beans to collection for given path
+     *
+     * @param path
+     * @param beans
+     */
+    public void addBeanForPath(final String path, final Collection<HippoDocument> beans) {
+        if (Strings.isNullOrEmpty(path)) {
+            return;
         }
-        return p;
+        log.debug("Fetching item for path: [{}]", path);
+        final HippoDocument bean = getHippoBeanForPath(path, HippoDocument.class);
+        if (bean != null) {
+            beans.add(bean);
+        } else {
+            log.debug("Couldn't find bean for path: {}", path);
+        }
+    }
+
+    @Nullable
+    public String cleanupSearchQuery(final String query) {
+        return SearchInputParsingUtils.parse(query, false);
     }
 
 }

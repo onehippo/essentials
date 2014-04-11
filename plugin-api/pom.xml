@@ -4,30 +4,25 @@
   Copyright 2013 Hippo B.V. (http://www.onehippo.com)
   -->
 
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
-    <groupId>org.onehippo.cms7</groupId>
-    <artifactId>hippo-cms7-release</artifactId>
-    <version>7.8.5</version>
+    <groupId>org.onehippo.cms7.essentials</groupId>
+    <artifactId>hippo-essentials</artifactId>
+    <version>1.01.02-SNAPSHOT</version>
   </parent>
 
-  <name>Hippo Essentials  plugins sdk</name>
+  <name>Hippo Essentials plugins sdk</name>
   <description>Hippo Essentials plugins sdk</description>
   <artifactId>hippo-essentials-plugin-sdk</artifactId>
-  <groupId>org.onehippo.cms7.essentials</groupId>
-  <version>1.01.00-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <!--***START temporary override of versions*** -->
-    <hippo.cms.version>2.24.07</hippo.cms.version>
-    <hippo.hst.version>2.26.08</hippo.hst.version>
-    <hippo.repository.version>2.24.11</hippo.repository.version>
-    <hippo.addon-channel-manager.version>2.24.08</hippo.addon-channel-manager.version>
     <!-- ***END temporary override of versions*** -->
-    <guice.version>3.0</guice.version>
+    <javax.inject.version>1</javax.inject.version>
+    <spring.version>3.2.6.RELEASE</spring.version>
     <junit.version>4.11</junit.version>
     <maven-model.version>3.0.5</maven-model.version>
     <commons-io.version>2.3</commons-io.version>
@@ -39,7 +34,11 @@
     <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
     <geronimo-jta_1.1_spec.version>1.1.1</geronimo-jta_1.1_spec.version>
     <mustache.version>0.8.13</mustache.version>
-    <jackrabbit-ocm.version>2.0.0</jackrabbit-ocm.version>
+    <spring-test.version>3.2.6.RELEASE</spring-test.version>
+    <jsr311-api.version>1.1.1</jsr311-api.version>
+    <cxf-bundle.version>2.7.8</cxf-bundle.version>
+    <jackson.version>1.9.5</jackson.version>
+    <swagger-jaxrs_2.10.version>1.3.0</swagger-jaxrs_2.10.version>
   </properties>
 
   <modules>
@@ -56,14 +55,24 @@
       </dependency>
 
       <dependency>
-        <groupId>com.google.inject</groupId>
-        <artifactId>guice</artifactId>
-        <version>${guice.version}</version>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-core</artifactId>
+        <version>${spring.version}</version>
       </dependency>
       <dependency>
-        <groupId>com.google.inject.extensions</groupId>
-        <artifactId>guice-multibindings</artifactId>
-        <version>${guice.version}</version>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-context</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-expression</artifactId>
+        <version>${spring.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-beans</artifactId>
+        <version>${spring.version}</version>
       </dependency>
       <dependency>
         <groupId>org.onehippo.cms7</groupId>
@@ -77,14 +86,19 @@
         </exclusions>
       </dependency>
       <dependency>
+        <groupId>javax.inject</groupId>
+        <artifactId>javax.inject</artifactId>
+        <version>${javax.inject.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>javax.ws.rs</groupId>
+        <artifactId>jsr311-api</artifactId>
+        <version>${jsr311-api.version}</version>
+      </dependency>
+      <dependency>
         <groupId>com.github.spullara.mustache.java</groupId>
         <artifactId>compiler</artifactId>
         <version>${mustache.version}</version>
-      </dependency>
-      <dependency>
-        <groupId>org.apache</groupId>
-        <artifactId>jackrabbit-ocm</artifactId>
-        <version>${jackrabbit-ocm.version}</version>
       </dependency>
       <dependency>
         <groupId>org.apache.maven</groupId>
@@ -97,6 +111,11 @@
         <version>${guava.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>com.wordnik</groupId>
+        <artifactId>swagger-jaxrs_2.10</artifactId>
+        <version>${swagger-jaxrs_2.10.version}</version>
+      </dependency>
       <dependency>
         <groupId>commons-lang</groupId>
         <artifactId>commons-lang</artifactId>
@@ -137,6 +156,31 @@
         <version>${junit.version}</version>
       </dependency>
       <dependency>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${spring-test.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.apache.cxf</groupId>
+        <artifactId>cxf-bundle</artifactId>
+        <version>${cxf-bundle.version}</version>
+        <scope>test</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-mapper-asl</artifactId>
+        <version>${jackson.version}</version>
+        <scope>provided</scope>
+      </dependency>
+      <dependency>
+        <groupId>org.codehaus.jackson</groupId>
+        <artifactId>jackson-core-asl</artifactId>
+        <version>${jackson.version}</version>
+        <scope>provided</scope>
+      </dependency>
+
+      <dependency>
         <groupId>org.onehippo.cms7.hst</groupId>
         <artifactId>hst-content-beans</artifactId>
         <version>${hippo.hst.version}</version>
@@ -174,6 +218,4 @@
       <url>http://maven.onehippo.com/maven2/</url>
     </repository>
   </repositories>
-
-
 </project>

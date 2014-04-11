@@ -1,12 +1,12 @@
 #set( $dollar = '$' )
-  <?xml version="1.0" encoding="UTF-8"?>
+<?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.onehippo.cms7</groupId>
     <artifactId>hippo-cms7-release</artifactId>
-    <version>7.8.5</version>
+    <version>7.9.0-iteration-9</version>
   </parent>
 
   <name>${projectName}</name>
@@ -16,26 +16,29 @@
   <version>${version}</version>
   <packaging>pom</packaging>
 
-  <properties>
+  <!-- 
+    The below project elements are emptied/overridden as otherwise their metadata would be
+    inherited or merged from the parent hippo-cms7-release pom (or its hippo-cms7-project pom).
 
-    <!--***START temporary override of versions*** -->
-    <essentials.version>1.01.00-SNAPSHOT</essentials.version>
-    <!-- ***END temporary override of versions*** -->
-
-    <!--Solving duplicate CMS dependencies-->
-    <hippo.cms.version>2.24.07</hippo.cms.version>
-
-    <jstl.version>1.1.2</jstl.version>
-    <taglibs.version>1.1.2</taglibs.version>
-    <commons.lang.version>2.6</commons.lang.version>
-    <junit.version>4.10</junit.version>
-    <easymock.version>3.1</easymock.version>
-    <freemarker.version>2.3.18</freemarker.version>
-
-    <filesync.override>false</filesync.override>
-    <maven.plugins.filesync.version>1.0.0</maven.plugins.filesync.version>
-
-  </properties>
+    DO NOT remove these tags but instead fill them in appropriately as needed, 
+    UNLESS the inherited values are valid for your project.
+  -->
+  <url/>
+  <inceptionYear/>
+  <organization/>
+  <licenses>
+    <license/>
+  </licenses>
+  <mailingLists>
+    <mailingList/>
+  </mailingLists>
+  <developers>
+    <developer/>
+  </developers>
+  <contributors>
+    <contributor/>
+  </contributors>
+  <issueManagement/>
   <!--
   <scm>
     <connection/>
@@ -43,19 +46,68 @@
     <url/>
   </scm>
   -->
+  <ciManagement/>
+  <distributionManagement>
+    <repository>
+      <id>-</id>
+      <url>-</url>
+    </repository>
+    <snapshotRepository>
+      <id>-</id>
+      <url>-</url>
+    </snapshotRepository>
+  </distributionManagement>
+  <!-- End of emptied/overridden metadata from parent hippo-cms7-release pom. -->
 
-  <dependencies>
-    <dependency>
-      <groupId>org.onehippo.cms7.essentials.installer</groupId>
-      <artifactId>plugin-dashboard</artifactId>
-      <version>${essentials.version}</version>
-      <type>war</type>
-    </dependency>
-  </dependencies>
+  <properties>
 
+    <!--***START temporary override of versions*** -->
+    <essentials.version>1.01.02-SNAPSHOT</essentials.version>
+    <!-- ***END temporary override of versions*** -->
+
+    <jsp-api.version>2.1</jsp-api.version>
+    <jstl.version>1.1.2</jstl.version>
+    <taglibs.version>1.1.2</taglibs.version>
+    <commons.lang.version>2.6</commons.lang.version>
+    <junit.version>4.10</junit.version>
+    <easymock.version>3.1</easymock.version>
+    <freemarker.version>2.3.18</freemarker.version>
+     
+    <filesync.override>false</filesync.override>
+    <maven.plugins.filesync.version>1.0.0</maven.plugins.filesync.version>
+
+  </properties>
+
+  <repositories>
+    <repository>
+      <id>hippo</id>
+      <name>Hippo maven 2 repository.</name>
+      <url>http://maven.onehippo.com/maven2/</url>
+    </repository>
+  </repositories>
 
   <dependencyManagement>
     <dependencies>
+      <dependency>
+        <groupId>org.onehippo.cms7.essentials</groupId>
+        <artifactId>hippo-essentials-plugin-api-implementation</artifactId>
+        <version>${dollar}{essentials.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.onehippo.cms7.essentials</groupId>
+        <artifactId>hippo-essentials-plugin-api</artifactId>
+        <version>${dollar}{essentials.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.onehippo.cms7.essentials</groupId>
+        <artifactId>hippo-components-cms-plugin-library</artifactId>
+        <version>${dollar}{essentials.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.onehippo.cms7.essentials</groupId>
+        <artifactId>hippo-components-plugin-library</artifactId>
+        <version>${dollar}{essentials.version}</version>
+      </dependency>
 
       <!-- other predefined runtime scope versioned dependencies -->
       <dependency>
@@ -174,6 +226,7 @@
         <module>bootstrap</module>
         <module>cms</module>
         <module>site</module>
+        <module>essentials</module>
       </modules>
     </profile>
 
@@ -186,6 +239,16 @@
             <artifactId>cargo-maven2-plugin</artifactId>
             <configuration>
               <configuration>
+                <properties>
+                  <catalina.servlet.uriencoding>UTF-8</catalina.servlet.uriencoding>
+                </properties>
+                <configfiles>
+                  <configfile>
+                    <file>${project.basedir}/conf/context.xml</file>
+                    <todir>conf/</todir>
+                    <tofile>context.xml</tofile>
+                  </configfile>
+                </configfiles>
                 <deployables>
                   <deployable>
                     <type>war</type>
@@ -202,23 +265,13 @@
                     </properties>
                   </deployable>
                   <deployable>
-                    <groupId>org.onehippo.cms7.essentials.installer</groupId>
-                    <artifactId>plugin-dashboard</artifactId>
+                    <location>${dollar}{project.basedir}/essentials/target/essentials.war</location>
                     <type>war</type>
+                    <properties>
+                      <context>/essentials</context>
+                    </properties>
                   </deployable>
-
                 </deployables>
-                <properties>
-                  <catalina.servlet.uriencoding>UTF-8</catalina.servlet.uriencoding>
-                  <cargo.tomcat.connector.emptySessionPath>false</cargo.tomcat.connector.emptySessionPath>
-                </properties>
-                <configfiles>
-                  <configfile>
-                    <file>${project.basedir}/conf/context.xml</file>
-                    <todir>conf/</todir>
-                    <tofile>context.xml</tofile>
-                  </configfile>
-                </configfiles>
               </configuration>
               <container>
                 <systemProperties>
@@ -279,52 +332,5 @@
     </profile>
 
   </profiles>
-
-
-  <repositories>
-    <repository>
-      <id>hippo</id>
-      <name>Hippo maven 2 repository.</name>
-      <url>http://maven.onehippo.com/maven2/</url>
-    </repository>
-  </repositories>
-
-  <!--
-    The below project elements are emptied/overridden as otherwise their metadata would be
-    inherited or merged from the parent hippo-cms7-release pom (or its hippo-cms7-project pom).
-
-    DO NOT remove these tags but instead fill them in appropriately as needed,
-    UNLESS the inherited values are valid for your project.
-  -->
-  <url/>
-  <inceptionYear/>
-  <organization/>
-  <licenses>
-    <license/>
-  </licenses>
-  <mailingLists>
-    <mailingList/>
-  </mailingLists>
-  <developers>
-    <developer/>
-  </developers>
-  <contributors>
-    <contributor/>
-  </contributors>
-  <issueManagement/>
-
-  <ciManagement/>
-  <distributionManagement>
-    <repository>
-      <id>-</id>
-      <url>-</url>
-    </repository>
-    <snapshotRepository>
-      <id>-</id>
-      <url>-</url>
-    </snapshotRepository>
-  </distributionManagement>
-  <!-- End of emptied/overridden metadata from parent hippo-cms7-release pom. -->
-
 
 </project>

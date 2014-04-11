@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2014 Hippo B.V. (http://www.onehippo.com)
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
+<instructions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://www.onehippo.org/essentials/instructions /instructions.xsd" xmlns="http://www.onehippo.org/essentials/instructions">
+  <!--
+    DOCUMENT TYPES REGISTRATION
+  -->
+  <instructionSet>
+    <!-- cnd-->
+    <cnd documentType="bannerdocument" superType="{{namespace}}:basedocument,hippostd:relaxed,hippotranslation:translated,hippostd:taggable"/>
+
+    <!-- templates-->
+    <xml action="copy" source="xml/namespaces/bannerdocument.xml" target="/hippo:namespaces/{{namespace}}"/>
+
+    <!-- beans-->
+    <file action="copy" source="java/Banner.txt" target="{{beansFolder}}/Banner.java"/>
+    <!-- queries -->
+    <xml action="copy" source="xml/configuration/new-banner-folder.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+    <xml action="copy" source="xml/configuration/new-banner-document.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+
+
+  </instructionSet>
+  <!--
+    //############################################
+    // CAROUSEL COMPONENT
+    //############################################
+
+  -->
+  <instructionSet group="jsp">
+    <file action="copy" source="jsp/imports.jsp" target="{{jspRoot}}/essentials/common/imports.jsp"/>
+    <file action="copy" source="jsp/essentials-carousel.jsp" target="{{jspRoot}}/essentials/essentials-carousel.jsp"/>
+    <file action="copy" source="jsp/essentials-banner.jsp" target="{{jspRoot}}/essentials/essentials-banner.jsp"/>
+    <xml action="copy" source="hst/carousel-template-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/banner-template-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+  </instructionSet>
+  <instructionSet group="freemarker">
+    <file action="copy" source="freemarker/imports.ftl" target="{{freemarkerRoot}}/essentials/common/imports.ftl"/>
+    <file action="copy" source="ftl/essentials-carousel.ftl" target="{{freemarkerRoot}}/essentials/essentials-carousel.ftl"/>
+    <file action="copy" source="ftl/essentials-banner.ftl" target="{{freemarkerRoot}}/essentials/essentials-banner.ftk"/>
+    <xml action="copy" source="hst/carousel-template-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/banner-template-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+  </instructionSet>
+  <instructionSet>
+    <xml action="copy" source="hst/carousel-catalog.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:catalog"/>
+
+    <xml action="copy" source="hst/banner-template.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <file binary="true" action="copy" source="webapp/js/jquery-1.11.0.min.js" target="{{javascriptRoot}}/jquery-1.11.0.min.js"/>
+    <file binary="true" action="copy" source="webapp/js/bootstrap.min.js" target="{{javascriptRoot}}/bootstrap.min.js"/>
+    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.eot" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.eot"/>
+    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.svg" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.svg"/>
+    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.ttf" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.ttf"/>
+    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.woff" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.woff"/>
+  </instructionSet>
+
+
+  <!--
+    SAMPLE DATA
+  -->
+  <instructionSet group="sampleData">
+    <folder template="xml/data/banner-folder-creator.xml" path="/content/documents/{{namespace}}/banners"/>
+    <xml action="copy" source="xml/data/banner_entry_1.xml" target="/content/documents/{{namespace}}/banners"/>
+    <xml action="copy" source="xml/data/banner_entry_2.xml" target="/content/documents/{{namespace}}/banners"/>
+    <xml action="copy" source="xml/data/banner_images.xml" target="/content/gallery/{{namespace}}"/>
+  </instructionSet>
+
+
+</instructions>

@@ -19,7 +19,6 @@ package org.onehippo.cms7.essentials.dashboard.instruction;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 import java.util.Map;
 
 import javax.jcr.ImportUUIDBehavior;
@@ -37,15 +36,17 @@ import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TemplateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+
 
 /**
  * @version "$Id$"
  */
+@Component
 @XmlRootElement(name = "folder", namespace = EssentialConst.URI_ESSENTIALS_INSTRUCTIONS)
 public class NodeFolderInstruction extends PluginInstruction {
 
@@ -54,8 +55,8 @@ public class NodeFolderInstruction extends PluginInstruction {
     private String template;
     private String path;
     private PluginContext context;
-    @Inject(optional = true)
-    @Named("instruction.message.folder.create")
+
+    @Value("${instruction.message.folder.create}")
     private String messageSuccess;
 
     // path="/foo/bar/foobar" template="/my_folder_template.xml"
@@ -79,7 +80,7 @@ public class NodeFolderInstruction extends PluginInstruction {
 
     private InstructionStatus createFolders() {
 
-        final Session session = context.getSession();
+        final Session session = context.createSession();
 
         InputStream stream = null;
         try {
@@ -91,7 +92,7 @@ public class NodeFolderInstruction extends PluginInstruction {
                 log.error("Template was not found: {}", template);
                 return InstructionStatus.FAILED;
             }
-            String content = GlobalUtils.readStreamAsText(stream).toString();
+            String content = GlobalUtils.readStreamAsText(stream);
             final Map<String, Object> data = context.getPlaceholderData();
             final Iterable<String> pathParts = Splitter.on('/').omitEmptyStrings().split(path);
             Node parent = session.getRootNode();
@@ -120,6 +121,7 @@ public class NodeFolderInstruction extends PluginInstruction {
             GlobalUtils.refreshSession(session, false);
         } finally {
             IOUtils.closeQuietly(stream);
+            GlobalUtils.cleanupSession(session);
         }
         return InstructionStatus.FAILED;
     }

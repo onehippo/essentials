@@ -18,6 +18,12 @@
       <xs:enumeration value="copy"/>
     </xs:restriction>
   </xs:simpleType>
+  <xs:simpleType name="directoryActionType">
+    <xs:restriction base="xs:string">
+      <xs:enumeration value="delete"/>
+      <xs:enumeration value="copy"/>
+    </xs:restriction>
+  </xs:simpleType>
   <xs:simpleType name="cndActionType">
     <xs:restriction base="xs:string">
       <xs:enumeration value="delete"/>
@@ -25,14 +31,18 @@
     </xs:restriction>
   </xs:simpleType>
 
+
   <xs:complexType name="instructionsSetType" mixed="true">
     <xs:choice minOccurs="0" maxOccurs="unbounded">
       <xs:element type="fileType" name="file" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element type="directoryType" name="dirctory" minOccurs="0" maxOccurs="unbounded"/>
+      <xs:element type="executeType" name="execute" minOccurs="0" maxOccurs="unbounded"/>
+      <!--<xs:element type="placeHoldersType" name="placeholders" minOccurs="0" maxOccurs="unbounded"/>-->
       <xs:element type="xmlType" name="xml" minOccurs="0" maxOccurs="unbounded"/>
-      <xs:element type="cndType" name="cnd" minOccurs="0" maxOccurs="unbounded" />
+      <xs:element type="cndType" name="cnd" minOccurs="0" maxOccurs="unbounded"/>
       <xs:element type="folderType" name="folder" minOccurs="0" maxOccurs="unbounded"/>
     </xs:choice>
-    <xs:attribute use="optional" name="name" type="xs:string"/>
+    <xs:attribute use="optional" name="group" default="default" type="xs:string"/>
   </xs:complexType>
 
   <!--
@@ -51,6 +61,40 @@
     <xs:attribute use="required" name="target" type="xs:string"/>
     <xs:attribute use="optional" name="overwrite" type="xs:boolean" default="false"/>
     <xs:attribute use="optional" name="message" type="xs:string" default="false"/>
+    <xs:attribute use="optional" name="binary" type="xs:boolean" default="false"/>
+  </xs:complexType>
+  <xs:complexType name="directoryType" mixed="true">
+    <xs:attribute use="required" name="action" type="directoryActionType"/>
+    <xs:attribute use="optional" name="source" type="xs:string">
+      <xs:annotation>
+        <xs:documentation>Source file. We'll first try to check if file exist on a file system and copy it, if not, we'll try to fetch it from the classpath</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+    <xs:attribute use="required" name="target" type="xs:string"/>
+    <xs:attribute use="optional" name="overwrite" type="xs:boolean" default="false"/>
+    <xs:attribute use="optional" name="message" type="xs:string" default="false"/>
+    <xs:attribute use="optional" name="binary" type="xs:boolean" default="false">
+      <xs:annotation>
+        <xs:documentation>NOTE: directory cannot have mixed content when executing copy, so either it must contain binaries or text files (because of placeholders)</xs:documentation>
+      </xs:annotation>
+    </xs:attribute>
+  </xs:complexType>
+  <!-- EXECUTE  -->
+  <xs:complexType name="executeType" mixed="true">
+    <xs:attribute use="required" name="class" type="xs:string"/>
+  </xs:complexType>
+  <!-- PLACEHOLDER  -->
+  <xs:complexType name="placeHolderType" mixed="true">
+    <xs:attribute use="required" name="key" type="xs:string"/>
+    <xs:attribute use="required" name="value" type="xs:string"/>
+  </xs:complexType>
+
+  <!-- PLACEHOLDERS  -->
+  <xs:complexType name="placeHoldersType" mixed="true">
+    <xs:choice minOccurs="0" maxOccurs="unbounded">
+      <xs:element type="placeHolderType" name="placeholder"/>
+    </xs:choice>
+
   </xs:complexType>
 
   <xs:complexType name="xmlType" mixed="true">

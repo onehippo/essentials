@@ -44,15 +44,17 @@ import com.google.common.base.Strings;
 /**
  * Utility class for manipulating java source files.
  *
- * @version "$Id: JavaSourceUtils.java 175636 2013-08-30 14:55:58Z mmilicevic $"
+ * @version "$Id$"
  */
-public class JavaSourceUtils {
+public final class JavaSourceUtils {
 
     private static final Pattern DOT_SPLITTER = Pattern.compile("\\.");
     /**
      * Pattern for replacing return type in case of array, e.g. {@code String []} or {@code String [  ]}
      */
     private static final Pattern ARRAY_PATTERN = Pattern.compile("\\[\\s*\\]");
+    public static final String UNCHECKED = "unchecked";
+    public static final String RAWTYPES = "rawtypes";
     private static Logger log = LoggerFactory.getLogger(JavaSourceUtils.class);
 
     private JavaSourceUtils() {
@@ -67,15 +69,16 @@ public class JavaSourceUtils {
      * @param fileExtension  name of file extension, if null {@code .java will be used}
      * @return Path object of the file created or null if failed to create a class
      */
-    @SuppressWarnings("unchecked")
-    public static Path createJavaClass(final String sourceRootPath, final String className, final String packageName, String fileExtension) {
-        if (Strings.isNullOrEmpty(fileExtension)) {
-            fileExtension = EssentialConst.FILE_EXTENSION_JAVA;
+    @SuppressWarnings(UNCHECKED)
+    public static Path createJavaClass(final String sourceRootPath, final String className, final String packageName, final String fileExtension) {
+        String myFileExtension = fileExtension;
+        if (Strings.isNullOrEmpty(myFileExtension)) {
+            myFileExtension = EssentialConst.FILE_EXTENSION_JAVA;
         }
         FileOutputStream outputStream = null;
         try {
 
-            final Path clazzPath = createJavaSourcePath(sourceRootPath, className, packageName, fileExtension);
+            final Path clazzPath = createJavaSourcePath(sourceRootPath, className, packageName, myFileExtension);
             if (clazzPath.toFile().exists()) {
                 log.info("File already exists: {}", clazzPath);
                 return clazzPath;
@@ -117,7 +120,7 @@ public class JavaSourceUtils {
      * @param internalBeanName  name of the bean, e.g. {@code MyNewsBean}
      * @return source code of annotated bean or null on fail
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static String createHippoBean(final Path path, final String packageName, final String documentNamespace, final String internalBeanName) {
 
         if (path == null) {
@@ -254,7 +257,7 @@ public class JavaSourceUtils {
         unit.recordModifications();
         final AST ast = unit.getAST();
         unit.accept(new ASTVisitor() {
-            @SuppressWarnings("rawtypes")
+            @SuppressWarnings(RAWTYPES)
             @Override
             public boolean visit(MethodDeclaration node) {
                 final List parameters = node.parameters();
@@ -288,7 +291,7 @@ public class JavaSourceUtils {
      * @param node         node we are adding annotation to
      * @param ast          AST tree  of the source code we are manipulating
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addHippoGeneratedAnnotation(final String internalName, final CompilationUnit unit, final ASTNode node, final AST ast) {
         //
         final NormalAnnotation generatedAnnotation = ast.newNormalAnnotation();
@@ -324,8 +327,13 @@ public class JavaSourceUtils {
      * @param methodName   name of the method
      * @param propertyName name of the property
      */
-    public static void addBeanMethodCalendar(final Path path, final String methodName, final String propertyName) {
-        addBeanMethodProperty(path, methodName, propertyName, Calendar.class.getSimpleName());
+    public static void addBeanMethodCalendar(final Path path, final String methodName, final String propertyName, final boolean multiple) {
+        final String returnType = multiple ? "List<Calendar>" : Calendar.class.getSimpleName();
+        if (multiple) {
+            addImport(path, "java.util.List");
+        }
+        addImport(path, "java.util.Calendar");
+        addBeanMethodProperty(path, methodName, propertyName, returnType);
         final String importName = Calendar.class.getPackage().getName();
         addImport(path, importName);
 
@@ -339,7 +347,7 @@ public class JavaSourceUtils {
      * @param propertyName name of the property
      * @param multiple     indicates multiple property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addBeanMethodHippoHtml(final Path path, final String methodName, final String propertyName, final boolean multiple) {
         final String returnType = multiple ? "List<HippoHtml>" : "HippoHtml";
         if (multiple) {
@@ -361,7 +369,7 @@ public class JavaSourceUtils {
      * @param propertyName name of the property
      * @param multiple     is multiple property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addBeanMethodHippoMirror(final Path path, final String methodName, final String propertyName, final boolean multiple) {
         if (multiple) {
             addTwoArgumentsMethod("getLinkedBeans", "List<HippoMirrorBean>", path, methodName, propertyName);
@@ -401,7 +409,7 @@ public class JavaSourceUtils {
      * @param propertyName name of the property
      * @param multiple     indicates multiple property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addBeanMethodString(final Path path, final String methodName, final String propertyName, final boolean multiple) {
         final String returnType = multiple ? "String[]" : "String";
         addBeanMethodProperty(path, methodName, propertyName, returnType);
@@ -415,7 +423,7 @@ public class JavaSourceUtils {
      * @param propertyName name of the property
      * @param multiple     indicates multiple property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addBeanMethodBoolean(final Path path, final String methodName, final String propertyName, final boolean multiple) {
         // TODO add null checks and return Boolean.FALSE
         final String returnType = multiple ? "Boolean[]" : "Boolean";
@@ -430,7 +438,7 @@ public class JavaSourceUtils {
      * @param propertyName name of the property
      * @param multiple     indicates multiple property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addBeanMethodDouble(final Path path, final String methodName, final String propertyName, final boolean multiple) {
         final String returnType = multiple ? "Double[]" : "Double";
         addBeanMethodProperty(path, methodName, propertyName, returnType);
@@ -444,7 +452,7 @@ public class JavaSourceUtils {
      * @param propertyName name of the property
      * @param multiple     indicates multiple property
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addBeanMethodLong(final Path path, final String methodName, final String propertyName, final boolean multiple) {
         final String returnType = multiple ? "Long[]" : "Long";
         addBeanMethodProperty(path, methodName, propertyName, returnType);
@@ -471,7 +479,7 @@ public class JavaSourceUtils {
      */
     public static List<String> getImportStatements(final Path path) {
         final CompilationUnit unit = getCompilationUnit(path);
-        @SuppressWarnings("rawtypes")
+        @SuppressWarnings(RAWTYPES)
         final List imports = unit.imports();
         final List<String> importList = new ArrayList<>();
         for (Object anImport : imports) {
@@ -543,7 +551,7 @@ public class JavaSourceUtils {
      * @param source source to format
      * @return formatted source code or original on error
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({RAWTYPES, UNCHECKED})
     public static String formatCode(final String source) {
 
         final Map options = DefaultCodeFormatterConstants.getEclipseDefaultSettings();
@@ -577,7 +585,7 @@ public class JavaSourceUtils {
     /**
      * @see #formatCode(String)
      */
-    @SuppressWarnings({"rawtypes", "unchecked"})
+    @SuppressWarnings({RAWTYPES, UNCHECKED})
     public static String formatCode(final IDocument document) {
         final String source = document.get();
         return formatCode(source);
@@ -592,7 +600,7 @@ public class JavaSourceUtils {
      * @see EssentialConst#NODE_ANNOTATION_NAME
      */
     public static String getNodeJcrType(final Path path) {
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings({UNCHECKED, RAWTYPES})
         final List modifiers = getClassAnnotations(path);
         String jcrType = null;
         for (Object modifier : modifiers) {
@@ -600,11 +608,17 @@ public class JavaSourceUtils {
                 final NormalAnnotation annotation = (NormalAnnotation) modifier;
                 final Name typeName = annotation.getTypeName();
                 final String fullyQualifiedName = typeName.getFullyQualifiedName();
-                if (!fullyQualifiedName.equals(EssentialConst.NODE_ANNOTATION_FULLY_QUALIFIED) && !fullyQualifiedName.equals(EssentialConst.NODE_ANNOTATION_NAME)) {
+                // check Node & HippoGenerated annotations
+                if (
+                        (!fullyQualifiedName.equals(EssentialConst.NODE_ANNOTATION_FULLY_QUALIFIED) && !fullyQualifiedName.equals(EssentialConst.NODE_ANNOTATION_NAME))
+                                &&
+                                (!fullyQualifiedName.equals(HippoEssentialsGenerated.class.getName()) && !fullyQualifiedName.equals(HippoEssentialsGenerated.class.getSimpleName()))
+
+                        ) {
                     log.debug("Skipping annotation: {}", fullyQualifiedName);
                     continue;
                 }
-                @SuppressWarnings("rawtypes")
+                @SuppressWarnings(RAWTYPES)
                 final List values = annotation.values();
                 if (values != null) {
                     for (Object value : values) {
@@ -615,11 +629,22 @@ public class JavaSourceUtils {
                             final String identifier = name.getIdentifier();
                             if (identifier.equals("jcrType")) {
                                 final Expression literalValue = pair.getValue();
-                                if(literalValue instanceof StringLiteral){
+                                if (literalValue instanceof StringLiteral) {
                                     final StringLiteral ex = (StringLiteral) literalValue;
                                     jcrType = ex.getLiteralValue();
-                                }else{
-                                    log.warn("Couldn't resolve value for: {}", literalValue);
+                                } else {
+
+
+                                    log.warn("Couldn't resolve value for jcrType: {}, we'll retry with internalName one", literalValue);
+                                }
+                            }
+                            if (jcrType == null && identifier.equals(EssentialConst.ANNOTATION_INTERNAL_NAME_ATTRIBUTE)) {
+                                final Expression literalValue = pair.getValue();
+                                if (literalValue instanceof StringLiteral) {
+                                    final StringLiteral ex = (StringLiteral) literalValue;
+                                    jcrType = ex.getLiteralValue();
+                                } else {
+                                    log.warn("Couldn't resolve value for internalName: {}", literalValue);
                                 }
                             }
                         }
@@ -633,7 +658,7 @@ public class JavaSourceUtils {
     }
 
     public static boolean hasHippoEssentialsAnnotation(final Path path) {
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings({UNCHECKED, RAWTYPES})
         final List modifiers = getClassAnnotations(path);
         for (Object modifier : modifiers) {
             if (modifier instanceof NormalAnnotation) {
@@ -651,7 +676,7 @@ public class JavaSourceUtils {
     }
 
     public static HippoEssentialsGeneratedObject getHippoGeneratedAnnotation(final Path path) {
-        @SuppressWarnings({"unchecked", "rawtypes"})
+        @SuppressWarnings({UNCHECKED, RAWTYPES})
         final List modifiers = getClassAnnotations(path);
         for (Object modifier : modifiers) {
             if (modifier instanceof NormalAnnotation) {
@@ -662,44 +687,47 @@ public class JavaSourceUtils {
                         && !fullyQualifiedName.equals(HippoEssentialsGenerated.class.getCanonicalName())) {
                     continue;
                 }
-
-                final HippoEssentialsGeneratedObject o = new HippoEssentialsGeneratedObject();
-                o.setFilePath(path);
-                @SuppressWarnings("rawtypes")
-                final List values = annotation.values();
-                if (values != null) {
-                    for (Object value : values) {
-                        if (value instanceof MemberValuePair) {
-                            final MemberValuePair pair = (MemberValuePair) value;
-                            final SimpleName name = pair.getName();
-                            final String identifier = name.getIdentifier();
-                            switch (identifier) {
-                                case EssentialConst.ANNOTATION_ATTR_ALLOW_MODIFICATIONS: {
-                                    final BooleanLiteral ex = (BooleanLiteral) pair.getValue();
-                                    o.setAllowModifications(ex.booleanValue());
-                                    break;
-                                }
-                                case EssentialConst.ANNOTATION_ATTR_DATE: {
-                                    final StringLiteral ex = (StringLiteral) pair.getValue();
-                                    o.setDateGenerated(ex.getLiteralValue());
-                                    break;
-                                }
-                                case EssentialConst.ANNOTATION_ATTR_INTERNAL_NAME: {
-                                    final StringLiteral ex = (StringLiteral) pair.getValue();
-                                    o.setInternalName(ex.getLiteralValue());
-                                    break;
-                                }
-                                default:
-                                    log.error("Unknown identifier {}", identifier);
-                                    break;
-                            }
-                        }
-                    }
-                }
-                return o;
+                return populateGeneratedObject(path, annotation);
             }
         }
         return null;
+    }
+
+    private static HippoEssentialsGeneratedObject populateGeneratedObject(final Path path, final NormalAnnotation annotation) {
+        final HippoEssentialsGeneratedObject o = new HippoEssentialsGeneratedObject();
+        o.setFilePath(path);
+        @SuppressWarnings(RAWTYPES)
+        final List values = annotation.values();
+        if (values != null) {
+            for (Object value : values) {
+                if (value instanceof MemberValuePair) {
+                    final MemberValuePair pair = (MemberValuePair) value;
+                    final SimpleName name = pair.getName();
+                    final String identifier = name.getIdentifier();
+                    switch (identifier) {
+                        case EssentialConst.ANNOTATION_ATTR_ALLOW_MODIFICATIONS: {
+                            final BooleanLiteral ex = (BooleanLiteral) pair.getValue();
+                            o.setAllowModifications(ex.booleanValue());
+                            break;
+                        }
+                        case EssentialConst.ANNOTATION_ATTR_DATE: {
+                            final StringLiteral ex = (StringLiteral) pair.getValue();
+                            o.setDateGenerated(ex.getLiteralValue());
+                            break;
+                        }
+                        case EssentialConst.ANNOTATION_ATTR_INTERNAL_NAME: {
+                            final StringLiteral ex = (StringLiteral) pair.getValue();
+                            o.setInternalName(ex.getLiteralValue());
+                            break;
+                        }
+                        default:
+                            log.error("Unknown identifier {}", identifier);
+                            break;
+                    }
+                }
+            }
+        }
+        return o;
     }
 
     /**
@@ -708,7 +736,7 @@ public class JavaSourceUtils {
      * @param path       path of the java source class
      * @param importName name of the import e.g {@code java.util.List}
      */
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addImport(final Path path, final String importName) {
         final CompilationUnit unit = getCompilationUnit(path);
         unit.recordModifications();
@@ -729,7 +757,7 @@ public class JavaSourceUtils {
         GlobalUtils.writeToFile(rewrite, path);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private static List<Object> getClassAnnotations(final Path path) {
         final CompilationUnit unit = getCompilationUnit(path);
         final TypeDeclaration classType = (TypeDeclaration) unit.types().get(0);
@@ -740,7 +768,7 @@ public class JavaSourceUtils {
         return modifiers;
     }
 
-    @SuppressWarnings({"unchecked", "rawtypes"})
+    @SuppressWarnings({UNCHECKED, RAWTYPES})
     private static void addImport(final CompilationUnit unit, final AST ast, final CharSequence importName) {
         final List imports = unit.imports();
         for (Object anImport : imports) {
@@ -756,12 +784,12 @@ public class JavaSourceUtils {
         imports.add(essentialsImportDeclaration);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private static void addBeanMethodProperty(final Path path, final String methodName, final String propertyName, final String returnType) {
         addSimpleMethod("getProperty", path, methodName, propertyName, returnType);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private static void addSimpleMethod(final String hippoMethodName, final Path path, final String methodName, final String propertyName, final String returnType) {
         final CompilationUnit unit = getCompilationUnit(path);
         unit.recordModifications();
@@ -795,12 +823,14 @@ public class JavaSourceUtils {
         replaceFile(path, unit, ast);
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     private static void addAnnotation(ASTNode node, IExtendedModifier annotation) {
         // add annotation at first position:
         if (node instanceof TypeDeclaration) {
             TypeDeclaration type = (TypeDeclaration) node;
-            type.modifiers().add(0, annotation);
+            if (!hasAnnotation(type.modifiers(), annotation)) {
+                type.modifiers().add(0, annotation);
+            }
         } else if (node instanceof VariableDeclarationStatement) {
             VariableDeclarationStatement localVariable = (VariableDeclarationStatement) node;
             localVariable.modifiers().add(0, annotation);
@@ -816,6 +846,23 @@ public class JavaSourceUtils {
         } else {
             log.info("Couldn't add annotation to node: {}", node);
         }
+    }
+
+    @SuppressWarnings(RAWTYPES)
+    private static boolean hasAnnotation(final List modifiers, final IExtendedModifier annotation) {
+        for (Object modifier : modifiers) {
+            if (modifier instanceof NormalAnnotation && annotation instanceof NormalAnnotation) {
+                final NormalAnnotation existing = (NormalAnnotation) modifier;
+                final NormalAnnotation newOne = (NormalAnnotation) annotation;
+                final String fullyQualifiedName = existing.getTypeName().getFullyQualifiedName();
+                if (fullyQualifiedName.equals(newOne.getTypeName().getFullyQualifiedName())) {
+                    log.debug("Annotation already exists: {}", fullyQualifiedName);
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static Path createJavaSourcePath(final String sourceRoot, final String className, final CharSequence packageName, final String fileExtension) throws IOException {
@@ -856,7 +903,7 @@ public class JavaSourceUtils {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public static void addTwoArgumentsMethod(final String returnMethodName, final String returnType, final Path path, final String methodName, final String propertyName) {
         final CompilationUnit unit = getCompilationUnit(path);
         unit.recordModifications();

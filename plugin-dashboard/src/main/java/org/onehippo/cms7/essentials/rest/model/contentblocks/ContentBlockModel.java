@@ -28,7 +28,7 @@ import org.slf4j.LoggerFactory;
 /**
  * @version "$Id$"
  */
-public class ContentBlockModel implements Serializable {
+public final class ContentBlockModel implements Serializable {
 
     private static final long serialVersionUID = 1L;
     private static Logger log = LoggerFactory.getLogger(ContentBlockModel.class);
@@ -50,8 +50,8 @@ public class ContentBlockModel implements Serializable {
     public ContentBlockModel(Node node) {
         try {
             final String myProvider = getProperty(node, "cpItemsPath").getString();
-            final Node _default_ = node.getParent();
-            final Property myDocumentType = getProperty(_default_, "type");
+            final Node defaultNode = node.getParent();
+            final Property myDocumentType = getProperty(defaultNode, "type");
             final String myName = node.getName();
             setName(myName);
             setDocumentType(myDocumentType.getString());
@@ -111,7 +111,7 @@ public class ContentBlockModel implements Serializable {
 
     public enum Prefer implements Serializable {
         LEFT("left"), RIGHT("right");
-        String prefer;
+        private String prefer;
 
         private Prefer(String prefer) {
             this.prefer = prefer;
@@ -122,6 +122,30 @@ public class ContentBlockModel implements Serializable {
         }
     }
 
+    public enum PluginType {
+
+        LISTVIEWPLUGIN("org.hippoecm.frontend.service.render.ListViewPlugin"), TWOCOLUMN("org.hippoecm.frontend.editor.layout.TwoColumn"), UNKNOWN("unknown");
+        private String clazz;
+
+        PluginType(String clazz) {
+            this.clazz = clazz;
+        }
+
+        public static PluginType get(String clazz) {
+            for (PluginType a : PluginType.values()) {
+                if (a.clazz.equals(clazz)) {
+                    return a;
+                }
+            }
+            return UNKNOWN;
+        }
+
+        public String getClazz() {
+            return clazz;
+        }
+
+    }
+    /*
     public enum WicketId {
         LEFT("${cluster.id}.left.item"), RIGHT("${cluster.id}.right.item"), DEFAULT("${cluster.id}.field");
         private String wicketId;
@@ -144,10 +168,11 @@ public class ContentBlockModel implements Serializable {
         }
 
     }
+    */
 
     public enum Type implements Serializable {
         LINKS("links"), DROPDOWN("dropdown");
-        String type;
+        private String type;
 
         private Type(String type) {
             this.type = type;

@@ -9,32 +9,34 @@ import java.util.Set;
 
 import javax.jcr.Session;
 
-import org.hippoecm.repository.HippoRepository;
-import org.hippoecm.repository.HippoRepositoryFactory;
-import org.junit.Ignore;
 import org.junit.Test;
+import org.onehippo.cms7.essentials.BaseRepositoryTest;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @version "$Id: HippoNodeUtilsTest.java 167907 2013-06-17 08:34:55Z mmilicevic $"
  */
-@Ignore
-public class HippoNodeUtilsTest {
+public class HippoNodeUtilsTest extends BaseRepositoryTest {
 
     @Test
     public void testGetProjectNamespaces() throws Exception {
-        final HippoRepository repository = HippoRepositoryFactory.getHippoRepository("rmi://localhost:1099/hipporepository");
-        final Session session = repository.login("admin", "admin".toCharArray());
+        Session session = getSession();
         final List<String> projectNamespaces = HippoNodeUtils.getProjectNamespaces(session);
         final Set<String> reserved = EssentialConst.HIPPO_BUILT_IN_NAMESPACES;
         for (String r : reserved) {
             assertFalse(projectNamespaces.contains(r));
         }
-
         session.logout();
+    }
 
+    @Test
+    public void testGetNameFromType() throws Exception {
+        assertEquals(null, HippoNodeUtils.getNameFromType(""));
+        assertEquals("document", HippoNodeUtils.getNameFromType("hippo:document"));
+        assertEquals("document", HippoNodeUtils.getNameFromType("document"));
     }
 
     @Test
@@ -42,5 +44,41 @@ public class HippoNodeUtilsTest {
         assertEquals("prefix", HippoNodeUtils.getPrefixFromType("prefix:name"));
         assertEquals("", HippoNodeUtils.getPrefixFromType(":name"));
         assertEquals(null, HippoNodeUtils.getPrefixFromType("name"));
+        assertEquals(null, HippoNodeUtils.getPrefixFromType(""));
     }
+
+    @Test
+    public void testResolvePath() throws Exception {
+        assertEquals("/hippo:namespaces/someprefix/document", HippoNodeUtils.resolvePath("someprefix:document"));
+        assertEquals("/hippo:namespaces/system/String", HippoNodeUtils.resolvePath("String"));
+    }
+
+    @Test
+    public void testGetCompounds() throws Exception {
+        Session session = getSession();
+        final Set<String> compounds = HippoNodeUtils.getCompounds(session);
+        assertTrue(compounds.size() == 0);
+        session.logout();
+    }
+
+    @Test(expected = Exception.class)
+    public void testExceptionWhenNameIsEmpty() throws Exception {
+        HippoNodeUtils.checkName("");
+    }
+
+    @Test(expected = Exception.class)
+    public void testExceptionWhenNameContainsNumbers() throws Exception {
+        HippoNodeUtils.checkName("aBc2e");
+    }
+
+    @Test(expected = Exception.class)
+    public void testExceptionWhenUriIsEmpty() throws Exception {
+        HippoNodeUtils.checkURI("");
+    }
+
+    @Test(expected = Exception.class)
+    public void testExceptionWhenInvalidURI() throws Exception {
+        HippoNodeUtils.checkURI("htp://invalidUrl");
+    }
+
 }

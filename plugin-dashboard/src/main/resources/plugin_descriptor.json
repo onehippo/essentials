@@ -1,0 +1,327 @@
+{"items": [
+
+    {
+        "needsInstallation": true,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Content Blocks plugin provides the content/document editors an ability to add multiple pre-configured compound type blocks to a document. The CMS administrator can configure the available content blocks on per document type basis.",
+        "name": "Content Blocks",
+        "pluginId": "contentBlocks",
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Detailed Content Blocks documentation",
+            "url": "http://content-blocks.forge.onehippo.org"
+        },
+        "dependencies": [
+            {
+                "@type": "dependency",
+                "groupId": "org.onehippo.forge",
+                "artifactId": "content-blocks",
+                "scope": "compile",
+                "type": "cms"
+            }
+        ],
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "contentBlocks",
+                        "file": "contentBlocks.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": true,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Blog plugin",
+        "description": "Hippo Blog plugin contains Blog document types, HST components and markup files",
+        "name": "Blog plugin",
+        "restClasses": ["org.onehippo.cms7.essentials.dashboard.blog.BlogPluginResource"],
+        "pluginId": "blogPlugin",
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "dependencies": [
+            {
+                "@type": "dependency",
+                "groupId": "org.onehippo.forge.properties",
+                "artifactId": "properties-addon-repository",
+                "scope": "compile",
+                "type": "cms"
+            },
+            {
+                "@type": "dependency",
+                "groupId": "org.onehippo.forge.selectionplugins",
+                "artifactId": "selectionplugins-addon-repository",
+                "scope": "compile",
+                "type": "cms"
+            },
+            {
+                "@type": "dependency",
+                "groupId": "org.onehippo.forge.selectionplugins",
+                "artifactId": "selectionplugins-addon-cms",
+                "scope": "compile",
+                "type": "cms"
+            },
+            {
+                "@type": "dependency",
+                "groupId": "org.onehippo.cms7.essentials",
+                "artifactId": "hippo-essentials-blog-plugin",
+                "scope": "compile",
+                "type": "essentials",
+                "version": "1.01.02-SNAPSHOT"
+            }
+
+        ],
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "blogPlugin",
+                        "file": "blogPlugin.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Configuration of Hippo image sets",
+        "name": "Gallery plugin",
+        "pluginId": "galleryPlugin",
+
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "galleryPlugin",
+                        "file": "galleryPlugin.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Creates (re-generates) HST beans",
+        "name": "Beanwriter plugin",
+        "pluginId": "beanwriter",
+
+        "restClasses": ["org.onehippo.cms7.essentials.beanwriter.rest.BeanWriterResource"],
+        "type": "tools",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "beanwriter",
+                        "file": "beanwriter.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Adds search component",
+        "name": "Search plugin",
+        "pluginId": "searchPlugin",
+        "restClasses": ["org.onehippo.essentials.plugins.search.SearchPluginResource"],
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "searchPlugin",
+                        "file": "searchPlugin.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": true,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Adds Banner document type to your project",
+        "name": "Banner plugin",
+        "pluginId": "bannerPlugin",
+        "restClasses": ["org.onehippo.cms7.essentials.dashboard.banner.BannerPluginResource"],
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "bannerPlugin",
+                        "file": "bannerPlugin.js"
+                    }
+                ]
+            }
+        ],
+        "dependencies": [
+            {
+                "@type": "dependency",
+                "groupId": "org.onehippo.cms7.essentials",
+                "artifactId": "hippo-banner-plugin",
+                "scope": "compile",
+                "type": "essentials",
+                "version": "1.01.02-SNAPSHOT"
+            }
+        ]
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Adds Simple content document to your project",
+        "name": "Simple content plugin",
+        "pluginId": "simpleContent",
+        "restClasses": ["org.onehippo.cms7.essentials.dashboard.simplecontent.SimpleContentResource"],
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "simpleContent",
+                        "file": "simpleContent.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Creates REST services skeleton",
+        "name": "Rest Services plugin",
+        "pluginId": "restServices",
+        "restClasses": ["org.onehippo.cms7.essentials.dashboard.restservices.RestPluginResource"],
+        "type": "tools",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "restServices",
+                        "file": "restServices.js"
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "introduction": "Freemarker synchronizing tool",
+        "name": "Freemarker synchronizing",
+        "pluginId": "freemarkersync",
+
+        "restClasses": ["org.onehippo.cms7.essentials.tools.rest.FreemarkerSyncResource"],
+        "type": "tools",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "freemarkersync",
+                        "file": "freemarkersync.js"
+                    }
+                ]
+            }
+        ]
+
+    },
+    {
+        "needsInstallation": false,
+        "enabled": true,
+        "@type": "plugin",
+        "description": "A basic News and Events site that contains a homepage template, News and Agenda components and detail pages to render both News and Event articles. It comes with a standard navigational menu and URL structure. This is the most basic Power Pack to start with. You can easily extend with more components later on.",
+        "introduction": "Basic News and Events site",
+        "name": "Basic News and Events site",
+        "powerpackClass": "org.onehippo.cms7.essentials.powerpack.BasicPowerpack",
+        "pluginId": "newsEventsPowerpack",
+        "restClasses": [],
+        "type": "powerpacks",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+                    {
+                        "component": "newsEventsPowerpack",
+                        "file": "newsEventsPowerpack.js"
+                    }
+                ]
+            }
+        ]
+
+    },
+    {
+        "needsInstallation": false,
+        "enabled": false,
+        "@type": "plugin",
+        "description": "A REST only site that contains only REST services and no pages.",
+        "introduction": "Headless REST based content repository",
+        "name": "Headless REST based content repository",
+        "pluginId": "notImplementedYet",
+
+        "restClasses": [],
+        "type": "powerpacks",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        }
+    }
+]}

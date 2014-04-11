@@ -16,8 +16,9 @@
 
 package org.onehippo.cms7.essentials.rest.model;
 
-import javax.jcr.Value;
 import javax.xml.bind.annotation.XmlRootElement;
+
+import org.onehippo.cms7.essentials.dashboard.model.Restful;
 
 /**
  * @version "$Id$"
@@ -68,15 +69,14 @@ public class PropertyRestful implements Restful {
 
     public Object getPropertyValue() {
         switch (getType()) {
-            case BOOLEAN: ;
+            case BOOLEAN:
                 return Boolean.valueOf(getValue());
-            case STRING: ;
+            case STRING:
                 return getValue();
             default:
                 return getValue();
         }
     }
-
 
 
     public PropertyType getType() {

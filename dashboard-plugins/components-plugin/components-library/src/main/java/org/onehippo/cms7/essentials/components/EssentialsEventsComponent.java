@@ -4,6 +4,11 @@
 
 package org.onehippo.cms7.essentials.components;
 
+import java.util.Calendar;
+
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+
 import org.hippoecm.hst.content.beans.query.HstQuery;
 import org.hippoecm.hst.content.beans.query.exceptions.FilterException;
 import org.hippoecm.hst.content.beans.query.filter.Filter;
@@ -16,13 +21,13 @@ import org.hippoecm.repository.util.DateTools;
 import org.onehippo.cms7.essentials.components.info.EssentialsDocumentListComponentInfo;
 import org.onehippo.cms7.essentials.components.info.EssentialsEventsComponentInfo;
 import org.onehippo.cms7.essentials.components.paging.Pageable;
+import org.onehippo.cms7.essentials.components.utils.SiteUtils;
 import org.onehippo.cms7.essentials.components.utils.query.HstQueryBuilder;
+import org.onehippo.cms7.essentials.components.utils.query.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.Session;
-import java.util.Date;
+import com.google.common.base.Strings;
 
 /**
  * HST component used for listing of Event document types
@@ -39,7 +44,7 @@ public class EssentialsEventsComponent extends EssentialsListComponent {
         final EssentialsEventsComponentInfo essentialsEventsComponentInfo = getComponentParametersInfo(request);
         final String path = getScopePath(essentialsEventsComponentInfo);
         log.debug("Getting EssentialsEventsComponentInfo for documents path:  [{}]", path);
-        final HippoBean scope = getScopeBean(request, path);
+        final HippoBean scope = getScopeBean(path);
         if (scope == null) {
             log.warn("Search scope was null");
             handleInvalidScope(request, response);
@@ -48,29 +53,31 @@ public class EssentialsEventsComponent extends EssentialsListComponent {
 
         final Pageable<HippoBean> pageable = doSearch(request, essentialsEventsComponentInfo, scope);
         request.setAttribute(REQUEST_ATTR_PAGEABLE, pageable);
+        populateRequest(request, essentialsEventsComponentInfo, pageable);
     }
 
     @Override
     protected <T extends EssentialsDocumentListComponentInfo> HstQuery buildQuery(final HstRequest request, final T componentInfo, final HippoBean scope) {
-        final HstQueryBuilder builder = new HstQueryBuilder(this, request);
+        final QueryBuilder builder = new HstQueryBuilder(this, request);
         final String documentTypes = componentInfo.getDocumentTypes();
-        final String[] types = parseDocumentTypes(documentTypes);
-        EssentialsEventsComponentInfo essentialsEventsComponentInfo = (EssentialsEventsComponentInfo) componentInfo;
-
+        final String[] types = SiteUtils.parseCommaSeparatedValue(documentTypes);
+        final EssentialsEventsComponentInfo essentialsEventsComponentInfo = (EssentialsEventsComponentInfo) componentInfo;
         builder.scope(scope).documents(types).includeSubtypes();
+        if (essentialsEventsComponentInfo.getHidePastEvents()) {
+            final String dateField  = essentialsEventsComponentInfo.getDocumentDateField();
+            if (!Strings.isNullOrEmpty(dateField)) {
+                try {
+                    final Session session = request.getRequestContext().getSession();
+                    final Filter filter = new FilterImpl(session, DateTools.Resolution.DAY);
 
-        if(essentialsEventsComponentInfo.hidePastEvents()) {
-            String dateField = null;
-            try {
-                final Session session = request.getRequestContext().getSession();
-                Filter filter = new FilterImpl(session, DateTools.Resolution.DAY);
-                dateField = essentialsEventsComponentInfo.getDocumentDateField();
-                filter.addGreaterOrEqualThan(dateField, new Date());
-                builder.addFilter(filter);
-            } catch (FilterException | RepositoryException e) {
-                log.error("Error while creating query filter to hide past events using date field {}", dateField, e);
+                    filter.addGreaterOrEqualThan(dateField, Calendar.getInstance(), DateTools.Resolution.DAY);
+                    builder.addFilter(filter);
+                } catch (FilterException | RepositoryException e) {
+                    log.error("Error while creating query filter to hide past events using date field {}", dateField, e);
+                }
             }
         }
         return builder.build();
     }
 }
+

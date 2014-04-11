@@ -22,14 +22,14 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import org.apache.commons.lang.StringUtils;
+import org.onehippo.cms7.essentials.dashboard.model.Restful;
 import org.onehippo.cms7.essentials.rest.model.PropertyRestful;
-import org.onehippo.cms7.essentials.rest.model.Restful;
 import org.onehippo.cms7.essentials.rest.model.TranslationRestful;
 
 /**
  * @version "$Id$"
  */
-@XmlRootElement(name = "imageSet")
+@XmlRootElement(name = "imageSets")
 public class ImageSetRestful implements Restful {
 
     private static final long serialVersionUID = 1L;
@@ -48,7 +48,7 @@ public class ImageSetRestful implements Restful {
     public ImageSetRestful(final String name, final String path) {
 
         this.name = name;
-        this.name = path;
+        this.path = path;
     }
 
     public String getNamespace() {
@@ -120,26 +120,26 @@ public class ImageSetRestful implements Restful {
     }
 
     public boolean hasVariant(final String namespace, final String name) {
-        for(final ImageVariantRestful variant : getVariants()) {
-            if(StringUtils.equals(variant.getNamespace(), namespace) && StringUtils.equals(variant.getName(), name)) {
+        for (final ImageVariantRestful variant : getVariants()) {
+            if (StringUtils.equals(variant.getNamespace(), namespace) && StringUtils.equals(variant.getName(), name)) {
                 return true;
             }
         }
         return false;
     }
 
-    public ImageVariantRestful getVariantByName(final String name) {
-        for(final ImageVariantRestful variant : this.variants) {
-            if(StringUtils.equals(variant.getName(), name)) {
+    public ImageVariantRestful getVariant(final String id) {
+        for (final ImageVariantRestful variant : this.variants) {
+            if (StringUtils.equals(variant.getId(), id)) {
                 return variant;
             }
         }
         return null;
     }
 
-    public ImageVariantRestful getVariant(final String namespace, final String name) {
-        for(final ImageVariantRestful variant : this.variants) {
-            if(StringUtils.equals(variant.getNamespace(), namespace) && StringUtils.equals(variant.getName(), name)) {
+    public ImageVariantRestful getVariant(final String namaspace, final String name) {
+        for (final ImageVariantRestful variant : this.variants) {
+            if (StringUtils.equals(variant.getNamespace(), namaspace) && StringUtils.equals(variant.getName(), name)) {
                 return variant;
             }
         }

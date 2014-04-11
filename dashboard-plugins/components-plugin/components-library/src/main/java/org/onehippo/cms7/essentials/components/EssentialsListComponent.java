@@ -6,25 +6,33 @@ package org.onehippo.cms7.essentials.components;
 
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-
-import org.apache.commons.lang.ArrayUtils;
+import org.hippoecm.hst.container.RequestContextProvider;
 import org.hippoecm.hst.content.beans.query.HstQuery;
 import org.hippoecm.hst.content.beans.query.HstQueryResult;
+import org.hippoecm.hst.content.beans.query.exceptions.FilterException;
 import org.hippoecm.hst.content.beans.query.exceptions.QueryException;
+import org.hippoecm.hst.content.beans.query.filter.Filter;
 import org.hippoecm.hst.content.beans.standard.HippoBean;
+import org.hippoecm.hst.content.beans.standard.HippoDocumentIterator;
+import org.hippoecm.hst.content.beans.standard.HippoFacetNavigationBean;
+import org.hippoecm.hst.content.beans.standard.HippoResultSetBean;
 import org.hippoecm.hst.core.component.HstComponentException;
 import org.hippoecm.hst.core.component.HstRequest;
 import org.hippoecm.hst.core.component.HstResponse;
 import org.hippoecm.hst.core.parameters.ParametersInfo;
+import org.hippoecm.hst.core.request.HstRequestContext;
 import org.onehippo.cms7.essentials.components.info.EssentialsDocumentListComponentInfo;
+import org.onehippo.cms7.essentials.components.info.EssentialsPageable;
+import org.onehippo.cms7.essentials.components.info.EssentialsSortable;
 import org.onehippo.cms7.essentials.components.paging.IterablePagination;
 import org.onehippo.cms7.essentials.components.paging.Pageable;
+import org.onehippo.cms7.essentials.components.utils.SiteUtils;
 import org.onehippo.cms7.essentials.components.utils.query.HstQueryBuilder;
+import org.onehippo.cms7.essentials.components.utils.query.QueryBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.google.common.base.Strings;
 
 /**
  * HST component used for listing of documents.
@@ -36,31 +44,13 @@ public class EssentialsListComponent extends CommonComponent {
 
     private static Logger log = LoggerFactory.getLogger(EssentialsListComponent.class);
 
-    /**
-     * Request parameter to set the current page.
-     */
-    protected static final String REQUEST_PARAM_PAGE = "page";
-
-    /**
-     * Request attribute to store pageable result in.
-     */
-    protected static final String REQUEST_ATTR_PAGEABLE = "pageable";
 
     @Override
     public void doBeforeRender(final HstRequest request, final HstResponse response) {
         final EssentialsDocumentListComponentInfo paramInfo = getComponentParametersInfo(request);
         final String path = getScopePath(paramInfo);
         log.debug("Calling EssentialsListComponent for documents path:  [{}]", path);
-        HippoBean scope;
-        if (Strings.isNullOrEmpty(path)) {
-            scope = getContentBean(request);
-            if (scope == null) {
-                // TODO check if we should use global scope:
-                scope = getSiteContentBaseBean(request);
-            }
-        } else {
-            scope = getScopeBean(request, path);
-        }
+        final HippoBean scope = getSearchScope(request, path);
 
         if (scope == null) {
             log.warn("Search scope was null");
@@ -68,9 +58,80 @@ public class EssentialsListComponent extends CommonComponent {
             return;
         }
 
-        final Pageable<HippoBean> pageable = doSearch(request, paramInfo, scope);
-        request.setAttribute(REQUEST_ATTR_PAGEABLE, pageable);
+        final Pageable<HippoBean> pageable;
+        if (scope instanceof HippoFacetNavigationBean) {
+            final HippoFacetNavigationBean facetBean = (HippoFacetNavigationBean) scope;
+            final HippoResultSetBean resultSet = facetBean.getResultSet();
+            final HippoDocumentIterator<HippoBean> iterator = resultSet.getDocumentIterator(HippoBean.class);
+            pageable = new IterablePagination<>(iterator, resultSet.getCount().intValue(), paramInfo.getPageSize(), getCurrentPage(request));
+        } else {
+            pageable = doSearch(request, paramInfo, scope);
+        }
+        populateRequest(request, paramInfo, pageable);
     }
+
+    /**
+     * Populates request with search results
+     *
+     * @param request   HstRequest
+     * @param paramInfo EssentialsPageable instance
+     * @param pageable  search results (Pageable<HippoBean>)
+     * @see CommonComponent#REQUEST_ATTR_QUERY
+     * @see CommonComponent#REQUEST_ATTR_PAGEABLE
+     * @see CommonComponent#REQUEST_ATTR_PAGE
+     * @see CommonComponent#REQUEST_ATTR_PAGE_SIZE
+     * @see CommonComponent#REQUEST_ATTR_PAGE_PAGINATION
+     */
+    protected void populateRequest(final HstRequest request, final EssentialsPageable paramInfo, final Pageable<? extends HippoBean> pageable) {
+        request.setAttribute(REQUEST_ATTR_QUERY, getSearchQuery(request));
+        request.setAttribute(REQUEST_ATTR_PAGEABLE, pageable);
+        request.setAttribute(REQUEST_ATTR_PAGE, getCurrentPage(request));
+        request.setAttribute(REQUEST_ATTR_PAGE_SIZE, paramInfo.getPageSize());
+        request.setAttribute(REQUEST_ATTR_PAGE_PAGINATION, paramInfo.getShowPagination());
+    }
+
+    /**
+     * Returns Search scope for given path. If path is null, current scope bean will be used, site wide scope otherwise
+     *
+     * @param request current HST request. Unused, available when overriding.
+     * @param path    path (optional)
+     * @return hippo bean or null
+     */
+    protected HippoBean getSearchScope(final HstRequest request, final String path) {
+        final HstRequestContext context = RequestContextProvider.get();
+        HippoBean scope = null;
+
+        if (Strings.isNullOrEmpty(path)) {
+            scope = context.getContentBean();
+        }
+
+        if (scope == null) {
+            scope = getScopeBean(path);
+        }
+        return scope;
+    }
+
+    /**
+     * Apply ordering (if order field name is provided)
+     *
+     * @param request       instance of  HstRequest
+     * @param query         instance of  HstQuery
+     * @param componentInfo instance of EssentialsDocumentListComponentInfo
+     * @param <T>
+     */
+    protected <T extends EssentialsDocumentListComponentInfo> void applyOrdering(final HstRequest request, final HstQuery query, final T componentInfo) {
+        final String sortField = componentInfo.getSortField();
+        if (Strings.isNullOrEmpty(sortField)) {
+            return;
+        }
+        final String sortOrder = Strings.isNullOrEmpty(componentInfo.getSortOrder()) ? EssentialsSortable.DESC : componentInfo.getSortOrder();
+        if (sortOrder.equals(EssentialsSortable.DESC)) {
+            query.addOrderByDescending(sortField);
+        } else {
+            query.addOrderByAscending(sortField);
+        }
+    }
+
 
     protected <T extends EssentialsDocumentListComponentInfo> Pageable<HippoBean> doSearch(final HstRequest request, final T paramInfo, final HippoBean scope) {
         try {
@@ -96,36 +157,80 @@ public class EssentialsListComponent extends CommonComponent {
     /**
      * Build the HST query for the list.
      *
-     * @param request the current request
+     * @param request   the current request
      * @param paramInfo the parameter info
-     * @param scope the scope of the query
+     * @param scope     the scope of the query
      * @return the HST query to execute
      */
     protected <T extends EssentialsDocumentListComponentInfo> HstQuery buildQuery(final HstRequest request, final T paramInfo, final HippoBean scope) {
-        final HstQueryBuilder builder = new HstQueryBuilder(this, request);
+        final QueryBuilder builder = new HstQueryBuilder(this, request);
         final String documentTypes = paramInfo.getDocumentTypes();
-        final String[] types = parseDocumentTypes(documentTypes);
+        final String[] types = SiteUtils.parseCommaSeparatedValue(documentTypes);
+        if (log.isDebugEnabled()) {
+            log.debug("Searching for document types:  {}, and including subtypes: {}", documentTypes, paramInfo.getIncludeSubtypes());
+        }
         return builder.scope(scope).documents(types).includeSubtypes().build();
     }
 
     /**
      * Execute the list query.
      *
-     * @param request the current request
+     * @param request   the current request
      * @param paramInfo the parameter info
-     * @param query the query to execute
+     * @param query     the query to execute
      * @return the pageable result
      * @throws QueryException query exception when query fails
      */
     protected <T extends EssentialsDocumentListComponentInfo> Pageable<HippoBean> executeQuery(final HstRequest request, final T paramInfo, final HstQuery query) throws QueryException {
+        final int pageSize = getPageSize(request, paramInfo);
+        final int page = getCurrentPage(request);
+        query.setLimit(pageSize);
+        query.setOffset((page - 1) * pageSize);
+        applySearchFilter(request, query);
+        applyOrdering(request, query, paramInfo);
+        applyExcludeScopes(request, query, paramInfo);
+
         final HstQueryResult execute = query.execute();
         final Pageable<HippoBean> pageable = new IterablePagination<>(
                 execute.getHippoBeans(),
                 execute.getTotalSize(),
-                getPageSize(request, paramInfo),
-                getCurrentPage(request));
+                pageSize,
+                page);
         pageable.setShowPagination(isShowPagination(request, paramInfo));
         return pageable;
+    }
+
+    protected <T extends EssentialsDocumentListComponentInfo> void applyExcludeScopes(final HstRequest request, final HstQuery query, final T paramInfo) {
+        // just an extension point for time being
+    }
+
+    /**
+     * Apply search filter (query) to result list
+     *
+     * @param request HstRequest
+     * @param query   HstQuery
+     * @throws FilterException
+     */
+    protected void applySearchFilter(final HstRequest request, final HstQuery query) throws FilterException {
+        // check if we have query parameter
+        final String queryParam = getSearchQuery(request);
+        if (!Strings.isNullOrEmpty(queryParam)) {
+            final Filter filter = query.createFilter();
+            filter.addContains(".", queryParam);
+            log.debug("using search query {}", queryParam);
+            query.setFilter(filter);
+        }
+    }
+
+
+    /**
+     * Fetches search query from reqest and cleans it
+     *
+     * @param request HstRequest
+     * @return null if query was null or invalid
+     */
+    protected String getSearchQuery(HstRequest request) {
+        return cleanupSearchQuery(getAnyParameter(request, REQUEST_ATTR_QUERY));
     }
 
 
@@ -136,17 +241,19 @@ public class EssentialsListComponent extends CommonComponent {
      * @return the current page of the query
      */
     protected int getCurrentPage(final HstRequest request) {
-        return getIntParameter(request, REQUEST_PARAM_PAGE, 1);
+        return getAnyIntParameter(request, REQUEST_ATTR_PAGE, 1);
     }
 
     /**
      * Determine the page size of the list query.
      *
-     * @param request the current request
+     * @param request   the current request
      * @param paramInfo the settings of the component
      * @return the page size of the query
      */
-    protected int getPageSize(final HstRequest request, final EssentialsDocumentListComponentInfo paramInfo) {
+    protected int getPageSize(final HstRequest request, final EssentialsPageable paramInfo) {
+        // NOTE although unused, leave request parameter so devs
+        // can use it if they override this method
         return paramInfo.getPageSize();
     }
 
@@ -164,31 +271,18 @@ public class EssentialsListComponent extends CommonComponent {
     /**
      * Determine whether pagination should be shown.
      *
-     * @param request the current request
+     * @param request   the current request
      * @param paramInfo the settings of the component
      * @return
      */
-    protected boolean isShowPagination(final HstRequest request, final EssentialsDocumentListComponentInfo paramInfo) {
+    protected boolean isShowPagination(final HstRequest request, final EssentialsPageable paramInfo) {
         final Boolean showPagination = paramInfo.getShowPagination();
-        if(showPagination == null) {
+        if (showPagination == null) {
             log.debug("Show pagination not configured, use default value 'true'");
             return true;
         }
         return showPagination;
     }
 
-    /**
-     * For given string, comma separate it and convert to array
-     *
-     * @param documentTypes comma separated document types
-     * @return empty array if empty
-     */
-    protected String[] parseDocumentTypes(final String documentTypes) {
-        if (Strings.isNullOrEmpty(documentTypes)) {
-            return ArrayUtils.EMPTY_STRING_ARRAY;
-        }
-        final Iterable<String> iterable = Splitter.on(",").trimResults().omitEmptyStrings().split(documentTypes);
-        return Iterables.toArray(iterable, String.class);
-    }
 
 }

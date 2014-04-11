@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<instructions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://www.onehippo.org/essentials/instructions /instructions.xsd" xmlns="http://www.onehippo.org/essentials/instructions">
+  <instructionSet>
+    <cnd documentType="contentdocument" superType="{{namespace}}:basedocument,hippostd:relaxed,hippotranslation:translated,hippostd:taggable"/>
+    <xml action="copy" source="namespaces/contentdocument.xml" target="/hippo:namespaces/{{namespace}}"/>
+    <file action="copy" source="java/ContentDocument.txt" target="{{beansFolder}}/ContentDocument.java"/>
+    <!-- folder doc queries-->
+    <xml action="copy" source="config/new-content-folder.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+    <xml action="copy" source="config/new-content-document.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+    <xml action="copy" source="data/sample-content_entry.xml" target="/content/documents/{{namespace}}"/>
+  </instructionSet>
+
+  <!-- HST CONFIG-->
+  <instructionSet>
+
+    <!-- NOTE: if menu already exists it'll fail so we add second instruction for sitemap item only-->
+    <xml action="copy" source="hst/content-menu-main.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:sitemenus"/>
+    <xml action="copy" source="hst/content-menu-item.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:sitemenus/main"/>
+    <xml action="copy" source="hst/content-sitemap.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:sitemap"/>
+    <xml action="copy" source="hst/content-page.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:pages"/>
+    <xml action="copy" source="hst/content-list-page.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:pages"/>
+    <xml action="copy" source="hst/simplecontent-catalog.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:catalog"/>
+
+
+  </instructionSet>
+
+
+  <!-- HST TEMPLATES -->
+  <instructionSet group="jsp">
+    <xml action="copy" source="hst/template-content-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <file action="copy" source="jsp/essentials-simplecontent.jsp" target="{{jspRoot}}/essentials/essentials-simplecontent.jsp"/>
+    <xml action="copy" source="hst/template-content-list-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <file action="copy" source="jsp/essentials-simplecontent-list.jsp" target="{{jspRoot}}/essentials/essentials-simplecontent-list.jsp"/>
+  </instructionSet>
+
+
+  <instructionSet group="freemarker">
+    <xml action="copy" source="hst/template-content-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <file action="copy" source="freemarker/essentials-simplecontent.ftl" target="{{freemarkerRoot}}/essentials/essentials-simplecontent.ftl"/>
+    <xml action="copy" source="hst/template-content-list-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <file action="copy" source="freemarker/essentials-simplecontent-list.ftl" target="{{freemarkerRoot}}/essentials/essentials-simplecontent-list.ftl"/>
+  </instructionSet>
+</instructions>

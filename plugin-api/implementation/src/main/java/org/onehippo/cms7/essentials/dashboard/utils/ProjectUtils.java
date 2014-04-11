@@ -21,8 +21,8 @@ import org.apache.maven.model.Dependency;
 import org.apache.maven.model.Model;
 import org.apache.maven.model.io.xpp3.MavenXpp3Reader;
 import org.codehaus.plexus.util.xml.pull.XmlPullParserException;
-import org.onehippo.cms7.essentials.dashboard.DependencyType;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.onehippo.cms7.essentials.dashboard.model.DependencyType;
 import org.onehippo.cms7.essentials.dashboard.utils.common.PackageVisitor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,10 +30,11 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Strings;
 
 /**
- * @version "$Id: ProjectUtils.java 164013 2013-05-11 14:05:39Z mmilicevic $"
+ * @version "$Id$"
  */
-public class ProjectUtils {
+public final class ProjectUtils {
 
+    private static final String BOOTSTRAP = "bootstrap";
     private static Logger log = LoggerFactory.getLogger(ProjectUtils.class);
 
 
@@ -63,9 +64,9 @@ public class ProjectUtils {
         return getJavaFolder(siteDirectory);
     }
 
-    public static File getSiteImagesFolder(){
+    public static File getSiteImagesFolder() {
         final File site = getSite();
-        final String absolutePath = site.getAbsolutePath() + File.separator + "src"+ File.separator + "main"+ File.separator + "webapp"+ File.separator + "images";
+        final String absolutePath = site.getAbsolutePath() + File.separator + "src" + File.separator + "main" + File.separator + "webapp" + File.separator + "images";
         return new File(absolutePath);
     }
 
@@ -81,7 +82,8 @@ public class ProjectUtils {
 
     /**
      * Returns SITE root folder e.g. {@code /home/foo/myproject/site}
-     * @return  site project folder
+     *
+     * @return site project folder
      */
     public static File getSite() {
         return getFolder("site");
@@ -96,8 +98,43 @@ public class ProjectUtils {
         return getFolder("cms");
     }
 
+    /**
+     * Returns Configuration root folder e.g. {@code /home/foo/myproject/bootstrap/configuration}
+     *
+     * @return Configuration project folder
+     */
+    public static File getBootstrapConfigFolder() {
+        return getFolder(BOOTSTRAP + File.separator + "configuration");
+    }
+    /**
+     * Returns Content root folder e.g. {@code /home/foo/myproject/bootstrap/content}
+     *
+     * @return Content project folder
+     */
+    public static File getBootstrapContentFolder() {
+        return getFolder(BOOTSTRAP + File.separator + "content");
+    }
+
+    /**
+     * Returns Essentials root folder e.g. {@code /home/foo/myproject/essentials}
+     *
+     * @return Essentials project folder
+     */
+    public static File getEssentialsFolder() {
+        //TODO:  NOTE we still need to decide about location
+        return getFolder("essentials");
+    }
+    /**
+     * Returns Bootstrap root folder e.g. {@code /home/foo/myproject/bootstrap}
+     *
+     * @return Bootstrap project folder
+     */
+    public static File getBootstrapFolder() {
+        return getFolder(BOOTSTRAP);
+    }
+
     private static File getFolder(final String name) {
-        final String baseDir = getBaseProjectDirectory();
+        final String baseDir = GlobalUtils.decodeUrl(ProjectUtils.getBaseProjectDirectory());
         if (Strings.isNullOrEmpty(baseDir)) {
             return null;
         }
@@ -105,9 +142,9 @@ public class ProjectUtils {
         if (!baseFile.exists() || !baseFile.isDirectory()) {
             return null;
         }
-        File site = new File(baseDir + File.separatorChar + name);
-        if (site.isDirectory()) {
-            return site;
+        File folder = new File(baseDir + File.separatorChar + name);
+        if (folder.isDirectory()) {
+            return folder;
         }
         return null;
     }
@@ -120,12 +157,56 @@ public class ProjectUtils {
         }
     }
 
+    public static Model getPomModel(DependencyType type) {
+        final String pomPath = getPomPath(type);
+        if (Strings.isNullOrEmpty(pomPath)) {
+            return null;
+        }
+        return getPomModel(pomPath);
+
+    }
+
+    /**
+     * Return full pom.xml file path for given dependency type
+     *
+     * @param type type of dependency
+     * @return null if type is invalid
+     */
+    public static String getPomPath(DependencyType type) {
+        if (type == null || type== DependencyType.INVALID) {
+            return null;
+        }
+        switch (type) {
+            case SITE:
+                return getPomForDir(ProjectUtils.getSite());
+            case CMS:
+                return getPomForDir(ProjectUtils.getCms());
+            case BOOTSTRAP:
+                return getPomForDir(ProjectUtils.getBootstrapFolder());
+            case BOOTSTRAP_CONFIG:
+                return getPomForDir(ProjectUtils.getBootstrapConfigFolder());
+            case BOOTSTRAP_CONTENT:
+                return getPomForDir(ProjectUtils.getBootstrapContentFolder());
+            case ESSENTIALS:
+                return getPomForDir(ProjectUtils.getEssentialsFolder());
+        }
+        return null;
+
+    }
+
+    private static String getPomForDir(final File folder) {
+        if (folder != null) {
+            return folder.getPath() + File.separatorChar + EssentialConst.POM_XML;
+        }
+        return null;
+    }
+
     private static Model getPomModel(String path) {
         Reader fileReader = null;
         Model model = null;
         try {
             final MavenXpp3Reader reader = new MavenXpp3Reader();
-            fileReader = new FileReader(path + File.separatorChar + "pom.xml");
+            fileReader = new FileReader(path);
             model = reader.read(fileReader);
         } catch (XmlPullParserException | IOException e) {
             log.error("Error parsing pom", e);
@@ -135,24 +216,9 @@ public class ProjectUtils {
         return model;
     }
 
-    public static Model getSitePomModel() {
-        if (ProjectUtils.getSite() != null) {
-            return getPomModel(ProjectUtils.getSite().getPath());
-        } else {
-            return null;
-        }
-    }
-
-    public static Model getCMSPomModel() {
-        if (ProjectUtils.getCms() != null) {
-            return getPomModel(ProjectUtils.getCms().getPath());
-        } else {
-            return null;
-        }
-    }
 
     public static boolean isInstalled(final DependencyType type, final Dependency dependency) {
-        final Model model = type == DependencyType.SITE ? getSitePomModel() : getCMSPomModel();
+        final Model model = getPomModel(type);
         final List<Dependency> dependencies = model.getDependencies();
         for (Dependency dep : dependencies) {
             if (dep.getArtifactId().equals(dependency.getArtifactId()) && dep.getGroupId().equals(dependency.getGroupId())) {
@@ -173,5 +239,6 @@ public class ProjectUtils {
                 + "java" + File.separatorChar;
         return new File(javaFolder);
     }
+
 
 }

@@ -19,8 +19,9 @@ package org.onehippo.cms7.essentials.rest.model.contentblocks;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
-import org.onehippo.cms7.essentials.rest.model.Restful;
-import org.onehippo.cms7.essentials.rest.model.RestfulList;
+import org.onehippo.cms7.essentials.dashboard.model.Restful;
+import org.onehippo.cms7.essentials.rest.model.RestList;
+
 
 /**
  * @version "$Id$"
@@ -30,15 +31,20 @@ public class CBPayload implements Restful {
 
     private static final long serialVersionUID = 1L;
 
-    private RestfulList<DocumentTypes> items;
+    private RestList<DocumentType> documentTypes = new RestList<>();
 
-    @XmlElement(name = "items")
-    public RestfulList<DocumentTypes> getItems() {
-        return items;
+    public CBPayload() {
     }
 
-    public void setItems(final RestfulList<DocumentTypes> items) {
-        this.items = items;
+
+    @XmlElement(name = "documentTypes")
+
+    public RestList<DocumentType> getDocumentTypes() {
+        return documentTypes;
+    }
+
+    public void setDocumentTypes(final RestList<DocumentType> documentTypes) {
+        this.documentTypes = documentTypes;
     }
 
 }

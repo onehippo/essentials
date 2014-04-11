@@ -16,68 +16,36 @@
 
 package org.onehippo.cms7.essentials.powerpack;
 
-import java.io.InputStream;
 import java.util.Set;
 
-import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
-import org.onehippo.cms7.essentials.dashboard.event.DisplayEvent;
-import org.onehippo.cms7.essentials.dashboard.instruction.executors.PluginInstructionExecutor;
-import org.onehippo.cms7.essentials.dashboard.instruction.parser.InstructionParser;
-import org.onehippo.cms7.essentials.dashboard.instructions.InstructionSet;
-import org.onehippo.cms7.essentials.dashboard.instructions.InstructionStatus;
-import org.onehippo.cms7.essentials.dashboard.instructions.Instructions;
-import org.onehippo.cms7.essentials.dashboard.packaging.PowerpackPackage;
-import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.onehippo.cms7.essentials.dashboard.packaging.DefaultPowerpack;
+import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
+import org.springframework.stereotype.Component;
 
-import com.google.common.eventbus.EventBus;
-import com.google.inject.Inject;
+import com.google.common.collect.ImmutableSet;
+
 
 /**
  * @version "$Id$"
  */
-public class BasicPowerpack implements PowerpackPackage {
+@Component
+public class BasicPowerpack extends DefaultPowerpack {
 
-    private static Logger log = LoggerFactory.getLogger(BasicPowerpack.class);
+    private static final ImmutableSet<String> INSTRUCTION_GROUPS_SAMPLE = new ImmutableSet.Builder<String>().add(EssentialConst.INSTRUCTION_GROUP_DEFAULT).add("samples").build();
 
-    protected Instructions instructions;
-    @Inject
-    private EventBus eventBus;
 
     @Override
-    public Instructions getInstructions() {
-        if (instructions == null) {
-            final InputStream resourceAsStream = getClass().getResourceAsStream("/META-INF/instructions.xml");
-            final String content = GlobalUtils.readStreamAsText(resourceAsStream);
-            instructions = InstructionParser.parseInstructions(content);
-        }
-        return instructions;
-
+    public String getInstructionPath() {
+        return "/META-INF/basic_powerpack_instructions.xml";
     }
 
     @Override
-    public InstructionStatus execute(final PluginContext context) {
-        if (instructions == null) {
-            getInstructions();
+    public Set<String> groupNames() {
+        if (Boolean.valueOf((String) getProperties().get("sampleData"))) {
+            return INSTRUCTION_GROUPS_SAMPLE;
         }
-        if (instructions == null) {
-            eventBus.post(new DisplayEvent("Couldn't parse instructions"));
-            log.error("Failed to parse instructions");
-            return InstructionStatus.FAILED;
-        }
-        final Set<InstructionSet> instructionSets = instructions.getInstructionSets();
-        InstructionStatus status = InstructionStatus.SUCCESS;
-        final PluginInstructionExecutor executor = new PluginInstructionExecutor();
-        for (InstructionSet instructionSet : instructionSets) {
-            // currently we return fail if any of instructions is failed
-            if (status == InstructionStatus.FAILED) {
-                executor.execute(instructionSet, context);
-                continue;
-            }
-            status = executor.execute(instructionSet, context);
-        }
-        // TODO
-        return status;
+        return DEFAULT_GROUPS;
     }
+
+
 }

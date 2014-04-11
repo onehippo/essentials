@@ -14,39 +14,35 @@
   See the License for the specific language governing permissions and
   limitations under the License.
   -->
-<project xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://maven.apache.org/POM/4.0.0" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 
   <parent>
-    <groupId>org.onehippo.cms7</groupId>
-    <artifactId>hippo-cms7-release</artifactId>
-    <version>7.8.5</version>
+    <groupId>org.onehippo.cms7.essentials</groupId>
+    <artifactId>hippo-essentials</artifactId>
+    <version>1.01.02-SNAPSHOT</version>
   </parent>
-
-
   <modelVersion>4.0.0</modelVersion>
   <name>Hippo Essentials plugins</name>
   <description>Hippo Essentials plugins</description>
-  <groupId>org.onehippo.cms7.essentials</groupId>
   <artifactId>hippo-dashboard-plugins</artifactId>
-  <version>1.01.00-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <!--***START temporary override of versions*** -->
-    <hippo.cms.version>2.24.07</hippo.cms.version>
-    <hippo.hst.version>2.26.08</hippo.hst.version>
-    <hippo.repository.version>2.24.11</hippo.repository.version>
-    <hippo.addon-channel-manager.version>2.24.08</hippo.addon-channel-manager.version>
+
     <!-- ***END temporary override of versions*** -->
 
 
     <maven-compiler-plugin.version>2.5.1</maven-compiler-plugin.version>
     <junit.version>4.11</junit.version>
-    <hippo-essentials-plugin-api.version>1.01.00-SNAPSHOT</hippo-essentials-plugin-api.version>
     <freemarker.version>2.3.18</freemarker.version>
+    <spring-test.version>3.2.6.RELEASE</spring-test.version>
   </properties>
 
   <modules>
+    <module>blog-plugin</module>
+    <module>simple-content</module>
+    <module>search-plugin</module>
     <module>dashboard-gallery-plugin</module>
     <module>dashboard-setup-plugin</module>
     <module>essentials-powerpacks</module>
@@ -54,9 +50,10 @@
     <module>dashboard-relateddocs-plugin</module>
     <module>dashboard-restservices-plugin</module>
     <module>dashboard-contentblocks-plugin</module>
-    <module>dashboard-easyforms-plugin</module>
     <module>components-plugin</module>
     <module>beanwriter-plugin</module>
+    <module>freemarker-synchronizer</module>
+    <module>banner-plugin</module>
   </modules>
   <dependencyManagement>
 
@@ -66,17 +63,24 @@
       <dependency>
         <groupId>org.onehippo.cms7.essentials</groupId>
         <artifactId>hippo-essentials-plugin-api</artifactId>
-        <version>${hippo-essentials-plugin-api.version}</version>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
-          <groupId>org.onehippo.cms7.essentials</groupId>
-          <artifactId>hippo-essentials-plugin-api-implementation</artifactId>
-          <version>${hippo-essentials-plugin-api.version}</version>
+        <groupId>org.springframework</groupId>
+        <artifactId>spring-test</artifactId>
+        <version>${spring-test.version}</version>
+        <scope>test</scope>
+      </dependency>
+
+      <dependency>
+        <groupId>org.onehippo.cms7.essentials</groupId>
+        <artifactId>hippo-essentials-plugin-api-implementation</artifactId>
+        <version>${project.version}</version>
       </dependency>
       <dependency>
         <groupId>org.onehippo.cms7.essentials</groupId>
         <artifactId>hippo-essentials-plugin-api-implementation</artifactId>
-        <version>${hippo-essentials-plugin-api.version}</version>
+        <version>${project.version}</version>
         <type>test-jar</type>
         <scope>test</scope>
       </dependency>
@@ -145,5 +149,4 @@
       <url>http://maven.onehippo.com/maven2/</url>
     </repository>
   </repositories>
-
 </project>

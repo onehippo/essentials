@@ -17,21 +17,18 @@
 package org.onehippo.cms7.essentials.components;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.List;
 
 import org.hippoecm.hst.content.beans.standard.HippoDocument;
 import org.hippoecm.hst.core.component.HstRequest;
 import org.hippoecm.hst.core.component.HstResponse;
 import org.hippoecm.hst.core.parameters.ParametersInfo;
+import org.hippoecm.hst.core.request.HstRequestContext;
 import org.onehippo.cms7.essentials.components.info.EssentialsCarouselComponentInfo;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Strings;
+import org.onehippo.cms7.essentials.components.paging.DefaultPagination;
 
 /**
- * HST component used for HST menus.
+ * HST component used for rendering of Carousel items
  *
  * @version "$Id$"
  */
@@ -39,39 +36,46 @@ import com.google.common.base.Strings;
 public class EssentialsCarouselComponent extends CommonComponent {
 
 
-    private static Logger log = LoggerFactory.getLogger(EssentialsCarouselComponent.class);
-
     @Override
     public void doBeforeRender(final HstRequest request, final HstResponse response) {
         final EssentialsCarouselComponentInfo componentInfo = getComponentParametersInfo(request);
-        final List<HippoDocument> items = getCarouselItems(request, componentInfo);
-        request.setAttribute(ATTRIBUTE_DOCUMENTS, items);
+        final List<HippoDocument> items = getCarouselItems(componentInfo);
+        request.setAttribute(REQUEST_ATTR_PAGEABLE, new DefaultPagination<>(items));
+        setCarouselOptions(request, componentInfo);
     }
 
-    public List<HippoDocument> getCarouselItems(final HstRequest request, final EssentialsCarouselComponentInfo componentInfo) {
+    /**
+     * Sets options like effects, speed, etc. of selected carousel component
+     *
+     * @param request       HstRequest instance
+     * @param componentInfo Carousel component annotation
+     */
+    public void setCarouselOptions(final HstRequest request, final EssentialsCarouselComponentInfo componentInfo) {
+        request.setAttribute("interval", componentInfo.getInterval());
+        request.setAttribute("cycle", componentInfo.getCycle());
+        request.setAttribute("pause", componentInfo.getPause());
+        request.setAttribute("showNavigation", componentInfo.getShowNavigation());
+        request.setAttribute("carouselHeight", componentInfo.getCarouselHeight());
+        request.setAttribute("carouselWidth", componentInfo.getCarouselWidth());
+        request.setAttribute("carouselBackgroundColor", componentInfo.getCarouselBackgroundColor());
+    }
+
+    /**
+     * Populates a list of carousel documents
+     *
+     * @param componentInfo Carousel component annotation
+     * @return list of documents to be populated
+     */
+    public List<HippoDocument> getCarouselItems(final EssentialsCarouselComponentInfo componentInfo) {
         final List<HippoDocument> beans = new ArrayList<>();
-        addBeanForPath(request, componentInfo.getCarouselItem1(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem2(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem3(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem4(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem5(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem6(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem7(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem8(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem9(), beans);
-        addBeanForPath(request, componentInfo.getCarouselItem10(), beans);
+        addBeanForPath(componentInfo.getCarouselItem1(), beans);
+        addBeanForPath(componentInfo.getCarouselItem2(), beans);
+        addBeanForPath(componentInfo.getCarouselItem3(), beans);
+        addBeanForPath(componentInfo.getCarouselItem4(), beans);
+        addBeanForPath(componentInfo.getCarouselItem5(), beans);
+        addBeanForPath(componentInfo.getCarouselItem6(), beans);
         return beans;
     }
 
-    private void addBeanForPath(final HstRequest request, final String path, final Collection<HippoDocument> beans) {
-        if (Strings.isNullOrEmpty(path)) {
-            return;
-        }
 
-        log.debug("Fetching carousel item for path: [{}]", path);
-        final HippoDocument bean = getHippoBeanForPath(path, HippoDocument.class, request);
-        if (bean != null) {
-            beans.add(bean);
-        }
-    }
 }

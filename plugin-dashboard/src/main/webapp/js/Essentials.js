@@ -6,28 +6,61 @@
     // UTILS
     //############################################
 
-    Essentials.emptyPayload = function () {
-        var payload = {};
-        payload.values = {};
-        payload.values.entry = [];
+    var Map = function () {
+        var ref = this.items = [];
+        this.put = function (key, value) {
+            //ref.push({"key":key,"value":value});
+            ref.push({"key":key,"value":value});
+            return this;
+        };
 
-        return {"payload": payload};
+    };
+    var Query = function(){
+        var ref = this;
+        this.forQuery = function (query) {
+            ref.query = query;
+            return this;
+        };
+        this.forPageSize = function (pageSize) {
+            ref.pageSize = pageSize;
+            return this;
+        };
+        this.forPage = function (page) {
+            ref.page = page;
+            return this;
+        };
+        this.ofType = function (type) {
+            ref.type = type;
+            return this;
+        };
+
     };
 
-    Essentials.addPayloadData = function (payload, key, value) {
-        if (payload == null) {
-            payload = Essentials.emptyPayload();
+
+    /**
+     * Creates a payload objects if not created already and adds key/value to dictionary (map)
+     * @param key
+     * @param value
+     * @param payload optional, may be null
+     * @returns
+     */
+    Essentials.addPayloadData = function (key, value, payload) {
+        if (payload === undefined || payload == null) {
+            payload = {"values":{}};
+
         }
-        else {
-            if (!payload.values) {
-                payload.values = {};
-                payload.values.entry = [];
-            } else if (!payload.values.entry) {
-                payload.values.entry = [];
-            }
-        }
-        payload.values.entry.push({"key": key, "value": value});
+        payload.values[key] = value;
         return payload;
+    };
+
+    Essentials.queryBuilder = function (q) {
+        var query = new Query();
+        query.forQuery(q);
+        return query;
+    };
+
+    Essentials.mapBuilder = function () {
+        return new Map();
     };
 
 
@@ -86,6 +119,28 @@
 
     Essentials.isEmpty = function (str) {
         return typeof str === "undefined" || str == null || str.trim().length == 0;
+    };
+     Essentials.keyValueAsDict = function (keyValArray) {
+         var dict = {};
+         if(keyValArray){
+             for (var i = 0; i < keyValArray.length; i++) {
+                 var keyValue = keyValArray[i];
+                 dict[keyValue.key] = keyValue.value;
+             }
+         }
+         return dict;
+    };
+
+    Essentials.asArray = function (obj) {
+        var array = [];
+        if (typeof obj === "undefined" || obj == null) {
+            return array;
+        }
+        if (typeof obj === "object") {
+            array.push(obj);
+            return array;
+        }
+        return array;
     };
 
 

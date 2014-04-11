@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<instructions xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+              xsi:schemaLocation="http://www.onehippo.org/essentials/instructions /instructions.xsd" xmlns="http://www.onehippo.org/essentials/instructions">
+  <!--
+    DOCUMENT TYPES REGISTRATION
+  -->
+  <instructionSet>
+    <!-- cnd-->
+    <cnd documentType="blogpost" superType="{{namespace}}:basedocument,hippostd:relaxed,hippotranslation:translated,hippostd:taggable"/>
+    <cnd documentType="author" superType="{{namespace}}:basedocument,hippostd:relaxed,hippotranslation:translated"/>
+    <cnd documentType="account" superType="hippo:compound,hippostd:relaxed"/>
+    <!-- templates-->
+    <xml action="copy" source="xml/namespaces/blogpost.xml" target="/hippo:namespaces/{{namespace}}"/>
+    <xml action="copy" source="xml/namespaces/author.xml" target="/hippo:namespaces/{{namespace}}"/>
+    <xml action="copy" source="xml/namespaces/account.xml" target="/hippo:namespaces/{{namespace}}"/>
+    <!-- beans-->
+    <file action="copy" source="java/Author.txt" target="{{beansFolder}}/Author.java"/>
+    <file action="copy" source="java/Blogpost.txt" target="{{beansFolder}}/Blogpost.java"/>
+    <file action="copy" source="java/Account.txt" target="{{beansFolder}}/Account.java"/>
+  </instructionSet>
+
+
+  <!--
+    CREATE FOLDER QUERIES
+  -->
+  <instructionSet>
+    <xml action="copy" source="xml/folderoptions/new-blog-folder.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+    <xml action="copy" source="xml/folderoptions/new-blog-document.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+
+    <xml action="copy" source="xml/folderoptions/new-blogauthor-folder.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+    <xml action="copy" source="xml/folderoptions/new-blogauthor-document.xml" target="/hippo:configuration/hippo:queries/hippo:templates"/>
+  </instructionSet>
+  <!--
+    CREATE DATA FOLDERS
+  -->
+  <instructionSet>
+    <folder template="xml/folder/administration-folder.xml" path="/content/documents/administration"/>
+    <folder template="xml/folder/blog-author-folder.xml" path="/content/documents/{{namespace}}/blog/authors"/>
+    <folder template="xml/folder/blog-folder.xml" path="/content/documents/{{namespace}}/blog/{{dateRepoYearMonth}}"/>
+  </instructionSet>
+  <!--
+    DATA
+  -->
+
+  <instructionSet>
+    <xml action="copy" source="xml/data/account-types.xml" target="/content/documents/administration"/>
+    <xml action="copy" source="xml/data/blog-categories.xml" target="/content/documents/administration"/>
+
+  </instructionSet>
+
+  <!--
+    SAMPLE DATA
+  -->
+  <instructionSet>
+    <xml action="copy" source="xml/samples/author_1.xml" target="/content/documents/{{namespace}}/blog/authors"/>
+    <xml action="copy" source="xml/samples/author_2.xml" target="/content/documents/{{namespace}}/blog/authors"/>
+    <xml action="copy" source="xml/samples/blog_entry_1.xml" target="/content/documents/{{namespace}}/blog/{{dateRepoYearMonth}}"/>
+    <xml action="copy" source="xml/samples/blog_entry_2.xml" target="/content/documents/{{namespace}}/blog/{{dateRepoYearMonth}}"/>
+  </instructionSet>
+
+  <!--
+    JSP TEMPLATES
+  -->
+  <instructionSet group="jsp">
+    <file action="copy" source="jsp/essentials-blog-main.jsp" target="{{jspRoot}}/essentials/blog/essentials-blog-main.jsp"/>
+    <file action="copy" source="jsp/essentials-blog-author-post.jsp" target="{{jspRoot}}/essentials/blog/essentials-blog-author-post.jsp"/>
+    <file action="copy" source="jsp/essentials-facet.jsp" target="{{jspRoot}}/essentials/facet/essentials-facet.jsp"/>
+    <file action="copy" source="jsp/essentials-blog-detail.jsp" target="{{jspRoot}}/essentials/blog/essentials-blog-detail.jsp"/>
+    <file action="copy" source="jsp/essentials-blog-list.jsp" target="{{jspRoot}}/essentials/blog/essentials-blog-list.jsp"/>
+    <file action="copy" source="jsp/essentials-author.jsp" target="{{jspRoot}}/essentials/author/essentials-author.jsp"/>
+  </instructionSet>
+  <!--
+    FREEMARKER TEMPLATES
+  -->
+  <instructionSet group="freemarker">
+    <file action="copy" source="freemarker/essentials-facet.ftl" target="{{freemarkerRoot}}/essentials/facet/essentials-facet.ftl"/>
+    <file action="copy" source="freemarker/essentials-blog-author-post.ftl" target="{{freemarkerRoot}}/essentials/blog/essentials-blog-author-post.ftl"/>
+    <file action="copy" source="freemarker/essentials-blog-detail.ftl" target="{{freemarkerRoot}}/essentials/blog/essentials-blog-detail.ftl"/>
+    <file action="copy" source="freemarker/essentials-blog-main.ftl" target="{{freemarkerRoot}}/essentials/blog/essentials-blog-main.ftl"/>
+    <file action="copy" source="freemarker/essentials-blog-list.ftl" target="{{freemarkerRoot}}/essentials/blog/essentials-blog-list.ftl"/>
+
+    <file action="copy" source="freemarker/essentials-author.ftl" target="{{freemarkerRoot}}/essentials/author/essentials-author.ftl"/>
+  </instructionSet>
+  <!--
+    FACET & DAEMON MODULE SETUP
+    NOTE: execute after creating folders etc, because we need to fetch blog folder UUID
+  -->
+  <instructionSet>
+    <execute class="org.onehippo.cms7.essentials.dashboard.blog.BlogFacetInstruction"/>
+    <execute class="org.onehippo.cms7.essentials.dashboard.blog.BlogDaemonModuleInstruction"/>
+  </instructionSet>
+  <!--
+  //############################################
+  // HST
+  //############################################
+  -->
+  <instructionSet>
+    <xml action="copy" source="xml/menu/blog-menu-item.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:sitemenus/main"/>
+  </instructionSet>
+
+  <instructionSet>
+    <xml action="copy" source="hst/blog-catalog.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:catalog"/>
+    <xml action="copy" source="hst/blog-sitemap.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:sitemap"/>
+    <xml action="copy" source="hst/page-blog-main.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:pages"/>
+    <xml action="copy" source="hst/page-blog-list.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:pages"/>
+    <xml action="copy" source="hst/page-blog-page.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:pages"/>
+  </instructionSet>
+  <!-- HST TEMPLATES -->
+  <instructionSet group="jsp">
+    <xml action="copy" source="hst/template-author-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-facet-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-author-post-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-main-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-detail-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-list-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+  </instructionSet>
+  <instructionSet group="freemarker">
+    <xml action="copy" source="hst/template-author-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-author-post-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-facet-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-main-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-detail-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <xml action="copy" source="hst/template-blog-list-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+  </instructionSet>
+  <!--
+    SYSTEM
+  -->
+  <instructionSet>
+    <file action="copy" source="properties/project.properties" target="{{cmsResources}}/project.properties"/>
+
+  </instructionSet>
+
+
+</instructions>

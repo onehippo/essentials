@@ -25,10 +25,11 @@ public interface EssentialsNewsComponentInfo extends EssentialsDocumentListCompo
 
     /**
      * Boolean flag which indicates if news items in that lay in the future will not be shown.
+     *
      * @return {@code true} if items should be hidden, {@code false} otherwise
      */
-    @Parameter(name = "hideFutureItems", defaultValue = "true", required = false, displayName = "Hide future documents")
-    Boolean isHideFutureItems();
+    @Parameter(name = "hideFutureItems", defaultValue = "on", required = false, displayName = "Hide future documents")
+    Boolean getHideFutureItems();
 
     @Parameter(name = "documentDateField", required = false, displayName = "Field that contains document date (for hiding)")
     String getDocumentDateField();

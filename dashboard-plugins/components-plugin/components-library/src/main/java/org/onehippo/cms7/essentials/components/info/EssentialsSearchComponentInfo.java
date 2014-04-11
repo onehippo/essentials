@@ -16,9 +16,31 @@
 
 package org.onehippo.cms7.essentials.components.info;
 
+import org.hippoecm.hst.core.parameters.JcrPath;
+import org.hippoecm.hst.core.parameters.Parameter;
+
 /**
  * @version "$Id$"
  */
-public interface EssentialsSearchComponentInfo {
+public interface EssentialsSearchComponentInfo extends EssentialsDocumentListComponentInfo {
+
+    @Parameter(name = "searchScope", required = false, displayName = "Search scope (folder)")
+    @JcrPath(
+            isRelative = true,
+            pickerConfiguration = "cms-pickers/documents",
+            pickerSelectableNodeTypes = {"hippostd:folder"},
+            pickerInitialPath = "/content/documents"
+
+    )
+    String getScope();
+
+    @Override
+    @Parameter(name = "showPagination", required = false, defaultValue = "on", displayName = "Show pagination")
+    Boolean getShowPagination();
+
+
+    @Override
+    @Parameter(name = "documentTypes", required = false, displayName = "Document types (comma separated)")
+    String getDocumentTypes();
 
 }

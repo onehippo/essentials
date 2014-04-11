@@ -1,0 +1,22 @@
+<div ng-controller="newsEventsCtrl">
+    <div class="checkbox">
+        <label><input id="sample-content" type="checkbox" ng-change="onChange()" ng-model="installSampleData">Add sample content</label>
+    </div>
+
+    <div class="radio">
+        <label>
+            <input id="jspFilesystemRadio" type="radio" name="template" checked="checked">Generate JSP templates on filesystem.
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            <input id="freemarkerFilesystemRadio" name="template" disabled="disabled" type="radio">Generate Freemarker templates on filesystem.
+        </label>
+    </div>
+    <div class="radio">
+        <label>
+            <input id="freemarkerRepositoryRadio" name="template" disabled="disabled" type="radio">Generate Freemarker templates in repository.
+        </label>
+    </div>
+
+</div>

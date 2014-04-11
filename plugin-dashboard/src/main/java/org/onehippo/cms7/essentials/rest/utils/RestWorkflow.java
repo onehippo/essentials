@@ -16,6 +16,7 @@
 
 package org.onehippo.cms7.essentials.rest.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashMap;
@@ -28,6 +29,7 @@ import javax.jcr.InvalidSerializedDataException;
 import javax.jcr.ItemExistsException;
 import javax.jcr.NamespaceException;
 import javax.jcr.NamespaceRegistry;
+import javax.jcr.Node;
 import javax.jcr.PathNotFoundException;
 import javax.jcr.ReferentialIntegrityException;
 import javax.jcr.RepositoryException;
@@ -39,11 +41,17 @@ import javax.jcr.nodetype.NodeTypeExistsException;
 import javax.ws.rs.core.Response;
 
 import org.apache.commons.io.IOUtils;
+import org.hippoecm.repository.api.HippoSession;
+import org.hippoecm.repository.api.ImportMergeBehavior;
+import org.hippoecm.repository.api.ImportReferenceBehavior;
+import org.hippoecm.repository.api.StringCodecFactory;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.utils.CndUtils;
+import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TemplateUtils;
 import org.onehippo.cms7.essentials.rest.exc.RestException;
+import org.onehippo.cms7.essentials.rest.model.contentblocks.ContentBlockModel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -52,6 +60,7 @@ import org.slf4j.LoggerFactory;
  */
 public class RestWorkflow {
 
+    public static final String HIPPOSYSEDIT_NODETYPE = "hipposysedit:nodetype/hipposysedit:nodetype";
     public static final String COMPOUND_TEMPLATE_NAME = "/rest_workflow_content_block_template.xml";
     private static Logger log = LoggerFactory.getLogger(RestWorkflow.class);
     private final Session session;
@@ -71,7 +80,7 @@ public class RestWorkflow {
 
     }
 
-    public boolean addContentBlockCompound(final String name) throws RestException {
+    public boolean addContentBlockCompound(final String name) {
 
         try {
             // register namespace:
@@ -104,19 +113,19 @@ public class RestWorkflow {
             throw new RestException("Namespace exception in rest workflow: " + e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
         } catch (PathNotFoundException e) {
             log.error("Path not found", e);
-            throw new RestException("Path not found"+e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
+            throw new RestException("Path not found", Response.Status.INTERNAL_SERVER_ERROR, e);
         } catch (NoSuchNodeTypeException e) {
             log.error("Node not found in rest workflow: {}", e);
             throw new RestException(e, Response.Status.INTERNAL_SERVER_ERROR);
         } catch (NodeTypeExistsException e) {
             log.error("Error in rest workflow: {}", e);
-            throw new RestException("Node already exists: "+e.getMessage() ,Response.Status.INTERNAL_SERVER_ERROR);
-        }catch (RepositoryException e) {
+            throw new RestException("Node already exists: ", Response.Status.INTERNAL_SERVER_ERROR, e);
+        } catch (RepositoryException e) {
             log.error("Error in rest workflow: {}", e);
             throw new RestException(e, Response.Status.INTERNAL_SERVER_ERROR);
         } catch (IOException e) {
             log.error("Template error in rest workflow: {}", e);
-            throw new RestException("Template error in rest workflow: "+e.getMessage(), Response.Status.INTERNAL_SERVER_ERROR);
+            throw new RestException("Template error in rest workflow: ", Response.Status.INTERNAL_SERVER_ERROR, e);
         }
 
     }
@@ -124,12 +133,13 @@ public class RestWorkflow {
 
     /**
      * Removes document type from cnd and also removes document template
+     *
      * @param name name of the document type
-     * @return  true on success, throws exception otherwise
+     * @return true on success, throws exception otherwise
      */
     public boolean removeDocumentType(final String name) {
         try {
-            session.getNode("/hippo:namespaces/" + namespace+'/'+name).remove();
+            session.getNode("/hippo:namespaces/" + namespace + '/' + name).remove();
             session.save();
             return true;
             //return CndUtils.unRegisterDocumentType(context, namespace, name);
@@ -139,5 +149,89 @@ public class RestWorkflow {
         }
 
 
+    }
+
+
+    public boolean addContentBlockToType(final ContentBlockModel contentBlockModel) {
+        final String documentType = contentBlockModel.getDocumentType();
+        InputStream in = null;
+
+        try {
+            Node docType;
+            if (documentType.contains(":")) {
+                docType = session.getNode("/hippo:namespaces/" + documentType.replace(':', '/'));
+            } else {
+                docType = session.getNode("/hippo:namespaces/system/" + documentType);
+            }
+
+            Node nodeType = null;
+            if (docType.hasNode(HIPPOSYSEDIT_NODETYPE)) {
+                nodeType = docType.getNode(HIPPOSYSEDIT_NODETYPE);
+            }
+            if (nodeType == null) {
+                throw new RestException("Node " + HIPPOSYSEDIT_NODETYPE + " not found", Response.Status.NOT_FOUND);
+            }
+            if (docType.hasNode("editor:templates/_default_/root")) {
+                final Node ntemplate = docType.getNode("editor:templates/_default_");
+                final Node root = docType.getNode("editor:templates/_default_/root");
+                ContentBlockModel.PluginType pluginType = null;
+                if (root.hasProperty("plugin.class")) {
+                    pluginType = ContentBlockModel.PluginType.get(root.getProperty("plugin.class").getString());
+                }
+                if (pluginType != null) {
+
+                    Map<String, Object> data = new HashMap<>();
+
+                    data.put("name", contentBlockModel.getName());
+                    data.put("path", new StringCodecFactory.UriEncoding().encode(contentBlockModel.getName()));
+                    data.put("documenttype", documentType);
+                    data.put("namespace", documentType.substring(0, documentType.indexOf(':')));
+                    data.put("type", contentBlockModel.getType().getType());
+                    data.put("provider", contentBlockModel.getProvider());
+
+                    String fieldType = "${cluster.id}.field";
+
+                    if (pluginType.getClazz().equals(ContentBlockModel.PluginType.TWOCOLUMN.getClazz())) {
+                        // switch (selected) {
+                        //  case LEFT:
+                        fieldType = "${cluster.id}.left.item";
+                        //      break;
+                        ///   case RIGHT:
+                        //     fieldType = "${cluster.id}.right.item";
+                        //     break;
+                        //}
+                    }
+                    data.put("fieldType", fieldType);
+
+                    String parsed = TemplateUtils.injectTemplate("content_blocks_nodetype.xml", data, getClass());
+                    if (parsed == null) {
+                        throw new RestException("Error updating content blocks, template with name: content_block_nodetype.xml couldn't be found", Response.Status.NOT_FOUND);
+
+                    }
+
+                    in = new ByteArrayInputStream(parsed.getBytes("UTF-8"));
+
+                    ((HippoSession) session).importDereferencedXML(nodeType.getPath(), in, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW,
+                            ImportReferenceBehavior.IMPORT_REFERENCE_NOT_FOUND_REMOVE, ImportMergeBehavior.IMPORT_MERGE_ADD_OR_OVERWRITE);
+
+                    parsed = TemplateUtils.injectTemplate(EssentialConst.CONTENT_BLOCKS_TEMPLATE_XML, data, getClass());
+                    in = new ByteArrayInputStream(parsed.getBytes("UTF-8"));
+
+                    ((HippoSession) session).importDereferencedXML(ntemplate.getPath(), in, ImportUUIDBehavior.IMPORT_UUID_CREATE_NEW,
+                            ImportReferenceBehavior.IMPORT_REFERENCE_NOT_FOUND_REMOVE, ImportMergeBehavior.IMPORT_MERGE_ADD_OR_OVERWRITE);
+
+                    session.save();
+                    return true;
+                }
+
+            }
+
+        } catch (RepositoryException | IOException e) {
+            GlobalUtils.refreshSession(session, false);
+            log.error("Error in content bocks plugin", e);
+        } finally {
+            IOUtils.closeQuietly(in);
+        }
+        return false;
     }
 }

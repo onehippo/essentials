@@ -13,8 +13,8 @@ import java.util.Map;
 
 import javax.jcr.Session;
 
-import org.onehippo.cms7.essentials.dashboard.Plugin;
 import org.onehippo.cms7.essentials.dashboard.config.PluginConfigService;
+import org.onehippo.cms7.essentials.dashboard.model.Plugin;
 
 import com.google.common.collect.Multimap;
 
@@ -23,7 +23,7 @@ import com.google.common.collect.Multimap;
  *
  * @version "$Id$"
  */
-public interface PluginContext extends Serializable, AutoCloseable {
+public interface PluginContext extends Serializable {
 
 
     /**
@@ -55,9 +55,8 @@ public interface PluginContext extends Serializable, AutoCloseable {
      * <p>Sessions will be logout after plugin is unloaded by plugin framework</p>
      *
      * @return instance of JCR session, with admin rights
-     * @see org.onehippo.cms7.essentials.dashboard.DashboardPlugin#onRemove()
      */
-    Session getSession();
+    Session createSession();
 
     /**
      * Returns root of the site directory
@@ -185,6 +184,11 @@ public interface PluginContext extends Serializable, AutoCloseable {
      * @return root of java file folder like {@code /home/user/project/site/src/main/java}
      */
     String getSiteJavaRoot();
+
+
+    void addPlaceholderData(String key, Object value);
+
+    void addPlaceholderData(Map<String, Object> data);
 
     /**
      * returns pre-filled nr of key value pairs for replacement injection in templates etc.

@@ -13,13 +13,14 @@
   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
   See the License for the specific language governing permissions and
   limitations under the License.
---><project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
   <parent>
     <groupId>org.onehippo.cms7</groupId>
     <artifactId>hippo-cms7-project</artifactId>
-    <version>20</version>
+    <version>24.1-SNAPSHOT</version>
   </parent>
 
   <name>Hippo CMS7 Site Toolkit Maven Archetypes</name>
@@ -28,26 +29,60 @@
   </description>
 
   <artifactId>essentials-archetype</artifactId>
-  <version>1.01.00-SNAPSHOT</version>
+  <version>1.01.02-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
     <notice.project.name>Hippo CMS7 Essentials Maven Archetypes</notice.project.name>
   </properties>
 
+
+  <!-- PUBLISH TO PRIVATE REPO-->
+  <distributionManagement>
+    <repository>
+      <id>hippo-maven2-private</id>
+      <name>Hippo Private Maven 2</name>
+      <url>https://maven.onehippo.com/content/repositories/private-releases</url>
+      <uniqueVersion>false</uniqueVersion>
+    </repository>
+    <snapshotRepository>
+      <id>hippo-maven2-private-snapshots</id>
+      <name>Hippo Private Maven 2 Snapshots</name>
+      <url>https://maven.onehippo.com/content/repositories/private-snapshots</url>
+      <uniqueVersion>false</uniqueVersion>
+    </snapshotRepository>
+  </distributionManagement>
+
   <repositories>
     <repository>
+      <id>hippo-maven2-private</id>
+      <name>Hippo maven 2 private repository.</name>
+      <url>https://maven.onehippo.com/maven2-private</url>
+    </repository>
+    <repository>
+      <id>hippo-maven2-private-snapshots</id>
+      <name>Hippo maven 2 private repository snapshots</name>
+      <url>http://maven.onehippo.com/maven2-private-snapshots</url>
+    </repository>
+    <repository>
       <id>hippo</id>
-      <name>Hippo Maven 2</name>
+      <name>Hippo maven 2 repository.</name>
       <url>http://maven.onehippo.com/maven2/</url>
+    </repository>
+    <repository>
+      <id>hippo-forge</id>
+      <name>Hippo Forge maven 2 repository.</name>
+      <url>http://maven.onehippo.com/maven2-forge/</url>
       <snapshots>
         <enabled>false</enabled>
       </snapshots>
       <releases>
         <updatePolicy>never</updatePolicy>
       </releases>
+      <layout>default</layout>
     </repository>
   </repositories>
+
 
   <modules>
     <module>website</module>
@@ -73,5 +108,26 @@
       </plugin>
     </plugins>
   </reporting>
+
+  <profiles>
+    <profile>
+      <id>pedantic</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <inherited>false</inherited>
+            <configuration>
+              <excludes combine.children="append">
+                <!-- skip archetype resources itself (but should not contain 3rd party copyrighted/licensed content) -->
+                <exclude>website/src/**</exclude>
+              </excludes>
+            </configuration>
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

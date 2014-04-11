@@ -50,8 +50,6 @@ public final class XmlUtils {
     }
 
 
-
-
     public static String xmlNodeToString(final XmlNode value) {
         try {
             final JAXBContext context = JAXBContext.newInstance(XmlNode.class);
@@ -93,7 +91,7 @@ public final class XmlUtils {
             return (XmlNode) unmarshaller.unmarshal(path.toFile());
         } catch (JAXBException e) {
             if (log.isDebugEnabled()) {
-                log.error("Error parsing XmlNode document", e.getMessage());
+                log.error("Error parsing XmlNode document: " + path, e.getMessage());
             }
         }
 

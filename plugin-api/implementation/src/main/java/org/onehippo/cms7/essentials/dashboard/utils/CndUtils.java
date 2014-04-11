@@ -28,7 +28,11 @@ import com.google.common.base.Strings;
  */
 public final class CndUtils {
 
+
     private static Logger log = LoggerFactory.getLogger(CndUtils.class);
+
+    private CndUtils() {
+    }
 
     /**
      * Register a new namespace in the repository.
@@ -39,9 +43,13 @@ public final class CndUtils {
      * @throws RepositoryException when unable to register namespace
      */
     public static void registerNamespace(final PluginContext context, final String prefix, final String uri) throws RepositoryException {
-        final Session session = context.getSession();
-        final NamespaceRegistry namespaceRegistry = session.getWorkspace().getNamespaceRegistry();
-        namespaceRegistry.registerNamespace(prefix, uri);
+        final Session session = context.createSession();
+        try {
+            final NamespaceRegistry namespaceRegistry = session.getWorkspace().getNamespaceRegistry();
+            namespaceRegistry.registerNamespace(prefix, uri);
+        } finally {
+            GlobalUtils.cleanupSession(session);
+        }
     }
 
     /**
@@ -51,9 +59,9 @@ public final class CndUtils {
      * @param uri     the URI of the namespace
      * @return true when namespace with given URI exists, false otherwise
      */
-    public static boolean existsNamespaceUri(final PluginContext context, final String uri) {
+    public static boolean namespaceUriExists(final PluginContext context, final String uri) {
+        final Session session = context.createSession();
         try {
-            final Session session = context.getSession();
             final NamespaceRegistry namespaceRegistry = session.getWorkspace().getNamespaceRegistry();
             // Check whether a prefix is mapped for the prefix
             final String p = namespaceRegistry.getPrefix(uri);
@@ -63,6 +71,8 @@ public final class CndUtils {
             log.debug("Namespace exception", e);
         } catch (RepositoryException e) {
             log.error("Error while determining namespace check.", e);
+        }finally {
+            GlobalUtils.cleanupSession(session);
         }
         return false;
     }
@@ -74,9 +84,9 @@ public final class CndUtils {
      * @param prefix  the prefix of the namespace
      * @return true when namespace with given prefix exists, false otherwise
      */
-    public static boolean existsNamespacePrefix(final PluginContext context, final String prefix) {
+    public static boolean namespacePrefixExists(final PluginContext context, final String prefix) {
+        final Session session = context.createSession();
         try {
-            final Session session = context.getSession();
             final NamespaceRegistry namespaceRegistry = session.getWorkspace().getNamespaceRegistry();
             // Check whether a URI is mapped for the prefix
             final String p = namespaceRegistry.getURI(prefix);
@@ -86,6 +96,8 @@ public final class CndUtils {
             log.debug("Namespace exception", e);
         } catch (RepositoryException e) {
             log.error("Error while determining namespace check.", e);
+        }finally {
+            GlobalUtils.cleanupSession(session);
         }
         return false;
     }
@@ -97,20 +109,24 @@ public final class CndUtils {
             final boolean orderable,
             final boolean mixin,
             final String... superTypes) throws RepositoryException {
-        final Session session = context.getSession();
-        final Workspace workspace = session.getWorkspace();
-        final NodeTypeManager manager = workspace.getNodeTypeManager();
-        final NodeTypeTemplate template = manager.createNodeTypeTemplate();
+        final Session session = context.createSession();
+        try {
+            final Workspace workspace = session.getWorkspace();
+            final NodeTypeManager manager = workspace.getNodeTypeManager();
+            final NodeTypeTemplate template = manager.createNodeTypeTemplate();
 
-        template.setName(prefix + ':' + name);
-        template.setOrderableChildNodes(orderable);
-        template.setMixin(mixin);
-        if (superTypes.length > 0) {
-            template.setDeclaredSuperTypeNames(superTypes);
+            template.setName(prefix + ':' + name);
+            template.setOrderableChildNodes(orderable);
+            template.setMixin(mixin);
+            if (superTypes.length > 0) {
+                template.setDeclaredSuperTypeNames(superTypes);
+            }
+
+
+            manager.registerNodeType(template, false);
+        } finally {
+            GlobalUtils.cleanupSession(session);
         }
-
-
-        manager.registerNodeType(template, false);
     }
 
     public static boolean unRegisterDocumentType(
@@ -119,7 +135,7 @@ public final class CndUtils {
             final String prefix,
             final String name
     ) throws RepositoryException {
-        final Session session = context.getSession();
+        final Session session = context.createSession();
         final Workspace workspace = session.getWorkspace();
         final NodeTypeManager manager = workspace.getNodeTypeManager();
 
@@ -133,6 +149,7 @@ public final class CndUtils {
             manager.unregisterNodeType(prefix + ':' + name);
         } finally {
             NodeTypeRegistry.disableCheckForReferencesInContentException = false;
+            GlobalUtils.cleanupSession(session);
 
         }
         return true;
@@ -153,13 +170,17 @@ public final class CndUtils {
             throw new RepositoryException("Unable to create namespace for empty prefix");
         }
 
-        final Session session = context.getSession();
-        final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
-        if (namespaces.hasNode(prefix)) {
-            log.info("Namespace '{}' already registered", prefix);
-            return namespaces.getNode(prefix);
+        final Session session = context.createSession();
+        try {
+            final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
+            if (namespaces.hasNode(prefix)) {
+                log.info("Namespace '{}' already registered", prefix);
+                return namespaces.getNode(prefix);
+            }
+            return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
+        } finally {
+            GlobalUtils.cleanupSession(session);
         }
-        return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
     }
 
     // TODO merge with above
@@ -168,13 +189,17 @@ public final class CndUtils {
             throw new RepositoryException("Unable to fetch namespace for empty prefix");
         }
 
-        final Session session = context.getSession();
-        final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
-        if (namespaces.hasNode(prefix)) {
-            return namespaces.getNode(prefix);
+        final Session session = context.createSession();
+        try {
+            final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
+            if (namespaces.hasNode(prefix)) {
+                return namespaces.getNode(prefix);
+            }
+            log.info("Namespace node '{}' not available", prefix);
+            return null;
+        } finally {
+            GlobalUtils.cleanupSession(session);
         }
-        log.info("Namespace node '{}' not available", prefix);
-        return null;
     }
 
     /**
@@ -185,15 +210,19 @@ public final class CndUtils {
      * @return true when the node type exists, false otherwise
      * @throws RepositoryException
      */
-    public static boolean existsNodeType(final PluginContext context, final String nodeType) throws RepositoryException {
+    public static boolean nodeTypeExists(final PluginContext context, final String nodeType) throws RepositoryException {
         if (StringUtils.isEmpty(nodeType)) {
             log.debug("Empty node type does not exist");
             return false;
         }
-        final Session session = context.getSession();
-        final Workspace workspace = session.getWorkspace();
-        final NodeTypeManager manager = workspace.getNodeTypeManager();
-        return manager.hasNodeType(nodeType);
+        final Session session = context.createSession();
+        try {
+            final Workspace workspace = session.getWorkspace();
+            final NodeTypeManager manager = workspace.getNodeTypeManager();
+            return manager.hasNodeType(nodeType);
+        } finally {
+            GlobalUtils.cleanupSession(session);
+        }
     }
 
     /**
@@ -205,19 +234,23 @@ public final class CndUtils {
      * @return true when nodeType is of superType
      * @throws RepositoryException
      */
-    public static boolean isNodeType(final PluginContext context, final String nodeType, final String superType) throws RepositoryException {
+    public static boolean isNodeOfSuperType(final PluginContext context, final String nodeType, final String superType) throws RepositoryException {
         if (StringUtils.isEmpty(nodeType)) {
             log.debug("Empty node type does not exist");
             return false;
         }
-        final Session session = context.getSession();
-        final Workspace workspace = session.getWorkspace();
-        final NodeTypeManager manager = workspace.getNodeTypeManager();
-        if (manager.hasNodeType(nodeType)) {
-            final NodeType type = manager.getNodeType(nodeType);
-            if (type != null) {
-                return type.isNodeType(superType);
+        final Session session = context.createSession();
+        try {
+            final Workspace workspace = session.getWorkspace();
+            final NodeTypeManager manager = workspace.getNodeTypeManager();
+            if (manager.hasNodeType(nodeType)) {
+                final NodeType type = manager.getNodeType(nodeType);
+                if (type != null) {
+                    return type.isNodeType(superType);
+                }
             }
+        } finally {
+            GlobalUtils.cleanupSession(session);
         }
         return false;
     }
@@ -256,20 +289,24 @@ public final class CndUtils {
             log.debug("Return empty list for empty super type");
             return nodeTypes;
         }
-        final Session session = context.getSession();
-        final Workspace workspace = session.getWorkspace();
-        final NodeTypeManager manager = workspace.getNodeTypeManager();
-        final NodeTypeIterator primaryNodeTypes = manager.getPrimaryNodeTypes();
-        while (primaryNodeTypes.hasNext()) {
-            final NodeType nodeType = primaryNodeTypes.nextNodeType();
-            final String name = nodeType.getName();
-            if (includeSuperType && isNodeType(nodeType, superType)) {
-                log.debug("Adding {} to list of types of {}", name, superType);
-                nodeTypes.add(name);
-            } else if (isSubType(nodeType, superType)) {
-                log.debug("Adding {} to list of sub types of {}", name, superType);
-                nodeTypes.add(name);
+        final Session session = context.createSession();
+        try {
+            final Workspace workspace = session.getWorkspace();
+            final NodeTypeManager manager = workspace.getNodeTypeManager();
+            final NodeTypeIterator primaryNodeTypes = manager.getPrimaryNodeTypes();
+            while (primaryNodeTypes.hasNext()) {
+                final NodeType nodeType = primaryNodeTypes.nextNodeType();
+                final String name = nodeType.getName();
+                if (includeSuperType && isNodeType(nodeType, superType)) {
+                    log.debug("Adding {} to list of types of {}", name, superType);
+                    nodeTypes.add(name);
+                } else if (isSubType(nodeType, superType)) {
+                    log.debug("Adding {} to list of sub types of {}", name, superType);
+                    nodeTypes.add(name);
+                }
             }
+        } finally {
+            GlobalUtils.cleanupSession(session);
         }
         return nodeTypes;
     }

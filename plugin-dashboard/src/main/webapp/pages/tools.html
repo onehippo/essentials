@@ -1,4 +1,4 @@
-<div class="row">
+<div class="row" ng-controller="pluginCtrl">
     <table class="table table-striped">
         <thead>
         <tr>
@@ -6,11 +6,11 @@
         </tr>
         </thead>
         <tbody>
-        <tr>
-            <td>
-                <a class="btn btn-primary" href="#/tools/beanwriter">HST bean re-generation</a>
+        <tr ng-repeat="plugin in plugins | filter:{needsInstallation:false} | filter:{type:'tools'}">
+            <td >
+                <a class="btn btn-primary" href="#/tools/{{plugin.pluginId}}">{{plugin.name}}</a>
             </td>
-            <td>Creates (re-generates) HST beans</td>
+            <td>{{plugin.introduction}}</td>
         </tr>
         </tbody>
     </table>

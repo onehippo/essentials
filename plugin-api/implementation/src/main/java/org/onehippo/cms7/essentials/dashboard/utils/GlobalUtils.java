@@ -3,6 +3,8 @@ package org.onehippo.cms7.essentials.dashboard.utils;
 import java.io.BufferedWriter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.nio.file.DirectoryStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,18 +18,21 @@ import javax.jcr.Session;
 import org.apache.commons.io.IOUtils;
 import org.hippoecm.repository.HippoRepository;
 import org.hippoecm.repository.HippoRepositoryFactory;
-import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.onehippo.cms7.essentials.dashboard.config.JcrPluginConfigService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Charsets;
+import com.google.common.base.Joiner;
+import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
+import com.google.common.collect.Lists;
 
 /**
- * @version "$Id: GlobalUtils.java 174806 2013-08-23 09:22:46Z mmilicevic $"
+ * @version "$Id$"
  */
-public class GlobalUtils {
+public final class GlobalUtils {
 
     private static final String PREFIX_GET = "get";
     private static final Pattern NAMESPACE_PATTERN = Pattern.compile(":");
@@ -64,6 +69,9 @@ public class GlobalUtils {
 
     public static String readStreamAsText(final InputStream stream) {
         try {
+            if (stream == null) {
+                return null;
+            }
             return IOUtils.toString(stream);
         } catch (IOException e) {
             log.error("Error reading files", e);
@@ -128,17 +136,18 @@ public class GlobalUtils {
      * @param name
      * @return
      */
-    public static String createMethodName(String name) {
-        if (Strings.isNullOrEmpty(name) || name.trim().equals(":")) {
+    public static String createMethodName(final String name) {
+        String myName = name;
+        if (Strings.isNullOrEmpty(myName) || myName.trim().equals(":")) {
             return EssentialConst.INVALID_METHOD_NAME;
         }
-        name = CharMatcher.WHITESPACE.removeFrom(name);
+        myName = CharMatcher.WHITESPACE.removeFrom(myName);
         // replace all whitespaces:
-        final int index = name.indexOf(':');
-        if (index == -1 || index == name.length() - 1) {
-            return PREFIX_GET + capitalize(name.replace(':', ' ').trim());
+        final int index = myName.indexOf(':');
+        if (index == -1 || index == myName.length() - 1) {
+            return PREFIX_GET + capitalize(myName.replace(':', ' ').trim());
         }
-        final String[] parts = NAMESPACE_PATTERN.split(name);
+        final String[] parts = NAMESPACE_PATTERN.split(myName);
         if (parts.length < 1) {
             return EssentialConst.INVALID_METHOD_NAME;
         }
@@ -164,10 +173,6 @@ public class GlobalUtils {
         return capitalize(parts[1]);
     }
 
-    public static void refreshSession(final PluginContext context, final boolean keepChanges) {
-        final Session session = context.getSession();
-        refreshSession(session, keepChanges);
-    }
 
     @SuppressWarnings("HippoHstCallNodeRefreshInspection")
     public static void refreshSession(final Session session, final boolean keepChanges) {
@@ -189,5 +194,64 @@ public class GlobalUtils {
             log.error("Error creating repository connection", e);
         }
         return null;
+    }
+
+    public static void cleanupSession(final Session session) {
+        if (session != null) {
+            session.logout();
+        }
+
+    }
+
+    public static <T> T newInstance(final Class<T> clazz) {
+        try {
+            return clazz.newInstance();
+        } catch (InstantiationException e) {
+            log.error("Error instantiating", e);
+        } catch (IllegalAccessException e) {
+            log.error("Access exception", e);
+        }
+        return null;
+    }
+
+    @SuppressWarnings("unchecked")
+    public static <T> T newInstance(final String className) {
+        Class<?> aClass = loadCLass(className);
+        if (aClass != null) {
+            return (T) newInstance(aClass);
+        }
+        return null;
+    }
+
+
+    public static Class<?> loadCLass(final String clazz) {
+        try {
+            return Class.forName(clazz);
+        } catch (ClassNotFoundException e) {
+            log.error("Error loading class: [" + clazz + ']', e);
+        }
+        return null;
+    }
+
+    public static String getParentConfigPath(final CharSequence pluginId) {
+        final String fullConfigPath = getFullConfigPath(pluginId);
+        return fullConfigPath.substring(0, fullConfigPath.lastIndexOf('/'));
+    }
+
+    public static String getFullConfigPath(final CharSequence pluginId) {
+        final List<String> configList = Lists.newLinkedList(Splitter.on('/').split(JcrPluginConfigService.CONFIG_PATH));
+        configList.addAll(Lists.newLinkedList(Splitter.on('.').split(pluginId)));
+        return '/' + Joiner.on('/').join(configList);
+    }
+
+
+    public static String decodeUrl(final String url) {
+        try {
+            return URLDecoder.decode(url, EssentialConst.UTF_8);
+        } catch (UnsupportedEncodingException e) {
+            log.error("Error using encoder", e);
+        }
+        return url;
+
     }
 }

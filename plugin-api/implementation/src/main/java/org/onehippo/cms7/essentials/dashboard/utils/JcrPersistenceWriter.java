@@ -23,9 +23,11 @@ import javax.jcr.Item;
 import javax.jcr.Node;
 import javax.jcr.Property;
 import javax.jcr.RepositoryException;
+import javax.jcr.Session;
 
+import org.apache.commons.lang.StringUtils;
+import org.onehippo.cms7.essentials.dashboard.config.Document;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
-import org.onehippo.cms7.essentials.dashboard.model.JcrModel;
 import org.onehippo.cms7.essentials.dashboard.model.PersistentHandler;
 import org.onehippo.cms7.essentials.dashboard.model.hst.SimplePropertyModel;
 import org.onehippo.cms7.essentials.dashboard.utils.annotations.AnnotationUtils;
@@ -42,32 +44,35 @@ import com.google.common.base.Strings;
 /**
  * @version "$Id$"
  */
-public class JcrPersistenceWriter {
+public class JcrPersistenceWriter implements AutoCloseable {
 
+    public static final char PATH_SEPARATOR = '/';
+    public static final String ERROR_PROCESSING_VALUE = "Error processing value";
     private static Logger log = LoggerFactory.getLogger(JcrPersistenceWriter.class);
     private final PluginContext context;
+    private final Session session;
 
-    public JcrPersistenceWriter(final PluginContext context) {
+    public JcrPersistenceWriter(final Session session, final PluginContext context) {
         this.context = context;
+        this.session = session;
+
     }
 
-    public Item write(final JcrModel model) {
-        final Node rootNode = writeNode(model);
-        if (rootNode == null) {
+
+    public Item write(final Document model) {
+        return writeNode(model);
+    }
+
+    private Node writeNode(final Document model) {
+
+        try {
+            createSubfolders(model.getParentPath());
+        } catch (RepositoryException e) {
+            log.error("Error creating subfolders", e);
             return null;
         }
-        //save changes
-        try {
-            context.getSession().save();
-            return rootNode;
-        } catch (RepositoryException e) {
-            log.error("Error saving model", e);
-            GlobalUtils.refreshSession(context, false);
-        }
-        return null;
-    }
 
-    private Node writeNode(final JcrModel model) {
+
         final PersistentNode node = AnnotationUtils.getClassAnnotation(model.getClass(), PersistentNode.class);
         if (node == null) {
             log.error("No @PersistentNode annotation found for object: {}", model);
@@ -80,13 +85,13 @@ public class JcrPersistenceWriter {
             return null;
         }
 
-        final PersistentHandler<PersistentNode, Node> nodeWriter = PersistentNode.ProcessAnnotation.NODE_WRITER;
-        final Node jcrNode = nodeWriter.execute(context, model, node);
+        final PersistentHandler<PersistentNode, Node> nodeWriter = PersistentNode.ProcessAnnotation.NODE;
+        final Node jcrNode = nodeWriter.execute(session, model, node);
         if (jcrNode == null) {
             return null;
         }
         // process single properties:
-        final PersistentHandler<PersistentProperty, Property> propWriter = PersistentProperty.ProcessAnnotation.PROPERTY_WRITER;
+        final PersistentHandler<PersistentProperty, Property> propWriter = PersistentProperty.ProcessAnnotation.PROPERTY;
         final Collection<Field> fields = AnnotationUtils.getAnnotatedFields(model.getClass(), PersistentProperty.class);
         for (Field field : fields) {
             try {
@@ -94,20 +99,20 @@ public class JcrPersistenceWriter {
                 if (value != null) {
                     final PersistentProperty property = field.getAnnotation(PersistentProperty.class);
                     final String name = property.name();
-                    final JcrModel myModel = new SimplePropertyModel(value);
+                    final Document myModel = new SimplePropertyModel(value);
                     myModel.setParentPath(jcrNode.getPath());
                     myModel.setName(name);
                     // write single property:
-                    propWriter.execute(context, myModel, property);
+                    propWriter.execute(session, myModel, property);
                 }
             } catch (IllegalAccessException e) {
-                log.error("Error processing value", e);
+                log.error(ERROR_PROCESSING_VALUE, e);
             } catch (RepositoryException e) {
                 log.error("Error fetching parent path", e);
             }
         }
 
-        final PersistentMultiProperty.ProcessAnnotation multiWriter = PersistentMultiProperty.ProcessAnnotation.MULTI_PROPERTY_WRITER;
+        final PersistentMultiProperty.ProcessAnnotation multiWriter = PersistentMultiProperty.ProcessAnnotation.MULTI_PROPERTY;
         final Collection<Field> multiFields = AnnotationUtils.getAnnotatedFields(model.getClass(), PersistentMultiProperty.class);
         for (Field multiField : multiFields) {
             try {
@@ -115,14 +120,14 @@ public class JcrPersistenceWriter {
                 if (value != null) {
                     final PersistentMultiProperty p = multiField.getAnnotation(PersistentMultiProperty.class);
                     final String name = p.name();
-                    final JcrModel myModel = new SimplePropertyModel(value);
+                    final Document myModel = new SimplePropertyModel(value);
                     myModel.setParentPath(jcrNode.getPath());
                     myModel.setName(name);
                     // write single property:
-                    multiWriter.execute(context, myModel, p);
+                    multiWriter.execute(session, myModel, p);
                 }
             } catch (IllegalAccessException e) {
-                log.error("Error processing value", e);
+                log.error(ERROR_PROCESSING_VALUE, e);
             } catch (RepositoryException e) {
                 log.error("Error fetching parent path", e);
             }
@@ -132,16 +137,16 @@ public class JcrPersistenceWriter {
         for (Field persistentField : persistentFields) {
             try {
                 final Object value = persistentField.get(model);
-                if (value instanceof JcrModel) {
+                if (value instanceof Document) {
                     final PersistentNode myNode = AnnotationUtils.getClassAnnotation(value.getClass(), PersistentNode.class);
                     if (myNode == null) {
                         log.error("Item is not annotated by @PersistentNode annotation: {}", value.getClass());
                         continue;
                     }
-                    writeNode((JcrModel) value);
+                    writeNode((Document) value);
                 }
             } catch (IllegalAccessException e) {
-                log.error("Error processing value", e);
+                log.error(ERROR_PROCESSING_VALUE, e);
             }
         }
         // process collections:
@@ -152,8 +157,8 @@ public class JcrPersistenceWriter {
                 if (value instanceof Collection) {
                     Iterable<?> collection = (Iterable<?>) value;
                     for (Object o : collection) {
-                        if (o instanceof JcrModel) {
-                            writeNode((JcrModel) o);
+                        if (o instanceof Document) {
+                            writeNode((Document) o);
                         } else {
                             if (o != null) {
                                 log.error("Value is within collection is not JcrModel type:  {}", o.getClass());
@@ -164,14 +169,42 @@ public class JcrPersistenceWriter {
                     log.error("Field is annotated by @PersistableCollection however it is not collection type {}", value.getClass());
                 }
             } catch (IllegalAccessException e) {
-                log.error("Error processing value", e);
+                log.error(ERROR_PROCESSING_VALUE, e);
             }
 
         }
 
 
         return jcrNode;
+
     }
 
+    private Node createSubfolders(final String path) throws RepositoryException {
+
+        final String[] pathParts = StringUtils.split(path, PATH_SEPARATOR);
+        final StringBuilder parent = new StringBuilder();
+        Node parentNode = session.getRootNode();
+        for (final String pathPart : pathParts) {
+            parent.append(PATH_SEPARATOR);
+            String folderPath = parent.append(pathPart).toString();
+            if (session.itemExists(folderPath)) {
+                log.info("folderPath {}", folderPath);
+                parentNode = parentNode.getNode(pathPart);
+                continue;
+            }
+            log.info("folderPath {}", folderPath);
+            parentNode = parentNode.addNode(pathPart, "essentials:folder");
+            session.save();
+
+        }
+
+
+        return parentNode;
+    }
+
+    @Override
+    public void close() throws Exception {
+        GlobalUtils.cleanupSession(session);
+    }
 }
 

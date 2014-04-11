@@ -17,6 +17,8 @@
 package org.onehippo.cms7.essentials.dashboard.instruction;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
@@ -26,6 +28,7 @@ import java.util.Deque;
 import java.util.Map;
 import java.util.Set;
 
+import javax.inject.Inject;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlRootElement;
 
@@ -36,20 +39,22 @@ import org.onehippo.cms7.essentials.dashboard.event.InstructionEvent;
 import org.onehippo.cms7.essentials.dashboard.event.MessageEvent;
 import org.onehippo.cms7.essentials.dashboard.instructions.InstructionStatus;
 import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
+import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
+import org.onehippo.cms7.essentials.dashboard.utils.ProjectUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TemplateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.eventbus.EventBus;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 
 /**
  * @version "$Id$"
  */
+@Component
 @XmlRootElement(name = "file", namespace = EssentialConst.URI_ESSENTIALS_INSTRUCTIONS)
 public class FileInstruction extends PluginInstruction {
 
@@ -60,19 +65,21 @@ public class FileInstruction extends PluginInstruction {
             .build();
     private static final Logger log = LoggerFactory.getLogger(FileInstruction.class);
     private String message;
+    private boolean binary;
+
     @Inject
     private EventBus eventBus;
-    @Inject(optional = true)
-    @Named("instruction.message.file.delete")
+
+    @Value("${instruction.message.file.delete}")
     private String messageDelete;
-    @Inject(optional = true)
-    @Named("instruction.message.file.copy")
+
+    @Value("${instruction.message.file.copy}")
     private String messageCopy;
-    @Inject(optional = true)
-    @Named("instruction.message.file.copy.error")
+
+    @Value("${instruction.message.file.copy.error}")
     private String messageCopyError;
-    @Inject(optional = true)
-    @Named("instruction.message.folder.create")
+
+    @Value("${instruction.message.folder.create}")
     private String messageFolderCreate;
     private boolean overwrite;
     private String source;
@@ -112,66 +119,93 @@ public class FileInstruction extends PluginInstruction {
             eventBus.post(new InstructionEvent(this));
             return InstructionStatus.SKIPPED;
         }
-        File file = new File(source);
-        if (!file.exists()) {
-            // try to read as resource:
-            final InputStream stream = getClass().getClassLoader().getResourceAsStream(source);
-            if (stream != null) {
-                try {
 
-                    if (!destination.exists()) {
-                        //Recursively creates parent directories in case they don't exist yet
-                        Deque<String> directories = new ArrayDeque<>();
-                        String parent = destination.getParent();
-                        while (!new File(parent).exists()) {
-                            directories.push(parent);
-                            parent = new File(parent).getParent();
-                        }
-                        if (!directories.isEmpty()) {
-                            folderMessage = directories.size() > 1 ? directories.size() - 1 + " directories" : "directory";
-                            createdFolders = directories.getLast().substring(directories.getFirst().length());
-                            createdFoldersTarget = directories.getLast();
-                            Files.createDirectories(new File(directories.getLast()).toPath());
-                            eventBus.post(new InstructionEvent(messageFolderCreate));
-                        }
+        InputStream stream = null;
 
-                        Files.createFile(destination.toPath());
-                    }
-                    // replace file placeholders if needed:
-                    if (isBinary()) {
-                        FileUtils.copyInputStreamToFile(stream, destination);
-                    } else {
-                        final String replacedData = TemplateUtils.injectTemplate(source, context.getPlaceholderData(), getClass());
-                        FileUtils.copyInputStreamToFile(IOUtils.toInputStream(replacedData), destination);
-                    }
-
-                    sendEvents();
-                    return InstructionStatus.SUCCESS;
-                } catch (IOException e) {
-                    log.error("Error while copy resource", e);
-                } finally {
-                    IOUtils.closeQuietly(stream);
+        try {
+            stream = extractStream();
+            if (stream == null) {
+                log.error("Stream was null for source: {}", source);
+                return InstructionStatus.FAILED;
+            }
+            if (destination.exists()) {
+                final boolean success = destination.delete();
+                if (!success) {
+                    log.error("Failed to delete destination file: {}", destination);
+                    return InstructionStatus.FAILED;
                 }
             }
-            log.error("Source file doesn't exists: {}", file);
-            message = messageCopyError;
-            eventBus.post(new InstructionEvent(this));
-            return InstructionStatus.FAILED;
-        }
-        try {
-            FileUtils.copyFile(file, destination);
+            // try to read as resource:
+            if (!destination.exists()) {
+                createParentDirectories(destination);
+            }
+            // replace file placeholders if needed:
+            if (isBinary()) {
+                FileUtils.copyInputStreamToFile(stream, destination);
+            } else {
+                final String content = GlobalUtils.readStreamAsText(stream);
+                final String replacedData = TemplateUtils.replaceTemplateData(content, context.getPlaceholderData());
+                FileUtils.copyInputStreamToFile(IOUtils.toInputStream(replacedData), destination);
+            }
             sendEvents();
             return InstructionStatus.SUCCESS;
         } catch (IOException e) {
-            log.error("Error creating file", e);
+            message = messageCopyError;
+            log.error("Error while copy resource", e);
+        } finally {
+            IOUtils.closeQuietly(stream);
         }
         eventBus.post(new InstructionEvent(this));
         return InstructionStatus.FAILED;
-
     }
 
-    private boolean isBinary() {
-        return source.endsWith(".png") || source.endsWith(".jpeg");
+    protected InputStream extractStream() throws FileNotFoundException {
+        // try to read file first:
+        final String encoded  = GlobalUtils.decodeUrl(source);
+        final File file = new File(encoded );
+        if (file.exists()) {
+            return new FileInputStream(file);
+        } else {
+            return getClass().getClassLoader().getResourceAsStream(encoded );
+        }
+    }
+
+    /**
+     * Recursively creates parent directories in case they don't exist yet
+     *
+     * @param destination starting directory
+     * @throws IOException
+     */
+    protected void createParentDirectories(final File destination) throws IOException {
+
+        Deque<String> directories = new ArrayDeque<>();
+        String parent = destination.getParent();
+        while (!new File(parent).exists()) {
+            directories.push(parent);
+            parent = new File(parent).getParent();
+        }
+        processDirectories(directories);
+
+        Files.createFile(destination.toPath());
+    }
+
+    private void processDirectories(final Deque<String> directories) throws IOException {
+        if (!directories.isEmpty()) {
+            folderMessage = directories.size() > 1 ? directories.size() - 1 + " directories" : "directory";
+            createdFolders = directories.getLast().substring(directories.getFirst().length());
+            createdFoldersTarget = directories.getLast();
+            Files.createDirectories(new File(directories.getLast()).toPath());
+            eventBus.post(new InstructionEvent(messageFolderCreate));
+        }
+    }
+
+    @XmlAttribute(name = "binary")
+    public boolean isBinary() {
+        return binary;
+    }
+
+    public void setBinary(final boolean binary) {
+        this.binary = binary;
     }
 
     private InstructionStatus delete() {
@@ -214,7 +248,7 @@ public class FileInstruction extends PluginInstruction {
         data.put("createdFoldersTarget", createdFoldersTarget);
         // setup messages:
 
-        if (Strings.isNullOrEmpty(message)) {
+        if (Strings.isNullOrEmpty(message) && !Strings.isNullOrEmpty(action)) {
             // check message based on action:
             if (action.equals(COPY)) {
                 message = messageCopy;
@@ -229,7 +263,7 @@ public class FileInstruction extends PluginInstruction {
         message = TemplateUtils.replaceTemplateData(message, data);
     }
 
-    private boolean valid() {
+    protected boolean valid() {
         if (Strings.isNullOrEmpty(action) || !VALID_ACTIONS.contains(action) || Strings.isNullOrEmpty(target)) {
             return false;
         }

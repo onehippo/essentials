@@ -12,7 +12,7 @@ import java.util.List;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.onehippo.cms7.essentials.BaseTest;
+import org.onehippo.cms7.essentials.BaseResourceTest;
 import org.onehippo.cms7.essentials.dashboard.annotations.HippoEssentialsGenerated;
 import org.onehippo.cms7.essentials.dashboard.utils.code.ComponentInformation;
 import org.onehippo.cms7.essentials.dashboard.utils.code.ExistingMethodsVisitor;
@@ -23,9 +23,9 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- * @version "$Id: JavaSourceUtilsTest.java 174577 2013-08-21 16:12:51Z mmilicevic $"
+ * @version "$Id$"
  */
-public class JavaSourceUtilsTest extends BaseTest {
+public class JavaSourceUtilsTest extends BaseResourceTest {
 
     public static final String CLASS_NAME = "TestExampleClass";
     private static Logger log = LoggerFactory.getLogger(JavaSourceUtilsTest.class);
@@ -33,6 +33,7 @@ public class JavaSourceUtilsTest extends BaseTest {
     private Path path;
     private Path componentFile;
 
+    @Override
     @Before
     public void setUp() throws Exception {
 
@@ -100,7 +101,7 @@ public class JavaSourceUtilsTest extends BaseTest {
         assertEquals(0, collection.getMethodsNames().size());
         // add method:
         JavaSourceUtils.addBeanMethodString(path, "testMethod", "my:property", false);
-        JavaSourceUtils.addBeanMethodCalendar(path, "calendarTestMethod", "my:property");
+        JavaSourceUtils.addBeanMethodCalendar(path, "calendarTestMethod", "my:property", false);
         JavaSourceUtils.addBeanMethodHippoHtml(path, "htmlTestMethod", "my:property", false);
         // reload:
         collection = JavaSourceUtils.getMethodCollection(path);

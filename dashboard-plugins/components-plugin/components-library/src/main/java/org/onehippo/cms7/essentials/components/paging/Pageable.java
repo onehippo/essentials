@@ -23,6 +23,7 @@ import org.hippoecm.hst.content.beans.standard.HippoBean;
 
 /**
  * Pageable
+ *
  * @version $Id$
  */
 public abstract class Pageable<T extends HippoBean> {
@@ -45,13 +46,12 @@ public abstract class Pageable<T extends HippoBean> {
 
     private long total;
 
-    private int defaultPageRange = DEFAULT_PAGE_RANGE;
-
     private boolean showPagination = true;
 
     /**
      * Constructor. NOTE: you can always override <code><strong>setTotal()</strong></code> method in your own class if
      * total number of items is not available immediately
+     *
      * @param total total number of results query has returned
      * @see #setTotal(int)
      */
@@ -91,6 +91,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Returns max page size which wis used to limit nr. of results when executing query
+     *
      * @return limit number
      */
     public long getMaxSize() {
@@ -99,6 +100,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Returns current page number
+     *
      * @return pagenumber we are displaying
      */
     public int getCurrentPage() {
@@ -107,6 +109,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Returns previous page number
+     *
      * @return pagenumber we are displaying
      */
     public Integer getPreviousPage() {
@@ -118,6 +121,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Returns next page number
+     *
      * @return pagenumber we are displaying
      */
     public Integer getNextPage() {
@@ -129,6 +133,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Has current page previous pages?
+     *
      * @return true if page is bigger than 1 false otherwise
      */
     public boolean isPrevious() {
@@ -137,6 +142,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Has current page next pages?
+     *
      * @return true if page is followed  by other pages
      */
     public boolean isNext() {
@@ -145,6 +151,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Does  pagenumber exceeds number of visible pages?
+     *
      * @return true if so, false otherwise
      */
     public boolean isPreviousBatch() {
@@ -153,6 +160,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Is  pagenumber followed by next pages e.g. next 10
+     *
      * @return true if so, false otherwise
      */
     public boolean isNextBatch() {
@@ -161,6 +169,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Returns a list of numbers (between start and end offset)
+     *
      * @return List containing page numbers..
      */
     public List<Long> getPageNumbersArray() {
@@ -175,6 +184,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Get where result offset should start NOTE: it's zero based
+     *
      * @return int
      */
     public int getStartOffset() {
@@ -187,6 +197,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * get where result offset should end
+     *
      * @return int
      */
     public long getEndOffset() {
@@ -202,22 +213,24 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * get end page of the current page set (e.g. in pages 1...10 it will return 10)
+     *
      * @return end page nr. of page batch
      */
     public long getEndPage() {
         final long startPage = getStartPage();
-        long total_pages = getTotalPages();
+        long totalPages = getTotalPages();
         // boundary check
-        if (pageNumber > total_pages) {
-            return total_pages;
+        if (pageNumber > totalPages) {
+            return totalPages;
         }
         long end = startPage + visiblePages - 1;
-        return end > total_pages ? total_pages : end;
+        return end > totalPages ? totalPages : end;
     }
 
     /**
      * get start page of the offset, so, assuming visiblePages is set to 10: e.g. if pageNumber 3, it'll return 1,
      * pagenumber 19, it'll return  11)
+     *
      * @return int page number of visible page batch
      */
     public long getStartPage() {
@@ -235,6 +248,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Return total number of pages (based on page size)
+     *
      * @return nr. of pages
      */
     public long getTotalPages() {
@@ -251,11 +265,11 @@ public abstract class Pageable<T extends HippoBean> {
     //================================
 
     public void setPageSize(int pageSize) {
-        this.pageSize = pageSize <= 0 ? 10 : pageSize;
+        this.pageSize = pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
     }
 
     public final void processPageSize() {
-        pageSize = pageSize <= 0 ? 10 : pageSize;
+        pageSize = pageSize <= 0 ? DEFAULT_PAGE_SIZE : pageSize;
     }
 
     public final void processPageNumber() {
@@ -275,6 +289,7 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Total number of results.
+     *
      * @return total nr. of results
      */
     public long getTotal() {
@@ -283,11 +298,12 @@ public abstract class Pageable<T extends HippoBean> {
 
     /**
      * Sets total number of results.
+     *
      * @param total number of results query returned/your collection holds
      */
     public void setTotal(int total) {
         if (total < 0) {
-            total = 0;
+            this.total = 0;
         }
         this.total = total;
     }
@@ -306,7 +322,7 @@ public abstract class Pageable<T extends HippoBean> {
     }
 
     protected int getDefaultPageRange() {
-        return defaultPageRange;
+        return DEFAULT_PAGE_RANGE;
     }
 
     /**
@@ -340,22 +356,23 @@ public abstract class Pageable<T extends HippoBean> {
      * @param fillIn selected page
      * @return page range for given page
      */
-    public List<Long> getPageRangeWithFill(long page, final int fillIn) {
+    public List<Long> getPageRangeWithFill(final long page, final int fillIn) {
         final List<Long> pages = new ArrayList<>();
         // do bound checking
-        if (page < 0) {
-            page = 1;
+        long myPage = page;
+        if (myPage < 0) {
+            myPage = 1;
         }
-        if (page > getTotalPages()) {
-            page = getTotalPages();
+        if (myPage > getTotalPages()) {
+            myPage = getTotalPages();
         }
         // fill in lower range: e.g. for 2 it will  be 1
-        long start = page - fillIn;
+        long start = myPage - fillIn;
         if (start <= 0) {
             start = 1;
         }
         // end part:
-        long end = page + fillIn + 1;
+        long end = myPage + fillIn + 1;
         if (end > getTotalPages()) {
             end = getTotalPages();
         }

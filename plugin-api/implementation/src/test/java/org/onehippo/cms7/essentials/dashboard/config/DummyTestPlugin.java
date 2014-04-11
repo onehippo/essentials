@@ -2,7 +2,10 @@ package org.onehippo.cms7.essentials.dashboard.config;
 
 import java.util.List;
 
-import org.onehippo.cms7.essentials.dashboard.Plugin;
+import org.onehippo.cms7.essentials.dashboard.model.EssentialsDependency;
+import org.onehippo.cms7.essentials.dashboard.model.Plugin;
+import org.onehippo.cms7.essentials.dashboard.model.Vendor;
+import org.onehippo.cms7.essentials.dashboard.model.VendorRestful;
 
 /**
  * @version "$Id: DummyTestPlugin.java 174785 2013-08-23 08:28:52Z mmilicevic $"
@@ -11,14 +14,26 @@ public class DummyTestPlugin implements Plugin {
 
     private static final long serialVersionUID = 1L;
 
+    private String parentPath;
+
 
     @Override
-    public void addScreenShot(final Screenshot screenShot) {
+    public List<String> getRestClasses() {
+        return null;
+    }
+
+    @Override
+    public void setRestClasses(final List<String> restClasses) {
 
     }
 
     @Override
-    public void addAsset(final Asset asset) {
+    public boolean isEnabled() {
+        return false;
+    }
+
+    @Override
+    public void setEnabled(final boolean enabled) {
 
     }
 
@@ -27,10 +42,6 @@ public class DummyTestPlugin implements Plugin {
         return "test";
     }
 
-    @Override
-    public void setScreenshots(final List<Screenshot> screenshots) {
-
-    }
 
     @Override
     public void setDescription(final String description) {
@@ -38,47 +49,52 @@ public class DummyTestPlugin implements Plugin {
     }
 
     @Override
-    public Asset getAsset(final String id) {
+    public boolean isNeedsInstallation() {
+        return false;
+    }
+
+    @Override
+    public void setNeedsInstallation(final boolean needsInstallation) {
+
+    }
+
+    @Override
+    public boolean isInstalled() {
+        return false;
+    }
+
+    @Override
+    public void setInstalled(final boolean installed) {
+
+    }
+
+    @Override
+    public String getPluginId() {
+        return "pluginId";
+    }
+
+    @Override
+    public void setPluginId(final String pluginId) {
+
+    }
+
+    @Override
+    public Vendor getVendor() {
+        return new VendorRestful();
+    }
+
+    @Override
+    public String getPowerpackClass() {
         return null;
     }
 
     @Override
-    public List<Asset> getAssets() {
-        return null;
-    }
-
-    @Override
-    public void setAssets(final List<Asset> assets) {
+    public void setPowerpackClass(final String powerpackClass) {
 
     }
 
     @Override
-    public String getVendorLink() {
-        return "test vendor link";
-    }
-
-    @Override
-    public void setVendorLink(final String vendorLink) {
-
-    }
-
-    @Override
-    public String getPluginLink() {
-        return "pluginLink";
-    }
-
-    @Override
-    public void setPluginLink(final String pluginLink) {
-
-    }
-
-    @Override
-    public String getVendor() {
-        return "vendor";
-    }
-
-    @Override
-    public void setVendor(final String vendor) {
+    public void setVendor(final Vendor vendor) {
 
     }
 
@@ -102,10 +118,6 @@ public class DummyTestPlugin implements Plugin {
 
     }
 
-    @Override
-    public List<Screenshot> getScreenshots() {
-        return null;
-    }
 
     @Override
     public String getName() {
@@ -128,22 +140,34 @@ public class DummyTestPlugin implements Plugin {
     }
 
     @Override
-    public String getIcon() {
+    public List<EssentialsDependency> getDependencies() {
         return null;
     }
 
     @Override
-    public void setIcon(final String icon) {
+    public void setDependencies(final List<EssentialsDependency> dependencies) {
 
     }
 
     @Override
-    public String getPluginClass() {
-        return getClass().getName();
+    public String getTitle() {
+        return null;
     }
 
     @Override
-    public void setPluginClass(final String pluginClass) {
+    public void setTitle(final String title) {
 
     }
+
+    @Override
+    public String getIntroduction() {
+        return null;
+    }
+
+    @Override
+    public void setIntroduction(final String introduction) {
+
+    }
+
+
 }

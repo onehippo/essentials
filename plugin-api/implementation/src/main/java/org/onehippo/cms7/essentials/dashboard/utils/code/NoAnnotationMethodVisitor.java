@@ -16,7 +16,6 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.MethodInvocation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.ReturnStatement;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.onehippo.cms7.essentials.dashboard.annotations.HippoEssentialsGenerated;
 import org.slf4j.Logger;
@@ -26,7 +25,7 @@ import org.slf4j.LoggerFactory;
  * Visits a java file and returns all methods we can annotate which are not annotated by
  * {@code HippoEssentialsGenerated} annotation,
  *
- * @version "$Id: NoAnnotationMethodVisitor.java 173889 2013-08-15 13:08:14Z mmilicevic $"
+ * @version "$Id$"
  * @see HippoEssentialsGenerated
  */
 public class NoAnnotationMethodVisitor extends ASTVisitor {
@@ -51,6 +50,11 @@ public class NoAnnotationMethodVisitor extends ASTVisitor {
         final Block body = node.getBody();
         @SuppressWarnings("rawtypes")
         final List statements = body.statements();
+        processStatements(node, statements);
+        return super.visit(node);
+    }
+
+    private void processStatements(final MethodDeclaration node, final Iterable<?> statements) {
         for (Object o : statements) {
             if (o instanceof ReturnStatement) {
                 final ReturnStatement statement = (ReturnStatement) o;
@@ -69,29 +73,32 @@ public class NoAnnotationMethodVisitor extends ASTVisitor {
                                 // check if namespaces property
                                 if (value.indexOf(':') != -1) {
                                     modifiableMethods.add(new EssentialsGeneratedMethod(node, node.getName().getIdentifier(), value));
-
                                     modifiableMethodsInternalNames.add(value);
                                 }
-                            } else if (arg instanceof SimpleName) {
+                            } else {
+                                log.debug("#NOT IMPLEMENTED PARSING OF ARGUMENT: {}", arg.getClass());
+                                /*
+                                else if (arg instanceof SimpleName) {
                                 final SimpleName argument = (SimpleName) arg;
-                                final String identifier = argument.getIdentifier();
                                 final Object val = argument.resolveConstantExpressionValue();
                                 // TODO always null, upgrade to latest JDT and check if we can resolve this
                                 // @see org.onehippo.cms7.essentials.dashboard.utils.JavaSourceUtils.getAnnotateMethods()
                                 log.debug("identifier {}", val);
 
-                            } else {
+                                } else {
                                 log.warn("#NOT IMPLEMENTED PARSING OF ARGUMENT: {}", arg.getClass());
                                 log.debug("e {}", arg);
+                                }
+                            */
+
                             }
                         }
                     }
                 } else {
-                    log.warn("#NOT IMPLEMENTED PARSING OF: {}", e.getClass());
+                    log.debug("#NOT IMPLEMENTED PARSING OF: {}", e.getClass());
                 }
             }
         }
-        return super.visit(node);
     }
 
     public Set<String> getModifiableMethodsInternalNames() {
@@ -101,4 +108,6 @@ public class NoAnnotationMethodVisitor extends ASTVisitor {
     public List<EssentialsGeneratedMethod> getModifiableMethods() {
         return modifiableMethods;
     }
+
+
 }

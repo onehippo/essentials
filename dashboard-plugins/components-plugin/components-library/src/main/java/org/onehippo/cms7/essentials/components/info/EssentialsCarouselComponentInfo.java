@@ -16,53 +16,87 @@
 
 package org.onehippo.cms7.essentials.components.info;
 
-import org.hippoecm.hst.core.parameters.DocumentLink;
+import org.hippoecm.hst.core.parameters.Color;
+import org.hippoecm.hst.core.parameters.FieldGroup;
+import org.hippoecm.hst.core.parameters.FieldGroupList;
+import org.hippoecm.hst.core.parameters.JcrPath;
 import org.hippoecm.hst.core.parameters.Parameter;
 
 /**
  * @version "$Id$"
  */
+@FieldGroupList({
+        @FieldGroup(
+                titleKey = "carousel.documents",
+                value = {"document1", "document2", "document3", "document4", "document5",
+                        "document6", "document7", "document8", "document9", "document10"}
+        ),
+        @FieldGroup(
+                titleKey = "carousel.settings",
+                value = {"cycle", "interval", "showNavigation"}
+        )
+})
+
 public interface EssentialsCarouselComponentInfo {
 
 
-    @Parameter(name = "document1", required = false, displayName = "Carousel item 1")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
+    String HIPPO_DOCUMENT = "hippo:document";
+    String BANNERS_INITIAL_PATH = "banners";
+    String CMS_PICKERS_DOCUMENTS_ONLY = "cms-pickers/documents-only";
+
+    //############################################
+    // CAROUSEL SETTINGS
+    //############################################
+    @Parameter(name = "pause", displayName = "Pause carousel on mouse enter", defaultValue = "false")
+    Boolean getPause();
+
+    @Parameter(name = "cycle", displayName = "Cycle carousel continuously", defaultValue = "false")
+    Boolean getCycle();
+
+    @Parameter(name = "carouselHeight", defaultValue = "250", required = true, displayName = "Carousel height")
+    Integer getCarouselHeight();
+
+    @Parameter(name = "carouselWidth", defaultValue = "700", required = true, displayName = "Carousel width")
+    Integer getCarouselWidth();
+
+    @Parameter(name = "interval", defaultValue = "5000", required = true, displayName = "Carousel interval (milli seconds)")
+    Integer getInterval();
+
+    @Color
+    @Parameter(name = "carouselBackgroundColor", defaultValue = "#FFFFFF", required = true, displayName = "Carousel background color)")
+    String getCarouselBackgroundColor();
+
+    @Parameter(name = "showNavigation", defaultValue = "true", displayName = "Show carousel navigation")
+    Boolean getShowNavigation();
+
+
+    //############################################
+    // DOCUMENTS
+    //############################################
+
+
+    @Parameter(name = "document1", required = true, displayName = "Carousel item 1")
+    @JcrPath(isRelative = true, pickerInitialPath = BANNERS_INITIAL_PATH, pickerSelectableNodeTypes = {HIPPO_DOCUMENT}, pickerConfiguration = CMS_PICKERS_DOCUMENTS_ONLY)
     String getCarouselItem1();
 
     @Parameter(name = "document2", required = false, displayName = "Carousel item 2")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
+    @JcrPath(isRelative = true, pickerInitialPath = BANNERS_INITIAL_PATH, pickerSelectableNodeTypes = {HIPPO_DOCUMENT}, pickerConfiguration = CMS_PICKERS_DOCUMENTS_ONLY)
     String getCarouselItem2();
 
     @Parameter(name = "document3", required = false, displayName = "Carousel item 3")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
+    @JcrPath(isRelative = true, pickerInitialPath = BANNERS_INITIAL_PATH, pickerSelectableNodeTypes = {HIPPO_DOCUMENT}, pickerConfiguration = CMS_PICKERS_DOCUMENTS_ONLY)
     String getCarouselItem3();
 
     @Parameter(name = "document4", required = false, displayName = "Carousel item 4")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
+    @JcrPath(isRelative = true, pickerInitialPath = BANNERS_INITIAL_PATH, pickerSelectableNodeTypes = {HIPPO_DOCUMENT}, pickerConfiguration = CMS_PICKERS_DOCUMENTS_ONLY)
     String getCarouselItem4();
 
     @Parameter(name = "document5", required = false, displayName = "Carousel item 5")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
+    @JcrPath(isRelative = true, pickerInitialPath = BANNERS_INITIAL_PATH, pickerSelectableNodeTypes = {HIPPO_DOCUMENT}, pickerConfiguration = CMS_PICKERS_DOCUMENTS_ONLY)
     String getCarouselItem5();
 
     @Parameter(name = "document6", required = false, displayName = "Carousel item 6")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
+    @JcrPath(isRelative = true, pickerInitialPath = BANNERS_INITIAL_PATH, pickerSelectableNodeTypes = {HIPPO_DOCUMENT}, pickerConfiguration = CMS_PICKERS_DOCUMENTS_ONLY)
     String getCarouselItem6();
-
-    @Parameter(name = "document7", required = false, displayName = "Carousel item 7")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
-    String getCarouselItem7();
-
-    @Parameter(name = "document8", required = false, displayName = "Carousel item 8")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
-    String getCarouselItem8();
-
-    @Parameter(name = "document9", required = false, displayName = "Carousel item 9")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
-    String getCarouselItem9();
-
-    @Parameter(name = "document10", required = false, displayName = "Carousel item 10")
-    @DocumentLink(allowCreation = false, docLocation = "/content/documents", docType = "hippo:document")
-    String getCarouselItem10();
 
 }

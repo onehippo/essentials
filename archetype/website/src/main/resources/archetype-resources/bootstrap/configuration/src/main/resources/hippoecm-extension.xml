@@ -9,21 +9,37 @@
     <sv:value>hippo:initializefolder</sv:value>
   </sv:property>
 
-  <!-- Autoexport module configuration -->  
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-autoexport-module"> 
-    <sv:property sv:name="jcr:primaryType" sv:type="Name"> 
-      <sv:value>hippo:initializeitem</sv:value> 
-    </sv:property>  
-    <sv:property sv:name="hippo:contentresource" sv:type="String"> 
-      <sv:value>configuration/modules/autoexport-module.xml</sv:value> 
-    </sv:property>  
-    <sv:property sv:name="hippo:contentroot" sv:type="String"> 
-      <sv:value>/hippo:configuration/hippo:modules</sv:value> 
-    </sv:property>  
-    <sv:property sv:name="hippo:sequence" sv:type="Double"> 
+  <!-- Autoexport module configuration -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-autoexport-module">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>configuration/modules/autoexport-module.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hippo:configuration/hippo:modules</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
       <sv:value>30010</sv:value>
-    </sv:property> 
-  </sv:node>  
+    </sv:property>
+  </sv:node>
+
+  <!-- Eventlogcleanup module configuration -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-eventlogcleanup-module">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>configuration/modules/eventlogcleanup-module.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hippo:configuration/hippo:modules</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30011</sv:value>
+    </sv:property>
+  </sv:node>
 
   <!-- Document types -->
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}">
@@ -68,12 +84,29 @@
       <sv:value>/hippo:namespaces/${rootArtifactId.replace($hyphen,$empty)}</sv:value>
     </sv:property>
   </sv:node>
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-channels">
+
+  <!-- hst configuration nodes -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-hosts">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
       <sv:value>30052</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/hosts.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-channels">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30053</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/channels.xml</sv:value>
@@ -110,28 +143,91 @@
       <sv:value>/hst:hst</sv:value>
     </sv:property>
   </sv:node>
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-hosts">
-    <sv:property sv:name="jcr:primaryType" sv:type="Name">
-      <sv:value>hippo:initializeitem</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>31062</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:contentresource" sv:type="String">
-      <sv:value>hst/hosts.xml</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:contentroot" sv:type="String">
-      <sv:value>/hst:hst</sv:value>
-    </sv:property>
-  </sv:node>
 
   <!-- Website -->
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-sitemap">
+  <!-- workspace configuration nodes -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-workspace">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
       <sv:value>30056</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/workspace.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-workspace-sitemap">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30057</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/workspace/sitemap.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-workspace-pages">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30058</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/workspace/pages.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-workspace-sitemenus">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30059</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/workspace/sitemenus.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-workspace-containers">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30060</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/workspace/containers.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <!-- NON workspace configuration for website -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-sitemap">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30070</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}/sitemap.xml</sv:value>
@@ -154,12 +250,85 @@
       <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}</sv:value>
     </sv:property>
   </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuration-prototypepages">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30071</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/prototypepages.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}</sv:value>
+    </sv:property>
+  </sv:node>
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuration-prototypepages-document-prototype">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30072</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/prototypepages/document-prototype.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:prototypepages</sv:value>
+    </sv:property>
+  </sv:node>
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuration-prototypepages-no-document-prototype">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30072.1</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/prototypepages/no-document-prototype.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:prototypepages</sv:value>
+    </sv:property>
+  </sv:node>
+  
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuration-abstractpages">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30073</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/abstractpages.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}</sv:value>
+    </sv:property>
+  </sv:node>
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuration-abstractpages-base">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>30074</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/configurations/${rootArtifactId}/abstractpages/base.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}/hst:abstractpages</sv:value>
+    </sv:property>
+  </sv:node>
+
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuration-pages">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>30058</sv:value>
+      <sv:value>30075</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}/pages.xml</sv:value>
@@ -173,7 +342,7 @@
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>30059</sv:value>
+      <sv:value>30083</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}/components.xml</sv:value>
@@ -187,7 +356,7 @@
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>30060</sv:value>
+      <sv:value>30090</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}/templates.xml</sv:value>
@@ -201,7 +370,7 @@
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>30061</sv:value>
+      <sv:value>30091</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}/catalog.xml</sv:value>
@@ -211,13 +380,13 @@
     </sv:property>
   </sv:node>
 
-  <!-- Subsite components -->
+  <!-- Subsite  common configuration -->
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-subsite-common-configuration-components">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>30080</sv:value>
+      <sv:value>30100</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}-subsite-common/components.xml</sv:value>
@@ -226,14 +395,13 @@
       <sv:value>/hst:hst/hst:configurations/${rootArtifactId.replace($hyphen,$empty)}-subsite-common</sv:value>
     </sv:property>
   </sv:node>
-
-  <!-- Subsite templates -->
+  <!-- Subsite common templates -->
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-subsite-common-configuration-templates">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>30081</sv:value>
+      <sv:value>300104</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/configurations/${rootArtifactId}-subsite-common/templates.xml</sv:value>
@@ -258,12 +426,91 @@
       <sv:value>/hst:hst/hst:blueprints</sv:value>
     </sv:property>
   </sv:node>
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-sitemap">
+
+  <!-- Blueprints workspace configuraion nodes -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-workspace">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
       <sv:value>31002</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/workspace.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration</sv:value>
+    </sv:property>
+  </sv:node>
+
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-workspace-sitemap">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>31003</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/workspace/sitemap.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-workspace-pages">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>31004</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/workspace/pages.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-workspace-sitemenus">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>31005</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/workspace/sitemenus.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-workspace-containers">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>31006</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentresource" sv:type="String">
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/workspace/containers.xml</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:contentroot" sv:type="String">
+      <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration/hst:workspace</sv:value>
+    </sv:property>
+  </sv:node>
+
+  <!-- Blueprints NON workspace configuraion nodes -->
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-sitemap">
+    <sv:property sv:name="jcr:primaryType" sv:type="Name">
+      <sv:value>hippo:initializeitem</sv:value>
+    </sv:property>
+    <sv:property sv:name="hippo:sequence" sv:type="Double">
+      <sv:value>31010</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>hst/blueprints/${rootArtifactId}-subsite/sitemap.xml</sv:value>
@@ -272,30 +519,31 @@
       <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration</sv:value>
     </sv:property>
   </sv:node>
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-pages">
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-abstractpages">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>31003</sv:value>
+      <sv:value>31011</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
-      <sv:value>hst/blueprints/${rootArtifactId}-subsite/pages.xml</sv:value>
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/abstractpages.xml</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentroot" sv:type="String">
       <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration</sv:value>
     </sv:property>
   </sv:node>
-  
-  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-sitemenus">
+
+  <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-hst-blueprints-${rootArtifactId.replace($hyphen,$empty)}-subsite-pages">
     <sv:property sv:name="jcr:primaryType" sv:type="Name">
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>31004</sv:value>
+      <sv:value>31012</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
-      <sv:value>hst/blueprints/${rootArtifactId}-subsite/sitemenus.xml</sv:value>
+      <sv:value>hst/blueprints/${rootArtifactId}-subsite/pages.xml</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentroot" sv:type="String">
       <sv:value>/hst:hst/hst:blueprints/${rootArtifactId.replace($hyphen,$empty)}-subsite/hst:configuration</sv:value>
@@ -308,29 +556,13 @@
       <sv:value>hippo:initializeitem</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>31900</sv:value>
+      <sv:value>31013</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentresource" sv:type="String">
       <sv:value>configuration/queries/templates/new-subsite/${rootArtifactId}-subsite.xml</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentroot" sv:type="String">
       <sv:value>/hippo:configuration/hippo:queries/hippo:templates/new-subsite/hippostd:templates</sv:value>
-    </sv:property>
-  </sv:node>
-
-  <!-- CMS configuration - xinha rich text editor -->
-  <sv:node sv:name="cmsconfig-xinha">
-    <sv:property sv:name="jcr:primaryType" sv:type="Name">
-      <sv:value>hippo:initializeitem</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>32002</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:contentresource" sv:type="String">
-      <sv:value>configuration/richtextconfig/xinha.xml</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:contentroot" sv:type="String">
-      <sv:value>/hippo:namespaces/hippostd/html/editor:templates/_default_</sv:value>
     </sv:property>
   </sv:node>
 
@@ -376,7 +608,7 @@
       <sv:value>/hippo:configuration/hippo:users</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33000.0</sv:value>
+      <sv:value>33000.2</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-user-author">
@@ -390,7 +622,7 @@
       <sv:value>/hippo:configuration/hippo:users</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.1</sv:value>
+      <sv:value>33000.3</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-user-liveuser">
@@ -404,7 +636,7 @@
       <sv:value>/hippo:configuration/hippo:users</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.2</sv:value>
+      <sv:value>33000.4</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-user-previewuser">
@@ -418,7 +650,7 @@
       <sv:value>/hippo:configuration/hippo:users</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.2</sv:value>
+      <sv:value>33000.5</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-user-configuser">
@@ -432,7 +664,7 @@
       <sv:value>/hippo:configuration/hippo:users</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.2</sv:value>
+      <sv:value>33000.6</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-user-sitewriter">
@@ -446,7 +678,7 @@
       <sv:value>/hippo:configuration/hippo:users</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.2</sv:value>
+      <sv:value>33000.7</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-groups-author-add">
@@ -460,7 +692,7 @@
       <sv:value>/hippo:configuration/hippo:groups/author/hipposys:members</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.3</sv:value>
+      <sv:value>33000.8</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-groups-editor-add">
@@ -474,7 +706,7 @@
       <sv:value>/hippo:configuration/hippo:groups/editor/hipposys:members</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.4</sv:value>
+      <sv:value>33000.9</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-groups-webmaster-add">
@@ -485,7 +717,7 @@
       <sv:value>/hippo:configuration/hippo:groups/webmaster/hipposys:members</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.5</sv:value>
+      <sv:value>33001.0</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:contentpropadd" sv:multiple="true" sv:type="String">
       <sv:value>editor</sv:value>
@@ -503,7 +735,7 @@
       <sv:value>/hippo:configuration/hippo:groups</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.6</sv:value>
+      <sv:value>33001.1</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-group-liveusers">
@@ -517,7 +749,7 @@
       <sv:value>/hippo:configuration/hippo:groups</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.6</sv:value>
+      <sv:value>33001.2</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-group-previewusers">
@@ -531,7 +763,7 @@
       <sv:value>/hippo:configuration/hippo:groups</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.6</sv:value>
+      <sv:value>33001.3</sv:value>
     </sv:property>
   </sv:node>
 
@@ -546,7 +778,7 @@
       <sv:value>/hippo:configuration/hippo:domains/hippofolders/readonly/hipposys:groups</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.7</sv:value>
+      <sv:value>33001.4</sv:value>
     </sv:property>
   </sv:node>
 
@@ -561,7 +793,7 @@
       <sv:value>/hippo:configuration/hippo:domains/preview-documents/readonly/hipposys:groups</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.7</sv:value>
+      <sv:value>33001.5</sv:value>
     </sv:property>
   </sv:node>
 
@@ -576,7 +808,7 @@
       <sv:value>/hippo:configuration/hippo:domains/live-documents/readonly/hipposys:groups</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.7</sv:value>
+      <sv:value>33001.6</sv:value>
     </sv:property>
   </sv:node>
   <sv:node sv:name="${rootArtifactId.replace($hyphen,$empty)}-configuser-read-everywhere">
@@ -590,23 +822,8 @@
       <sv:value>/hippo:configuration/hippo:domains/everywhere</sv:value>
     </sv:property>
     <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>33100.7</sv:value>
+      <sv:value>33001.7</sv:value>
     </sv:property>
   </sv:node>
 
-  <!-- channel manager fine grained locking -->
-  <sv:node sv:name="gogreen-channelmanager-fine-grained-locking">
-    <sv:property sv:name="jcr:primaryType" sv:type="Name">
-      <sv:value>hippo:initializeitem</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:contentresource" sv:type="String">
-      <sv:value>configuration/channelmanager/channelmanager-fine-grained-locking.xml</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:contentroot" sv:type="String">
-      <sv:value>/hippo:configuration/hippo:frontend/cms/hippo-channel-manager</sv:value>
-    </sv:property>
-    <sv:property sv:name="hippo:sequence" sv:type="Double">
-      <sv:value>34000.0</sv:value>
-    </sv:property>
-  </sv:node>
 </sv:node>

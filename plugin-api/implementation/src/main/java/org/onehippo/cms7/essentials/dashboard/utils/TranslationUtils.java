@@ -21,6 +21,9 @@ public final class TranslationUtils {
 
     private static Logger log = LoggerFactory.getLogger(TranslationUtils.class);
 
+    private TranslationUtils() {
+    }
+
     /**
      * @param node
      * @param property
@@ -94,19 +97,14 @@ public final class TranslationUtils {
             }
 
             final String childLanguage = getHippoLanguage(child);
-            if (StringUtils.isNotBlank(language)) {
-                if (!language.equals(childLanguage)) {
-                    continue;
-                }
+            if (StringUtils.isNotBlank(language) && (!language.equals(childLanguage))) {
+                continue;
             } else if (StringUtils.isNotBlank(childLanguage)) {
                 continue;
             }
-
             final String childProperty = getHippoProperty(child);
-            if (StringUtils.isNotBlank(property)) {
-                if (!property.equals(childProperty)) {
-                    continue;
-                }
+            if (StringUtils.isNotBlank(property) && (!property.equals(childProperty))) {
+                continue;
             } else if (StringUtils.isNotBlank(childProperty)) {
                 continue;
             }
@@ -183,14 +181,17 @@ public final class TranslationUtils {
             }
 
             final String childProperty = getHippoProperty(child);
-            if (StringUtils.isNotBlank(property)) {
-                if (!property.equals(childProperty)) {
-                    continue;
-                }
-            } else if (StringUtils.isNotBlank(childProperty)) {
-                //TODO check
+            if (StringUtils.isNotBlank(property) && (!property.equals(childProperty))) {
+                continue;
+
+            }
+
+            //TODO check this statment:
+            /*
+            else if (StringUtils.isNotBlank(childProperty)) {
                 //continue;
             }
+            */
 
             // A match: add child to list
             translations.add(child);

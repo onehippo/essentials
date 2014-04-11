@@ -16,12 +16,16 @@
 
 package org.onehippo.cms7.essentials.dashboard.instruction;
 
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.Iterables;
-import com.google.common.eventbus.EventBus;
-import com.google.inject.Inject;
-import com.google.inject.name.Named;
+import java.util.Map;
+
+import javax.inject.Inject;
+import javax.inject.Named;
+import javax.jcr.RepositoryException;
+import javax.jcr.Session;
+import javax.jcr.nodetype.NodeTypeExistsException;
+import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlRootElement;
+
 import org.apache.commons.lang.ArrayUtils;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.event.InstructionEvent;
@@ -32,16 +36,18 @@ import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TemplateUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
-import javax.jcr.RepositoryException;
-import javax.jcr.nodetype.NodeTypeExistsException;
-import javax.xml.bind.annotation.XmlAttribute;
-import javax.xml.bind.annotation.XmlRootElement;
-import java.util.Map;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
+import com.google.common.eventbus.EventBus;
+
 
 /**
  * @version "$Id$"
  */
+@Component
 @XmlRootElement(name = "cnd", namespace = EssentialConst.URI_ESSENTIALS_INSTRUCTIONS)
 public class CndInstruction extends PluginInstruction {
 
@@ -53,11 +59,11 @@ public class CndInstruction extends PluginInstruction {
     private String namespace;
     private String superType;
     private String documentType;
-    @Inject(optional = true)
-    @Named("instruction.message.cnd.register.failed")
+
+    @Named("${instruction.message.cnd.register.failed}")
     private String messageRegisterError;
-    @Inject(optional = true)
-    @Named("instruction.message.cnd.register")
+
+    @Named("${instruction.message.cnd.register}")
     private String message;
     private String action;
 
@@ -71,6 +77,7 @@ public class CndInstruction extends PluginInstruction {
 
 
         final String prefix = context.getProjectNamespacePrefix();
+        final Session session = context.createSession();
         try {
             // TODO extend so we can define supertypes
             String[] superTypes;
@@ -81,17 +88,19 @@ public class CndInstruction extends PluginInstruction {
                 superTypes = ArrayUtils.EMPTY_STRING_ARRAY;
             }
             CndUtils.registerDocumentType(context, prefix, documentType, true, false, superTypes);
-            context.getSession().save();
+            session.save();
             // TODO add message
             eventBus.post(new InstructionEvent(this));
             return InstructionStatus.SUCCESS;
         } catch (NodeTypeExistsException e) {
             // just add already exiting ones:
-            GlobalUtils.refreshSession(context.getSession(), false);
+            GlobalUtils.refreshSession(session, false);
 
         } catch (RepositoryException e) {
             log.error(String.format("Error registering document type: %s", namespace), e);
-            GlobalUtils.refreshSession(context.getSession(), false);
+            GlobalUtils.refreshSession(session, false);
+        }finally{
+            GlobalUtils.cleanupSession(session);
         }
 
         message = messageRegisterError;

@@ -77,13 +77,21 @@ public class XmlProperty implements NodeOrProperty {
         return null;
     }
 
+    @Override
     @XmlAttribute(name = "multiple", namespace = EssentialConst.URI_JCR_NAMESPACE)
     public Boolean getMultiple() {
-        if(multiple ==null){
+        if (multiple == null) {
             return Boolean.FALSE;
         }
         return multiple;
     }
+
+
+    @Override
+    public XmlProperty getPropertyForName(final String propertyName) {
+        return null;
+    }
+
 
     public void setMultiple(Boolean value) {
         this.multiple = value;
@@ -152,11 +160,12 @@ public class XmlProperty implements NodeOrProperty {
     @Override
     public String toString() {
         final StringBuilder sb = new StringBuilder("XmlProperty{");
+
+        sb.append("type='").append(type).append('\'');
+        sb.append(", name='").append(name).append('\'');
+        sb.append(", merge='").append(merge).append('\'');
         sb.append("values=").append(values);
         sb.append(", multiple=").append(multiple);
-        sb.append(", name='").append(name).append('\'');
-        sb.append(", type='").append(type).append('\'');
-        sb.append(", merge='").append(merge).append('\'');
         sb.append(", location='").append(location).append('\'');
         sb.append('}');
         return sb.toString();

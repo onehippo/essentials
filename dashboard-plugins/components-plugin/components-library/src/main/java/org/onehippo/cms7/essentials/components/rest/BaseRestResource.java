@@ -35,6 +35,7 @@ import org.slf4j.LoggerFactory;
 public abstract class BaseRestResource extends AbstractResource {
 
     public static final String INVALID_SCOPE = "Invalid scope";
+    public static final String UNCHECKED = "unchecked";
     private static Logger log = LoggerFactory.getLogger(BaseRestResource.class);
     //
 
@@ -46,7 +47,7 @@ public abstract class BaseRestResource extends AbstractResource {
      * @return HstQuery instance
      */
 
-    @SuppressWarnings("unchecked")
+    @SuppressWarnings(UNCHECKED)
     public HstQuery createQuery(final RestContext context, final Class<? extends HippoBean> clazz) {
         HstQuery query = null;
         try {
@@ -56,7 +57,7 @@ public abstract class BaseRestResource extends AbstractResource {
         } catch (QueryException e) {
             log.error("Error creating HST query", e);
         } catch (RepositoryException e) {
-            throw new WebServiceException(INVALID_SCOPE);
+            throw new WebServiceException(INVALID_SCOPE, e);
         }
         if (query == null) {
             throw new WebServiceException("Query was null (failed to create it)");
@@ -81,7 +82,6 @@ public abstract class BaseRestResource extends AbstractResource {
     }
 
     public Node getScope(final HttpServletRequest request) throws RepositoryException {
-        // HippoBean bena = getMountContentBaseBean(getRequestContext(request));
         HstRequestContext requestContext = getRequestContext(request);
         Mount siteMount = requestContext.getResolvedMount().getMount();
         if (siteMount == null) {
@@ -110,13 +110,12 @@ public abstract class BaseRestResource extends AbstractResource {
         return restful;
     }
 
+    @SuppressWarnings(UNCHECKED)
     protected <T extends HippoBean> T getSingleBean(HstQuery query) throws QueryException {
         final HstQueryResult results = query.execute();
         final HippoBeanIterator beans = results.getHippoBeans();
         if (beans.hasNext()) {
-            @SuppressWarnings({"unchecked", "UnnecessaryLocalVariable"})
-            final T bean = (T) beans.nextHippoBean();
-            return bean;
+            return (T) beans.nextHippoBean();
         }
 
         return null;
@@ -125,9 +124,9 @@ public abstract class BaseRestResource extends AbstractResource {
     protected <T extends HippoBean> List<T> populateBeans(HstQuery query) throws QueryException {
         final HstQueryResult results = query.execute();
         final HippoBeanIterator beans = results.getHippoBeans();
-        List<T> retval = new ArrayList<T>();
+        List<T> retval = new ArrayList<>();
         if (beans.hasNext()) {
-            @SuppressWarnings({"unchecked"})
+            @SuppressWarnings({UNCHECKED})
             final T bean = (T) beans.nextHippoBean();
             if (bean != null) {
                 retval.add(bean);
@@ -142,7 +141,7 @@ public abstract class BaseRestResource extends AbstractResource {
         final HippoBeanIterator beans = results.getHippoBeans();
         final RestList<Restful<T>> retVal = newRestList();
         while (beans.hasNext()) {
-            @SuppressWarnings("unchecked")
+            @SuppressWarnings(UNCHECKED)
             final T bean = (T) beans.nextHippoBean();
             if (bean != null) {
                 Restful<T> restful = createInstance(clazz);
