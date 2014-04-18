@@ -11,6 +11,7 @@ import org.hippoecm.hst.content.beans.query.HstQuery;
 import org.hippoecm.hst.content.beans.query.HstQueryResult;
 import org.hippoecm.hst.content.beans.query.exceptions.FilterException;
 import org.hippoecm.hst.content.beans.query.exceptions.QueryException;
+import org.hippoecm.hst.content.beans.query.filter.BaseFilter;
 import org.hippoecm.hst.content.beans.query.filter.Filter;
 import org.hippoecm.hst.content.beans.standard.HippoBean;
 import org.hippoecm.hst.content.beans.standard.HippoDocumentIterator;
@@ -21,6 +22,7 @@ import org.hippoecm.hst.core.component.HstRequest;
 import org.hippoecm.hst.core.component.HstResponse;
 import org.hippoecm.hst.core.parameters.ParametersInfo;
 import org.hippoecm.hst.core.request.HstRequestContext;
+import org.hippoecm.hst.util.ContentBeanUtils;
 import org.onehippo.cms7.essentials.components.info.EssentialsDocumentListComponentInfo;
 import org.onehippo.cms7.essentials.components.info.EssentialsPageable;
 import org.onehippo.cms7.essentials.components.info.EssentialsSortable;
@@ -33,6 +35,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Strings;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * HST component used for listing of documents.
@@ -60,10 +65,7 @@ public class EssentialsListComponent extends CommonComponent {
 
         final Pageable<HippoBean> pageable;
         if (scope instanceof HippoFacetNavigationBean) {
-            final HippoFacetNavigationBean facetBean = (HippoFacetNavigationBean) scope;
-            final HippoResultSetBean resultSet = facetBean.getResultSet();
-            final HippoDocumentIterator<HippoBean> iterator = resultSet.getDocumentIterator(HippoBean.class);
-            pageable = new IterablePagination<>(iterator, resultSet.getCount().intValue(), paramInfo.getPageSize(), getCurrentPage(request));
+            pageable = doFacetedSearch(request, paramInfo, scope);
         } else {
             pageable = doSearch(request, paramInfo, scope);
         }
@@ -79,15 +81,15 @@ public class EssentialsListComponent extends CommonComponent {
      * @see CommonComponent#REQUEST_ATTR_QUERY
      * @see CommonComponent#REQUEST_ATTR_PAGEABLE
      * @see CommonComponent#REQUEST_ATTR_PAGE
-     * @see CommonComponent#REQUEST_ATTR_PAGE_SIZE
-     * @see CommonComponent#REQUEST_ATTR_PAGE_PAGINATION
      */
     protected void populateRequest(final HstRequest request, final EssentialsPageable paramInfo, final Pageable<? extends HippoBean> pageable) {
         request.setAttribute(REQUEST_ATTR_QUERY, getSearchQuery(request));
         request.setAttribute(REQUEST_ATTR_PAGEABLE, pageable);
-        request.setAttribute(REQUEST_ATTR_PAGE, getCurrentPage(request));
-        request.setAttribute(REQUEST_ATTR_PAGE_SIZE, paramInfo.getPageSize());
-        request.setAttribute(REQUEST_ATTR_PAGE_PAGINATION, paramInfo.getShowPagination());
+        request.setAttribute(REQUEST_ATTR_PARAM_INFO, paramInfo);
+
+        if (pageable != null) {
+            pageable.setShowPagination(isShowPagination(request, paramInfo));
+        }
     }
 
     /**
@@ -146,6 +148,29 @@ public class EssentialsListComponent extends CommonComponent {
         return null;
     }
 
+    /**
+     * Execute the search given a facet navigation scope.
+     *
+     * @param request   current HST request
+     * @param paramInfo component parameters
+     * @param scope     bean representing search scope
+     * @param <T>       type of component info interface
+     * @return          pageable search results, or null if search failed.
+     */
+    protected <T extends EssentialsDocumentListComponentInfo>
+            Pageable<HippoBean> doFacetedSearch(final HstRequest request, final T paramInfo, final HippoBean scope) {
+
+        Pageable<HippoBean> pageable = null;
+        final String relPath = SiteUtils.relativePathFrom(scope, request.getRequestContext());
+        final HippoFacetNavigationBean facetBean = ContentBeanUtils.getFacetNavigationBean(relPath, getSearchQuery(request));
+        if (facetBean != null) {
+            final HippoResultSetBean resultSet = facetBean.getResultSet();
+            final HippoDocumentIterator<HippoBean> iterator = resultSet.getDocumentIterator(HippoBean.class);
+            pageable = new IterablePagination<>(iterator, resultSet.getCount().intValue(), paramInfo.getPageSize(), getCurrentPage(request));
+        }
+        return pageable;
+    }
+
     protected void handleInvalidScope(final HstRequest request, final HstResponse response) {
         // TODO determine what to do with invalid scope
         response.setStatus(HttpServletResponse.SC_NOT_FOUND);
@@ -186,9 +211,9 @@ public class EssentialsListComponent extends CommonComponent {
         final int page = getCurrentPage(request);
         query.setLimit(pageSize);
         query.setOffset((page - 1) * pageSize);
-        applySearchFilter(request, query);
         applyOrdering(request, query, paramInfo);
         applyExcludeScopes(request, query, paramInfo);
+        buildAndApplyFilters(request, query);
 
         final HstQueryResult execute = query.execute();
         final Pageable<HippoBean> pageable = new IterablePagination<>(
@@ -196,7 +221,6 @@ public class EssentialsListComponent extends CommonComponent {
                 execute.getTotalSize(),
                 pageSize,
                 page);
-        pageable.setShowPagination(isShowPagination(request, paramInfo));
         return pageable;
     }
 
@@ -205,21 +229,80 @@ public class EssentialsListComponent extends CommonComponent {
     }
 
     /**
-     * Apply search filter (query) to result list
+     * Create a list of filters and apply them to the query, using AND logic.
      *
-     * @param request HstRequest
-     * @param query   HstQuery
+     * @param request current HST request
+     * @param query   query under construction
      * @throws FilterException
      */
-    protected void applySearchFilter(final HstRequest request, final HstQuery query) throws FilterException {
+    protected void buildAndApplyFilters(final HstRequest request, final HstQuery query) throws FilterException {
+        final List<BaseFilter> filters = new ArrayList<BaseFilter>();
+
+        contributeAndFilters(filters, request, query);
+
+        final Filter queryFilter = createQueryFilter(request, query);
+        if (queryFilter != null) {
+            filters.add(queryFilter);
+        }
+
+        applyAndFilters(query, filters);
+    }
+
+    /**
+     * Extension point for sub-classes: contribute to a list of filters to apply using AND logic.
+     *
+     * @param filters list of filters under construction
+     * @param request current HST request
+     * @param query   query under construction, provider for new filters
+     */
+    protected void contributeAndFilters(final List<BaseFilter> filters, final HstRequest request, final HstQuery query) {
+        // empty
+    }
+
+    /**
+     * Apply a list of filters fo a query, using AND logic.
+     *
+     * Make sure that if the query already had a filter, it gets preserved.
+     *
+     * @param query   query under construction
+     * @param filters list of filters to be AND-ed
+     */
+    protected void applyAndFilters(final HstQuery query, final List<BaseFilter> filters) {
+        final BaseFilter oldRootFilter = query.getFilter();
+        if (oldRootFilter != null) {
+            filters.add(oldRootFilter);
+        }
+
+        if (filters.size() > 1) {
+            final Filter andFilter = query.createFilter();
+            for (BaseFilter filter : filters) {
+                andFilter.addAndFilter(filter);
+            }
+            query.setFilter(andFilter);
+        } else if (filters.size() == 1) {
+            query.setFilter(filters.get(0));
+        }
+    }
+
+    /**
+     * Apply search filter (query) to result list
+     *
+     * @param request current HST request
+     * @param query   query under construction, provider for new filters
+     * @throws FilterException
+     */
+    protected Filter createQueryFilter(final HstRequest request, final HstQuery query) throws FilterException {
+        Filter queryFilter = null;
+
         // check if we have query parameter
         final String queryParam = getSearchQuery(request);
         if (!Strings.isNullOrEmpty(queryParam)) {
-            final Filter filter = query.createFilter();
-            filter.addContains(".", queryParam);
             log.debug("using search query {}", queryParam);
-            query.setFilter(filter);
+
+            queryFilter = query.createFilter();
+            queryFilter.addContains(".", queryParam);
         }
+        return queryFilter;
     }
 
 
