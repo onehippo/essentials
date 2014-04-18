@@ -207,7 +207,7 @@ public class BlogListenerModule extends AbstractReconfigurableDaemonModule {
 
     @Override
     protected void doShutdown() {
-
+        session.logout();
     }
 
 }
