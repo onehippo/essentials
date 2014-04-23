@@ -1,4 +1,4 @@
-<#include "/WEB-INF/ftl/essentials/common/imports.ftl">
+<#include "/WEB-INF/freemarker/include/imports.ftl">
 <#-- @ftlvariable name="facets" type="org.hippoecm.hst.content.beans.standard.HippoFacetNavigationBean" -->
 <#-- @ftlvariable name="facetLimit" type="java.lang.Integer" -->
 <#-- @ftlvariable name="query" type="java.lang.String" -->
@@ -6,7 +6,7 @@
     <#assign facetLimit = 50>
 
 <form action="<@hst.actionURL />" method="get">
-    <div class="form-group">
+    <div class="row form-group">
         <div class="col-xs-8">
             <#if query??>
                 <input type="search" value="${query}" name="query" class="form-control" placeholder="Search blog posts">

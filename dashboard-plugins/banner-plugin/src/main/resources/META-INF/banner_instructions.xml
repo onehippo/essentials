@@ -42,29 +42,23 @@
 
   -->
   <instructionSet group="jsp">
-    <file action="copy" source="jsp/imports.jsp" target="{{jspRoot}}/essentials/common/imports.jsp"/>
-    <file action="copy" source="jsp/essentials-carousel.jsp" target="{{jspRoot}}/essentials/essentials-carousel.jsp"/>
-    <file action="copy" source="jsp/essentials-banner.jsp" target="{{jspRoot}}/essentials/essentials-banner.jsp"/>
-    <xml action="copy" source="hst/carousel-template-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
-    <xml action="copy" source="hst/banner-template-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+
+    <file action="copy" source="jsp/essentials-carousel.jsp" target="{{jspRoot}}/hstdefault/essentials-carousel.jsp"/>
+    <file action="copy" source="jsp/essentials-banner.jsp" target="{{jspRoot}}/hstdefault/essentials-banner.jsp"/>
+    <xml action="copy" source="hst/carousel-template-jsp.xml" target="/hst:hst/hst:configurations/hst:default/hst:templates"/>
+    <xml action="copy" source="hst/banner-template-jsp.xml" target="/hst:hst/hst:configurations/hst:default/hst:templates"/>
   </instructionSet>
   <instructionSet group="freemarker">
-    <file action="copy" source="freemarker/imports.ftl" target="{{freemarkerRoot}}/essentials/common/imports.ftl"/>
-    <file action="copy" source="ftl/essentials-carousel.ftl" target="{{freemarkerRoot}}/essentials/essentials-carousel.ftl"/>
-    <file action="copy" source="ftl/essentials-banner.ftl" target="{{freemarkerRoot}}/essentials/essentials-banner.ftk"/>
-    <xml action="copy" source="hst/carousel-template-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
-    <xml action="copy" source="hst/banner-template-ftl.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
+    <file action="copy" source="freemarker/essentials-carousel.ftl" target="{{freemarkerRoot}}/hstdefault/essentials-carousel.ftl"/>
+    <file action="copy" source="freemarker/essentials-banner.ftl" target="{{freemarkerRoot}}/hstdefault/essentials-banner.ftl"/>
+    <xml action="copy" source="hst/carousel-template-freemarker.xml" target="/hst:hst/hst:configurations/hst:default/hst:templates"/>
+    <xml action="copy" source="hst/banner-template-freemarker.xml" target="/hst:hst/hst:configurations/hst:default/hst:templates"/>
+    <file action="copy" binary="true" source="images/component-icon-banner.png" target="{{siteWebRoot}}/images/component-icon-banner.png"/>
+    <file action="copy" binary="true" source="images/component-icon-carousel.png" target="{{siteWebRoot}}/images/component-icon-carousel.png"/>
   </instructionSet>
   <instructionSet>
-    <xml action="copy" source="hst/carousel-catalog.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:catalog"/>
-
-    <xml action="copy" source="hst/banner-template.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
-    <file binary="true" action="copy" source="webapp/js/jquery-1.11.0.min.js" target="{{javascriptRoot}}/jquery-1.11.0.min.js"/>
-    <file binary="true" action="copy" source="webapp/js/bootstrap.min.js" target="{{javascriptRoot}}/bootstrap.min.js"/>
-    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.eot" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.eot"/>
-    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.svg" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.svg"/>
-    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.ttf" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.ttf"/>
-    <file action="copy" binary="true" source="bootstrap/fonts/glyphicons-halflings-regular.woff" target="{{siteWebRoot}}/fonts/glyphicons-halflings-regular.woff"/>
+    <xml action="copy" source="hst/catalog/banner-catalog-item.xml" target="/hst:hst/hst:configurations/hst:default/hst:catalog/essentials-catalog"/>
+    <xml action="copy" source="hst/catalog/carousel-catalog-item.xml" target="/hst:hst/hst:configurations/hst:default/hst:catalog/essentials-catalog"/>
   </instructionSet>
 
 
