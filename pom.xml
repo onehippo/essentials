@@ -1,4 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Copyright 2014 Hippo B.V. (http://www.onehippo.com)
+
+  Licensed under the Apache License, Version 2.0 (the "License");
+  you may not use this file except in compliance with the License.
+  You may obtain a copy of the License at
+
+   http://www.apache.org/licenses/LICENSE-2.0
+
+  Unless required by applicable law or agreed to in writing, software
+  distributed under the License is distributed on an "AS IS" BASIS,
+  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  See the License for the specific language governing permissions and
+  limitations under the License.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
 
@@ -71,18 +87,18 @@
 
 
   <repositories>
-<!--
-    <repository>
-      <id>hippo-maven2-private</id>
-      <name>Hippo maven 2 private repository.</name>
-      <url>https://maven.onehippo.com/maven2-private</url>
-    </repository>
-    <repository>
-      <id>hippo-maven2-private-snapshots</id>
-      <name>Hippo maven 2 private repository snapshots</name>
-      <url>https://maven.onehippo.com/maven2-private-snapshots</url>
-    </repository>
--->
+    <!--
+        <repository>
+          <id>hippo-maven2-private</id>
+          <name>Hippo maven 2 private repository.</name>
+          <url>https://maven.onehippo.com/maven2-private</url>
+        </repository>
+        <repository>
+          <id>hippo-maven2-private-snapshots</id>
+          <name>Hippo maven 2 private repository snapshots</name>
+          <url>https://maven.onehippo.com/maven2-private-snapshots</url>
+        </repository>
+    -->
     <repository>
       <id>hippo</id>
       <name>Hippo maven 2 repository.</name>
@@ -194,5 +210,58 @@
       </plugin>
     </plugins>
   </build>
+
+  <profiles>
+    <profile>
+      <id>pedantic</id>
+      <build>
+        <plugins>
+          <plugin>
+            <groupId>org.apache.rat</groupId>
+            <artifactId>apache-rat-plugin</artifactId>
+            <inherited>false</inherited>
+            <configuration>
+              <addDefaultLicenseMatchers>false</addDefaultLicenseMatchers>
+              <excludeSubProjects>false</excludeSubProjects>
+              <licenses>
+                <license implementation="org.apache.rat.analysis.license.AppliedApacheSoftwareLicense20">
+                  <copyrightOwner>Hippo B\.V\. \(http://www\.onehippo\.com\)</copyrightOwner>
+                </license>
+              </licenses>
+              <excludes>
+                <!-- no license headers needed for these files -->
+                <exclude>**/*.cnd</exclude>
+                <exclude>**/*.json</exclude>
+                <exclude>**/*.log</exclude>
+
+                <exclude>**/*.patch</exclude>
+                <exclude>**/*.properties</exclude>
+                <exclude>**/hippoecm-extension.xml</exclude>
+                <exclude>**/log4j.dtd</exclude>
+                <exclude>**/MANIFEST.MF</exclude>
+                <!-- exclude IntelliJ module files of sub-projects -->
+                <exclude>**/*.iml</exclude>
+                <!-- exclude IntelliJ Atlassian plugin file -->
+                <exclude>**/atlassian-ide-plugin.xml</exclude>
+                <!-- essentials specific -->
+                <exclude>plugin-dashboard/src/main/webapp/bootstrap-3.0.0/**</exclude>
+                <exclude>plugin-dashboard/src/main/webapp/components/**</exclude>
+                <exclude>plugin-dashboard/src/main/webapp/js/lib/**</exclude>
+                <exclude>archetype/**</exclude>
+                <exclude>ide/**</exclude>
+                <exclude>**/*.md</exclude>
+                <exclude>*/.idea/**</exclude>
+                <exclude>*/.bowerrc/**</exclude>
+                <exclude>**/*.svg</exclude>
+                <exclude>**/*.woff</exclude>
+                <exclude>**/*.ttf</exclude>
+              </excludes>
+            </configuration>
+
+          </plugin>
+        </plugins>
+      </build>
+    </profile>
+  </profiles>
 
 </project>

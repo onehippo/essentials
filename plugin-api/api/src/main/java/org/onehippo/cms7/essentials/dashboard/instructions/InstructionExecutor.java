@@ -1,5 +1,5 @@
 /*
- * Copyright 2013 Hippo B.V. (http://www.onehippo.com)
+ * Copyright 2014 Hippo B.V. (http://www.onehippo.com)
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -16,7 +16,10 @@
 
 package org.onehippo.cms7.essentials.dashboard.instructions;
 
+import java.util.Set;
+
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.onehippo.cms7.essentials.dashboard.model.Restful;
 
 /**
  * @version "$Id$"
@@ -24,4 +27,6 @@ import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 public interface InstructionExecutor {
 
     InstructionStatus execute(InstructionSet instruction, PluginContext context);
+
+    <T extends Restful> Set<T> getInstructionsMessages(InstructionSet instruction, PluginContext context);
 }
