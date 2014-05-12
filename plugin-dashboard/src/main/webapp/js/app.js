@@ -218,30 +218,7 @@
                     label: '@',
                     payload: '='
                 },
-                template: '<accordion close-others="oneAtATime"> \
-                    <accordion-group is-open="isopen"> \
-                    <accordion-heading ng-class="active"> \
-                    {{label ? label : "Display changes made by this plugin"}}\
-                    <i class="pull-right glyphicon" ng-class="{\'glyphicon-chevron-down\': isopen, \'glyphicon-chevron-right\': !isopen}"></i> \
-                    </accordion-heading> \
-                    <div ng-repeat="message in packageMessages.items" ng-switch="message.displayType"> \
-                    <div  ng-switch-when="PRE"> \
-                    <pre>{{message.value}}</pre> \
-                    </div> \
-                    <div ng-switch-when="A"> \
-                    <a target="_blank" href="{{message.value}}">{{message.value}}</a> \
-                    </div> \
-                    <div ng-switch-when="H3"><h3 class="alert-info">{{message.value}}</h3> \
-                    </div> \
-                    <div ng-switch-when="H4"> \
-                    <h3>{{message.value}}</h3> \
-                    </div> \
-                    <div ng-switch-when="STRONG"> \
-                    <strong>{{message.value}}</strong></div> \
-                    <div ng-switch-when="BR"><br/></div> \
-                    <div ng-switch-default class="alert-info"><br/>{{message.value}}</div> \
-                    </div></accordion-group> \
-                    </accordion>',
+                templateUrl: 'directives/essentials-messages.html',
                 controller: function ($scope, installerFactory) {
                     // refresh messages when changes are made:
                     $scope.$watch('payload', function (newValue, oldValue) {
@@ -267,43 +244,7 @@
                     buttonText: '@',
                     sample: '@'
                 },
-                template: '<div class="panel panel-default"><div class="panel-heading">{{pluginTitle}}</div> \
-            <div class="panel-body"> \
-                <form novalidate name="templateForm"> \
-            <div class="form-group"> \
-                <label>Please select templating language:</label> \
-            </div> \
-            <div class="radio"> \
-                <label> \
-                    <input type="radio" ng-model="templateName" required value="jsp"/> \
-                    JSP template \
-                </label> \
-            </div> \
-            <div class="radio"> \
-                <label> \
-                    <input type="radio" ng-model="templateName" required value="freemarker"/> \
-                    Freemarker template \
-                </label> \
-            </div> \
-            <div ng-show="sample" class="form-group"> \
-                    <label> Content: </label>\
-            </div> \
-            <div ng-show="sample" class = "checkbox">\
-                <label>  \
-                Add sample content <input type="checkbox" ng-model="sampleData"/> \
-                </label> \
-                </div> \
-            \
-        </form> \
-        <essentials-messages  payload="payload" label="{{label}}"/> \
-         </div> \
-        <div class="panel-footer">    \
-            <div class = "input-group">\
-                <span class="input-group-btn"> \
-                    <button class="btn btn-primary pull-right" type="submit" ng-click="run()">{{buttonText}}</button>\
-                </span> \
-                </div> \
-            </div></div>',
+                templateUrl: 'directives/essentials-simple-install-plugin.html',
                 controller: function ($scope, $sce, $log, $rootScope, $http) {
                     $scope.pluginId = "";
                     $scope.sampleData = true;
