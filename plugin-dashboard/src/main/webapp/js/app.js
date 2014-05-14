@@ -28,283 +28,312 @@
  *
  */
 (function () {
-  "use strict";
+    "use strict";
 
-  angular.module('hippo.essentials', ['ngRoute', 'localytics.directives', 'ui.bootstrap', 'ui.sortable', 'ui.router'])
+    angular.module('hippo.essentials', ['ngRoute', 'localytics.directives', 'ui.validate', 'ui.bootstrap', 'ui.sortable', 'ui.router'])
 
 //############################################
 // GLOBAL LOADING
 //############################################
-    .config(function ($provide, $httpProvider, $controllerProvider, $compileProvider) {
+        .config(function ($provide, $httpProvider, $controllerProvider, $compileProvider) {
 
-      $provide.factory('MyHttpInterceptor', function ($q, $rootScope, $log) {
-        return {
-          //############################################
-          // REQUEST
-          //############################################
-          request: function (config) {
-            if (!$rootScope.FEEDBACK_TIMER) {
-              $rootScope.FEEDBACK_TIMER = new Date();
-            }
-            $rootScope.busyLoading = true;
-            var date = new Date();
-            // keep success messages for 5 seconds
-            if ((date.getTime() - $rootScope.FEEDBACK_TIMER.getTime()) > 5000) {
-              $rootScope.FEEDBACK_TIMER = new Date();
-              $rootScope.feedbackMessages = [];
-            }
-            return config || $q.when(config);
-          },
-          requestError: function (error) {
-            $rootScope.busyLoading = true;
-            $rootScope.globalError = [];
-            $rootScope.feedbackMessages = [];
-            if (error.data) {
-              $rootScope.globalError.push(error.data);
-            }
-            else {
-              $rootScope.globalError.push(error.status);
-            }
-            return $q.reject(error);
-          },
+            $provide.factory('MyHttpInterceptor', function ($q, $rootScope, $log) {
+                return {
+                    //############################################
+                    // REQUEST
+                    //############################################
+                    request: function (config) {
+                        if (!$rootScope.FEEDBACK_TIMER) {
+                            $rootScope.FEEDBACK_TIMER = new Date();
+                        }
+                        $rootScope.busyLoading = true;
+                        var date = new Date();
+                        // keep success messages for 5 seconds
+                        if ((date.getTime() - $rootScope.FEEDBACK_TIMER.getTime()) > 5000) {
+                            $rootScope.FEEDBACK_TIMER = new Date();
+                            $rootScope.feedbackMessages = [];
+                        }
+                        return config || $q.when(config);
+                    },
+                    requestError: function (error) {
+                        $rootScope.busyLoading = true;
+                        $rootScope.globalError = [];
+                        $rootScope.feedbackMessages = [];
+                        if (error.data) {
+                            $rootScope.globalError.push(error.data);
+                        }
+                        else {
+                            $rootScope.globalError.push(error.status);
+                        }
+                        return $q.reject(error);
+                    },
 
-          //############################################
-          // RESPONSE
-          //############################################
-          response: function (data) {
-            $rootScope.busyLoading = false;
-            $rootScope.globalError = [];
-            // show success message:
-            if (data.data.successMessage) {
-              $rootScope.globalError = [];
-              $rootScope.feedbackMessages = [];
-              $rootScope.feedbackMessages.push(data.data.value);
-            }
-            $log.info(data);
-            return data || $q.when(data);
-          },
-          responseError: function (error) {
-            $rootScope.busyLoading = false;
-            $rootScope.globalError = [];
-            $rootScope.feedbackMessages = [];
-            if (error.data) {
-              $rootScope.globalError.push(error.data);
-            }
-            else {
-              $rootScope.globalError.push(error.status);
-            }
-            $log.error(error);
-            return $q.reject(error);
-          }
-        };
-      });
-      $httpProvider.interceptors.push('MyHttpInterceptor');
-    })
+                    //############################################
+                    // RESPONSE
+                    //############################################
+                    response: function (data) {
+                        $rootScope.busyLoading = false;
+                        $rootScope.globalError = [];
+                        // show success message:
+                        if (data.data.successMessage) {
+                            $rootScope.globalError = [];
+                            $rootScope.feedbackMessages = [];
+                            $rootScope.feedbackMessages.push(data.data.value);
+                        }
+                        $log.info(data);
+                        return data || $q.when(data);
+                    },
+                    responseError: function (error) {
+                        $rootScope.busyLoading = false;
+                        $rootScope.globalError = [];
+                        $rootScope.feedbackMessages = [];
+                        if (error.data) {
+                            $rootScope.globalError.push(error.data);
+                        }
+                        else {
+                            $rootScope.globalError.push(error.status);
+                        }
+                        $log.error(error);
+                        return $q.reject(error);
+                    }
+                };
+            });
+            $httpProvider.interceptors.push('MyHttpInterceptor');
+        })
 
 //############################################
 // RUN
 //############################################
 
 
-    .run(function ($rootScope, $location, $log, $http, $state) {
-      $rootScope.headerMessage = "Welcome on the Hippo Trail";
-      // routing listener
-      $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+        .run(function ($rootScope, $location, $log, $http, $state) {
+            $rootScope.headerMessage = "Welcome on the Hippo Trail";
+            // routing listener
+            $rootScope.$on('$stateChangeStart', function (event, toState, toParams, fromState, fromParams) {
+                // noop
 
-        // check if we need powerpacks install check
-        /*  if(!$rootScope.checkDone && (toState != "powerpacks" && $location.url() != "/" || $location.url() != "")){
-         $state.transitionTo('powerpacks');
-         }*/
-
-      });
+            });
 
 
-      var root = 'http://localhost:8080/essentials/rest';
-      var plugins = root + "/plugins";
+            var root = 'http://localhost:8080/essentials/rest';
+            var plugins = root + "/plugins";
 
-      $rootScope.PLUGIN_GROUP = {
-        plugin: "plugins",
-        tool: "tools"
-      };
-      /* TODO generate this server side ?*/
-      $rootScope.REST = {
-        root: root,
-        menus: root + '/menus/',
-        jcr: root + '/jcr/',
-        jcrQuery: root + '/jcr/query/',
-        dynamic: root + '/dynamic/',
+            $rootScope.PLUGIN_GROUP = {
+                plugin: "plugins",
+                tool: "tools"
+            };
+            /* TODO generate this server side ?*/
+            $rootScope.REST = {
+                root: root,
+                menus: root + '/menus/',
+                jcr: root + '/jcr/',
+                jcrQuery: root + '/jcr/query/',
+                dynamic: root + '/dynamic/',
 
-        /**
-         * Returns list of all plugins
-         * //TODO: change this once we have marketplace up and running
-         */
-        plugins: root + "/plugins/",
-        projectSettings: plugins + '/settings',
-        powerpacksStatus: plugins + '/status/powerpack/',
-        controllers: plugins + '/controllers/',
-        /**
-         * Returns list of all plugins that need configuration
-         */
-        pluginsToConfigure: plugins + '/configure/list/',
-        /**
-         *Add a plugin to the list of plugins that need configuration:
-         * POST method
-         * DELETE method deletes plugin from the list
-         */
-        pluginsAddToConfigure: plugins + '/configure/add/',
-        /**
-         *
-         * /installstate/{className}
-         */
-        pluginInstallState: plugins + '/installstate/',
-        /**
-         *  * /install/{className}
-         */
-        pluginInstall: plugins + '/install/',
-        /**
-         * Returns a list of plugin modules (javascript includes)
-         */
-        pluginModules: plugins + '/modules/',
+                /**
+                 * Returns list of all plugins
+                 * //TODO: change this once we have marketplace up and running
+                 */
+                plugins: root + "/plugins/",
+                projectSettings: plugins + '/settings',
+                packageStatus: plugins + '/status/package/',
+                packageMessages: plugins + '/changes/',
+                controllers: plugins + '/controllers/',
+                /**
+                 * Returns list of all plugins that need configuration
+                 */
+                pluginsToConfigure: plugins + '/configure/list/',
+                /**
+                 *Add a plugin to the list of plugins that need configuration:
+                 * POST method
+                 * DELETE method deletes plugin from the list
+                 */
+                pluginsAddToConfigure: plugins + '/configure/add/',
+                /**
+                 *
+                 * /installstate/{className}
+                 */
+                pluginInstallState: plugins + '/installstate/',
+                /**
+                 *  * /install/{className}
+                 */
+                pluginInstall: plugins + '/install/',
+                /**
+                 * Returns a list of plugin modules (javascript includes)
+                 */
+                pluginModules: plugins + '/modules/',
 
 
-        documentTypes: root + '/documenttypes/',
+                documentTypes: root + '/documenttypes/',
 
-        powerpacks_install: plugins + '/install/powerpack',
+                package_install: plugins + '/install/package',
+                hide_introduction: plugins + '/hideintroduction',
 
-        compounds: root + '/documenttypes/compounds',
-        compoundsCreate: root + '/documenttypes/compounds/create/',
-        compoundsDelete: root + '/documenttypes/compounds/delete/',
-        contentblocksCreate: root + '/documenttypes/compounds/contentblocks/create/',
+                compounds: root + '/documenttypes/compounds',
+                compoundsCreate: root + '/documenttypes/compounds/create/',
+                compoundsDelete: root + '/documenttypes/compounds/delete/',
+                contentblocksCreate: root + '/documenttypes/compounds/contentblocks/create/',
+                //############################################
+                // NODE
+                //############################################
+                node: root + '/node/',
+                getProperty: root + '/node/property',
+                setProperty: root + '/node/property/save',
+                galleryProcessor: root + '/imagegallery/',
+                imageGalleryData: root + '/imagegallery/gallerycontent/',
+                imageGalleryDataSave: root + '/imagegallery/gallerycontentsave',
+                imageSets: root + '/imagegallery/imagesets/',
+                galleryProcessorSave: root + '/imagegallery/save',
+                imageSetsSave: root + '/imagegallery/imagesets/save'
+
+
+            };
+
+            /**
+             * Set global variables (often used stuff)
+             */
+            $rootScope.initData = function () {
+                $http.get($rootScope.REST.controllers).success(function (data) {
+                    $rootScope.controllers = data;
+                });
+
+
+                $http.get($rootScope.REST.projectSettings).success(function (data) {
+                    $rootScope.projectSettings = Essentials.keyValueAsDict(data.items);
+
+                });
+
+            };
+
+
+            $rootScope.initData();
+        })
+
         //############################################
-        // NODE
+        // DIRECTIVES
         //############################################
-        node: root + '/node/',
-        getProperty: root + '/node/property',
-        setProperty: root + '/node/property/save',
-        galleryProcessor: root + '/imagegallery/',
-        imageGalleryData: root + '/imagegallery/gallerycontent/',
-        imageGalleryDataSave: root + '/imagegallery/gallerycontentsave',
-        imageSets: root + '/imagegallery/imagesets/',
-        galleryProcessorSave: root + '/imagegallery/save',
-        imageSetsSave: root + '/imagegallery/imagesets/save'
+        .directive("essentialsMessages", function () {
+            return {
+                replace: false,
+                restrict: 'E',
+                scope: {
+                    label: '@',
+                    payload: '='
+                },
+                templateUrl: 'directives/essentials-messages.html',
+                controller: function ($scope, installerFactory) {
+                    // refresh messages when changes are made:
+                    $scope.$watch('payload', function (newValue, oldValue) {
+                        if (newValue) {
+                            return installerFactory.packageMessages(newValue).success(function (data) {
+                                return $scope.packageMessages = data;
+                            });
+                        }
+                    }, true);
+                    return installerFactory.packageMessages($scope.payload).success(function (data) {
+                        return $scope.packageMessages = data;
+                    });
+                }
+            }
+        }).directive("essentialsSimpleInstallPlugin", function () {
+            return {
+                replace: false,
+                restrict: 'E',
+                scope: {
+                    label: '@',
+                    pluginId: '@',
+                    pluginTitle: '@',
+                    buttonText: '@',
+                    sample: '@'
+                },
+                templateUrl: 'directives/essentials-simple-install-plugin.html',
+                controller: function ($scope, $sce, $log, $rootScope, $http) {
+                    $scope.pluginId = "";
+                    $scope.sampleData = true;
+                    $scope.templateName = 'jsp';
+                    $scope.message = {};
+                    $scope.payload = {values: {pluginId: $scope.pluginId, sampleData: $scope.sampleData, templateName: $scope.templateName}};
+                    $scope.$watchCollection("[sampleData, templateName]", function () {
+                        $scope.payload = {values: {pluginId: $scope.pluginId, sampleData: $scope.sampleData, templateName: $scope.templateName}};
+                    });
+                    $scope.run = function () {
+                        $http.post($rootScope.REST.package_install, $scope.payload).success(function (data) {
+                        });
+                    };
+                }
 
-
-      };
-
-      /**
-       * Set global variables (often used stuff)
-       */
-      $rootScope.initData = function () {
-        $http.get($rootScope.REST.controllers).success(function (data) {
-          $rootScope.controllers = data;
-        });
-
-
-        $http.get($rootScope.REST.projectSettings).success(function (data) {
-          $rootScope.projectSettings = Essentials.keyValueAsDict(data.items);
-
-        });
-
-      };
-
-
-      $rootScope.initData();
-    })
-
-    //############################################
-    // DIRECTIVES
-    //############################################
-    .directive("powerpacks", function () {
-      return {
-        replace: true,
-        restrict: 'E',
-        scope: {
-          label: '@',
-          options: '=',
-          selectedDescription: '=',
-          ngModel: '=',
-          onSelect: '&'
-        },
-
-        link: function (scope, element, attrs, ctrl) {
-          scope.onPowerpackSelect = function () {
-            scope.onSelect();
-          }
-        },
-
-        template: '' +
-          '<div>' +
-          ' <div class="form-group">' +
-          '   <select class="form-control" ng-required="true" ng-selected="onPowerpackSelect()" ng-model="ngModel">' +
-          '     <option ng-repeat="option in options" value="{{option.pluginId}}" ng-disabled="!option.enabled">{{option.name}}</option>' +
-          '   </select>' +
-          ' </div>' +
-          ' <div class="panel panel-info"><div class="panel-body">{{selectedDescription}}</div></div>' +
-          '</div>'
-      };
-    })
+            }
+        })
+        .factory('installerFactory', function ($http, $rootScope) {
+            var packageMessages = function (payload) {
+                return $http.post($rootScope.REST.packageMessages, payload);
+            };
+            return {
+                packageMessages: packageMessages
+            };
+        })
 
 
 //############################################
 // FILTERS
 //############################################
 
-  /**
-   * Filter plugins for given group type
-   */
-    .filter('pluginType', function () {
-      return function (name, plugins) {
-        var retVal = [];
-        angular.forEach(plugins, function (plugin) {
-          if (plugin.type == name) {
-            retVal.push(plugin);
-          }
-        });
-        return retVal;
-      }
-    }).filter('splitString', function () {
-      return function (input, splitOn, idx) {
-        if (input) {
-          var split = input.split(splitOn);
-          if (split.length >= idx) {
-            return split[idx];
-          }
-        }
-        return "";
-      }
-    })
-    .filter('startsWith', function () {
-      return function (inputCollection, inputString) {
-        var collection = [];
-        if (inputCollection && inputString) {
-          for (var i = 0; i < inputCollection.length; i++) {
-            if (inputCollection[i].value.slice(0, inputString.length) == inputString) {
-              collection.push(inputCollection[i]);
+    /**
+     * Filter plugins for given group type
+     */
+        .filter('pluginType', function () {
+            return function (name, plugins) {
+                var retVal = [];
+                angular.forEach(plugins, function (plugin) {
+                    if (plugin.type == name) {
+                        retVal.push(plugin);
+                    }
+                });
+                return retVal;
             }
-          }
-          return collection;
-        }
-        return collection;
-      }
-    })
+        }).filter('splitString', function () {
+            return function (input, splitOn, idx) {
+                if (input) {
+                    var split = input.split(splitOn);
+                    if (split.length >= idx) {
+                        return split[idx];
+                    }
+                }
+                return "";
+            }
+        })
+        .filter('startsWith', function () {
+            return function (inputCollection, inputString) {
+                var collection = [];
+                if (inputCollection && inputString) {
+                    for (var i = 0; i < inputCollection.length; i++) {
+                        if (inputCollection[i].value.slice(0, inputString.length) == inputString) {
+                            collection.push(inputCollection[i]);
+                        }
+                    }
+                    return collection;
+                }
+                return collection;
+            }
+        })
 
-    //############################################
-    // BROADCAST SERVICE
-    //############################################
-    .factory('eventBroadcastService', function ($rootScope) {
-      var broadcaster = {};
-      broadcaster.event = '';
-      broadcaster.eventName = '';
-      broadcaster.broadcast = function (eventName, event) {
-        this.event = event;
-        this.eventName = eventName;
-        this.broadcastItem();
-      };
-      broadcaster.broadcastItem = function () {
-        $rootScope.$broadcast(this.eventName);
-      };
-      return broadcaster;
-    });
+        //############################################
+        // BROADCAST SERVICE
+        //############################################
+        .factory('eventBroadcastService', function ($rootScope) {
+            var broadcaster = {};
+            broadcaster.event = '';
+            broadcaster.eventName = '';
+            broadcaster.broadcast = function (eventName, event) {
+                this.event = event;
+                this.eventName = eventName;
+                this.broadcastItem();
+            };
+            broadcaster.broadcastItem = function () {
+                $rootScope.$broadcast(this.eventName);
+            };
+            return broadcaster;
+        });
 
 })();
 

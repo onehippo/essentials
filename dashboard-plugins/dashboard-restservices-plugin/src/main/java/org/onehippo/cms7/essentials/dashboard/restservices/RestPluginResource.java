@@ -16,9 +16,14 @@
 
 package org.onehippo.cms7.essentials.dashboard.restservices;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
+import javax.jcr.Node;
+import javax.jcr.RepositoryException;
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.GET;
@@ -29,7 +34,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
-import org.onehippo.cms7.essentials.dashboard.packaging.PowerpackPackage;
+import org.onehippo.cms7.essentials.dashboard.packaging.InstructionPackage;
 import org.onehippo.cms7.essentials.dashboard.rest.BaseResource;
 import org.onehippo.cms7.essentials.dashboard.rest.ErrorMessageRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.KeyValueRestful;
@@ -37,6 +42,7 @@ import org.onehippo.cms7.essentials.dashboard.rest.MessageRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.PostPayloadRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.RestfulList;
 import org.onehippo.cms7.essentials.dashboard.utils.BeanWriterUtils;
+import org.onehippo.cms7.essentials.dashboard.utils.HstUtils;
 
 import com.google.common.base.Strings;
 
@@ -61,13 +67,23 @@ public class RestPluginResource extends BaseResource {
         return list;
     }
 
-    /**
-     * Executes REST powerpack
-     */
+
+    @GET
+    @Path("/mounts")
+    public List<MountRestful> getHippoSites(@Context ServletContext servletContext) throws RepositoryException {
+
+        final Set<Node> hstMounts = HstUtils.getHstMounts(getContext(servletContext));
+        final List<MountRestful> list = new ArrayList<>();
+        for (Node m : hstMounts) {
+            list.add(new MountRestful(m.getIdentifier(), m.getPath(), m.getName()));
+        }
+        return list;
+    }
+
+
     @POST
     @Path("/")
-    public MessageRestful executePowerpack(final PostPayloadRestful payloadRestful, @Context ServletContext servletContext) {
-
+    public MessageRestful executeInstructionPackage(final PostPayloadRestful payloadRestful, @Context ServletContext servletContext) {
 
         final MessageRestful message = new MessageRestful();
 
@@ -79,11 +95,11 @@ public class RestPluginResource extends BaseResource {
         }
         final PluginContext context = getContext(servletContext);
 
-        final PowerpackPackage powerpack = new RestServicesPowerpack();
+        final InstructionPackage instructionPackage = new RestServicesInstructionPackage();
         // TODO: figure out injection part
-        getInjector().autowireBean(powerpack);
-        powerpack.setProperties(new HashMap<String, Object>(values));
-        powerpack.execute(context);
+        getInjector().autowireBean(instructionPackage);
+        instructionPackage.setProperties(new HashMap<String, Object>(values));
+        instructionPackage.execute(context);
         message.setValue("Please rebuild and restart your application");
         return message;
     }

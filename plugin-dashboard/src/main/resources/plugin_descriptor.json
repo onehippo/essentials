@@ -1,11 +1,10 @@
 {"items": [
 
     {
-        "needsInstallation": true,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Content Blocks plugin provides the content/document editors an ability to add multiple pre-configured compound type blocks to a document. The CMS administrator can configure the available content blocks on per document type basis.",
         "name": "Content Blocks",
+        "introduction": "Provide the ability to add multiple pre-configured compound type blocks to a document. The CMS administrator can configure the available content blocks on a per-document-type basis.",
         "pluginId": "contentBlocks",
         "type": "plugins",
         "vendor": {
@@ -34,13 +33,12 @@
         ]
     },
     {
-        "needsInstallation": true,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Blog plugin",
-        "description": "Hippo Blog plugin contains Blog document types, HST components and markup files",
-        "name": "Blog plugin",
-        "restClasses": ["org.onehippo.cms7.essentials.dashboard.blog.BlogPluginResource"],
+        "name": "Blog support",
+        "introduction": "Add blog and author document types to your project. Render blogs in an overview page including faceted navigation. Add an item to the site's main menu.",
+        "packageFile": "/META-INF/blog_instructions.xml",
+        "restClasses": [],
         "pluginId": "blogPlugin",
         "type": "plugins",
         "vendor": {
@@ -92,14 +90,13 @@
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Configuration of Hippo image sets",
-        "name": "Gallery plugin",
+        "name": "Gallery manager",
+        "introduction": "Manage your project's image sets.",
         "pluginId": "galleryPlugin",
 
-        "type": "plugins",
+        "type": "tools",
         "vendor": {
             "@type": "vendor",
             "name": "Hippo",
@@ -117,11 +114,10 @@
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Creates (re-generates) HST beans",
-        "name": "Beanwriter plugin",
+        "name": "Beanwriter",
+        "introduction": "Create (re-generate) HST beans.",
         "pluginId": "beanwriter",
 
         "restClasses": ["org.onehippo.cms7.essentials.beanwriter.rest.BeanWriterResource"],
@@ -143,14 +139,13 @@
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Adds search component",
-        "name": "Search plugin",
-        "pluginId": "searchPlugin",
-        "restClasses": ["org.onehippo.essentials.plugins.search.SearchPluginResource"],
-        "type": "plugins",
+        "name": "Clone a component",
+        "introduction": "Duplicate a Channel Manager catalog component and its markup (template).",
+        "pluginId": "cloneComponent",
+        "restClasses": ["org.onehippo.cms7.essentials.plugin.clonecomponent.CloneComponentResource"],
+        "type": "tools",
         "vendor": {
             "@type": "vendor",
             "name": "Hippo",
@@ -160,21 +155,21 @@
             {
                 "items": [
                     {
-                        "component": "searchPlugin",
-                        "file": "searchPlugin.js"
+                        "component": "cloneComponent",
+                        "file": "cloneComponent.js"
                     }
                 ]
             }
         ]
     },
     {
-        "needsInstallation": true,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Adds Banner document type to your project",
-        "name": "Banner plugin",
-        "pluginId": "bannerPlugin",
-        "restClasses": ["org.onehippo.cms7.essentials.dashboard.banner.BannerPluginResource"],
+        "name": "Search support",
+        "introduction": "Add a search page to the project, including URL mapping and main menu item, and a Search Box component to the Channel Manager's component catalog.",
+        "pluginId": "searchPlugin",
+        "packageFile": "/META-INF/searchPlugin_instructions.xml",
+        "restClasses": [],
         "type": "plugins",
         "vendor": {
             "@type": "vendor",
@@ -184,11 +179,28 @@
         "libraries": [
             {
                 "items": [
-                    {
-                        "component": "bannerPlugin",
-                        "file": "bannerPlugin.js"
-                    }
+
                 ]
+            }
+        ]
+    },
+    {
+        "enabled": true,
+        "@type": "plugin",
+        "name": "Banner support",
+        "introduction": "Add Banner document type to your project. Add Banner and Carousel components to the Channel Manager's component catalog.",
+        "pluginId": "bannerPlugin",
+        "packageFile": "/META-INF/banner_instructions.xml",
+        "restClasses": [],
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": []
             }
         ],
         "dependencies": [
@@ -203,13 +215,13 @@
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Adds menu document type to your project",
-        "name": "Menu plugin",
+        "name": "Menu support",
+        "introduction": "Add a Menu component to the Channel Manager's component catalog.",
         "pluginId": "menuPlugin",
-        "restClasses": ["org.onehippo.cms7.essentials.dashboard.menu.MenuPluginResource"],
+        "packageFile": "/META-INF/menu_instructions.xml",
+        "restClasses": [],
         "type": "plugins",
         "vendor": {
             "@type": "vendor",
@@ -218,23 +230,18 @@
         },
         "libraries": [
             {
-                "items": [
-                    {
-                        "component": "menuPlugin",
-                        "file": "menuPlugin.js"
-                    }
-                ]
+                "items": []
             }
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Adds Simple content document to your project",
-        "name": "Simple content plugin",
+        "name": "Simple content support",
+        "introduction": "Add a simple content document type, displayed on a content overview as well as content detail pages. Add a main menu item to access the overview. Add a Simple Content component to the Channel Manager's component catalog.",
         "pluginId": "simpleContent",
-        "restClasses": ["org.onehippo.cms7.essentials.dashboard.simplecontent.SimpleContentResource"],
+        "packageFile": "/META-INF/simpleContent_instructions.xml",
+        "restClasses": [],
         "type": "plugins",
         "vendor": {
             "@type": "vendor",
@@ -244,20 +251,16 @@
         "libraries": [
             {
                 "items": [
-                    {
-                        "component": "simpleContent",
-                        "file": "simpleContent.js"
-                    }
+
                 ]
             }
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Creates REST services skeleton",
-        "name": "Rest Services plugin",
+        "name": "Rest Services setup",
+        "introduction": "Configure your project's site application to have REST endpoints.",
         "pluginId": "restServices",
         "restClasses": ["org.onehippo.cms7.essentials.dashboard.restservices.RestPluginResource"],
         "type": "tools",
@@ -278,11 +281,10 @@
         ]
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "introduction": "Freemarker synchronizing tool",
         "name": "Freemarker synchronizing",
+        "introduction": "Synchronize Freemarker templates between your project sources and your project's repository.",
         "pluginId": "freemarkersync",
 
         "restClasses": ["org.onehippo.cms7.essentials.tools.rest.FreemarkerSyncResource"],
@@ -305,16 +307,14 @@
 
     },
     {
-        "needsInstallation": false,
         "enabled": true,
         "@type": "plugin",
-        "description": "A basic News and Events site that contains a homepage template, News and Agenda components and detail pages to render both News and Event articles. It comes with a standard navigational menu and URL structure. This is the most basic Power Pack to start with. You can easily extend with more components later on.",
-        "introduction": "Basic News and Events site",
-        "name": "Basic News and Events site",
-        "powerpackClass": "org.onehippo.cms7.essentials.powerpack.BasicPowerpack",
-        "pluginId": "newsEventsPowerpack",
+        "name": "Events support",
+        "introduction": "Add support for event documents, rendered in an event overview and event detail pages. All pages are disclosed under the \"events\" URL space, and the overview is linked into the site's main menu.",
+        "packageFile": "/META-INF/events_package_instructions.xml",
+        "pluginId": "eventsPlugin",
         "restClasses": [],
-        "type": "powerpacks",
+        "type": "plugins",
         "vendor": {
             "@type": "vendor",
             "name": "Hippo",
@@ -323,30 +323,56 @@
         "libraries": [
             {
                 "items": [
-                    {
-                        "component": "newsEventsPowerpack",
-                        "file": "newsEventsPowerpack.js"
-                    }
+
                 ]
             }
         ]
 
     },
     {
-        "needsInstallation": false,
-        "enabled": false,
+        "enabled": true,
         "@type": "plugin",
-        "description": "A REST only site that contains only REST services and no pages.",
-        "introduction": "Headless REST based content repository",
-        "name": "Headless REST based content repository",
-        "pluginId": "notImplementedYet",
-
+        "name": "List and Content support",
+        "introduction": "Add generic List and Content components to the Channel Manager's component catalog.",
+        "packageFile": "/META-INF/list_content_instructions.xml",
+        "pluginId": "listContentPlugin",
         "restClasses": [],
-        "type": "powerpacks",
+        "type": "plugins",
         "vendor": {
             "@type": "vendor",
             "name": "Hippo",
             "url": "http://www.onehippo.com"
-        }
+        },
+        "libraries": [
+            {
+                "items": [
+
+                ]
+            }
+        ]
+
+    },
+    {
+        "enabled": true,
+        "@type": "plugin",
+        "name": "News support",
+        "introduction": "Add support for news documents, rendered in a news overview and news detail pages. All pages are disclosed under the \"news\" URL space, and the overview is linked into the site's main menu.",
+        "packageFile": "/META-INF/news_package_instructions.xml",
+        "pluginId": "newsPlugin",
+        "restClasses": [],
+        "type": "plugins",
+        "vendor": {
+            "@type": "vendor",
+            "name": "Hippo",
+            "url": "http://www.onehippo.com"
+        },
+        "libraries": [
+            {
+                "items": [
+
+                ]
+            }
+        ]
+
     }
 ]}

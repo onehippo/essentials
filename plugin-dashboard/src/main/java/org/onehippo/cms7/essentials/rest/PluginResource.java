@@ -40,8 +40,7 @@ import org.apache.cxf.BusFactory;
 import org.apache.cxf.endpoint.Server;
 import org.apache.cxf.jaxrs.JAXRSServerFactoryBean;
 import org.apache.cxf.rs.security.cors.CrossOriginResourceSharing;
-import org.onehippo.cms7.essentials.dashboard.config.DefaultDocumentManager;
-import org.onehippo.cms7.essentials.dashboard.config.DocumentManager;
+import org.onehippo.cms7.essentials.dashboard.config.FilePluginService;
 import org.onehippo.cms7.essentials.dashboard.config.InstallerDocument;
 import org.onehippo.cms7.essentials.dashboard.config.PluginConfigService;
 import org.onehippo.cms7.essentials.dashboard.config.ProjectSettingsBean;
@@ -49,12 +48,13 @@ import org.onehippo.cms7.essentials.dashboard.ctx.DefaultPluginContext;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.event.DisplayEvent;
 import org.onehippo.cms7.essentials.dashboard.event.listeners.MemoryPluginEventListener;
-import org.onehippo.cms7.essentials.dashboard.instructions.InstructionStatus;
 import org.onehippo.cms7.essentials.dashboard.model.EssentialsDependency;
 import org.onehippo.cms7.essentials.dashboard.model.Plugin;
 import org.onehippo.cms7.essentials.dashboard.model.PluginRestful;
-import org.onehippo.cms7.essentials.dashboard.packaging.CommonsPowerpack;
-import org.onehippo.cms7.essentials.dashboard.packaging.PowerpackPackage;
+import org.onehippo.cms7.essentials.dashboard.model.Restful;
+import org.onehippo.cms7.essentials.dashboard.packaging.CommonsInstructionPackage;
+import org.onehippo.cms7.essentials.dashboard.packaging.InstructionPackage;
+import org.onehippo.cms7.essentials.dashboard.packaging.MessageGroup;
 import org.onehippo.cms7.essentials.dashboard.rest.BaseResource;
 import org.onehippo.cms7.essentials.dashboard.rest.KeyValueRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.MessageRestful;
@@ -74,6 +74,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.web.context.ContextLoader;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.Multimap;
 import com.google.common.eventbus.EventBus;
 import com.wordnik.swagger.annotations.Api;
 import com.wordnik.swagger.annotations.ApiOperation;
@@ -119,7 +120,7 @@ public class PluginResource extends BaseResource {
 
         final Collection<String> restClasses = new ArrayList<>();
         final PluginContext context = getContext(servletContext);
-        try (DocumentManager manager = new DefaultDocumentManager(context.createSession(), context)) {
+        try (PluginConfigService service = new FilePluginService(context)) {
             for (PluginRestful item : items) {
                 plugins.add(item);
                 final String pluginId = item.getPluginId();
@@ -139,7 +140,7 @@ public class PluginResource extends BaseResource {
 
                 // check if recently installed:
                 // TODO: move to client?
-                final InstallerDocument document = manager.fetchDocument(GlobalUtils.getFullConfigPath(pluginId), InstallerDocument.class);
+                final InstallerDocument document = service.read(pluginId, InstallerDocument.class);
                 if (document != null && document.getDateInstalled() != null) {
                     final Calendar dateInstalled = document.getDateInstalled();
                     final Calendar lastWeek = Calendar.getInstance();
@@ -185,32 +186,29 @@ public class PluginResource extends BaseResource {
 
 
     @ApiOperation(
-            value = "Installs selected powerpack package",
-            notes = "Use PostPayloadRestful and set powerpack id property (pluginId)",
+            value = "Installs selected instruction package",
+            notes = "Use PostPayloadRestful and set InstructionPackage id property (pluginId)",
             response = RestfulList.class)
     @POST
-    @Path("/install/powerpack")
-    public RestfulList<MessageRestful> installPowerpack(final PostPayloadRestful payloadRestful, @Context ServletContext servletContext) throws Exception {
-        final RestfulList<MessageRestful> messageRestfulRestfulList = new RestList<>();
+    @Path("/install/package")
+    public MessageRestful installInstructionPackage(final PostPayloadRestful payloadRestful, @Context ServletContext servletContext) throws Exception {
+
         final Map<String, String> values = payloadRestful.getValues();
         final String pluginId = String.valueOf(values.get(PLUGIN_ID));
         Plugin myPlugin = getPluginById(pluginId, servletContext);
 
         if (Strings.isNullOrEmpty(pluginId) || myPlugin == null) {
-            final MessageRestful resource = new MessageRestful("No valid powerpack was selected");
+            final MessageRestful resource = new MessageRestful("No valid InstructionPackage was selected");
             resource.setSuccessMessage(false);
-            messageRestfulRestfulList.add(resource);
-            return messageRestfulRestfulList;
+            return resource;
         }
-        final String className = ProjectSetupPlugin.class.getName();
-        final PluginContext context = new DefaultPluginContext(new PluginRestful(className));
+
+        final PluginContext context = new DefaultPluginContext(new PluginRestful(ProjectSettingsBean.DEFAULT_NAME));
         // inject project settings:
-        final PluginConfigService service;
         try (PluginConfigService configService = context.getConfigService()) {
-            service = configService;
 
 
-            final ProjectSettingsBean document = service.read(className, ProjectSettingsBean.class);
+            final ProjectSettingsBean document = configService.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
             if (document != null) {
                 context.setBeansPackageName(document.getSelectedBeansPackage());
                 context.setComponentsPackageName(document.getSelectedComponentsPackage());
@@ -220,61 +218,52 @@ public class PluginResource extends BaseResource {
             //############################################
             // EXECUTE SKELETON:
             //############################################
-            final PowerpackPackage commonsPack = new CommonsPowerpack();
-            getInjector().autowireBean(commonsPack);
-            commonsPack.setProperties(new HashMap<String, Object>(values));
-            commonsPack.execute(context);
+            final InstructionPackage commonPackage = new CommonsInstructionPackage();
+            getInjector().autowireBean(commonPackage);
+            commonPackage.setProperties(new HashMap<String, Object>(values));
+            commonPackage.execute(context);
 
-            final PowerpackPackage powerpackPackage = GlobalUtils.newInstance(myPlugin.getPowerpackClass());
-            powerpackPackage.setProperties(new HashMap<String, Object>(values));
-            getInjector().autowireBean(powerpackPackage);
-
-
-            final InstructionStatus status = powerpackPackage.execute(context);
-            log.info("status {}", status);
-            // save status:
-            if (document != null) {
-                document.setSetupDone(true);
-                final boolean written = service.write(document);
-                log.info("Config saved: {}", written);
+            // execute InstructionPackage itself
+            InstructionPackage instructionPackage = instructionPackageInstance(myPlugin);
+            if(instructionPackage==null){
+                return new MessageRestful("Could not execute Installation package", DisplayEvent.DisplayType.STRONG);
             }
-            addRestartInformation(eventBus);
-            final List<DisplayEvent> displayEvents = listener.consumeEvents();
-            for (DisplayEvent displayEvent : displayEvents) {
-                messageRestfulRestfulList.add(new MessageRestful(displayEvent.getMessage(), displayEvent.getDisplayType()));
-            }
+            instructionPackage.setProperties(new HashMap<String, Object>(values));
+            instructionPackage.execute(context);
+
+
         }
-        return messageRestfulRestfulList;
+        return new MessageRestful("Please rebuild and restart your application:", DisplayEvent.DisplayType.STRONG);
     }
 
 
-    // TODO mm: enable this after we figure out new endpoint
-/*
-public static List<PluginRestful> parseGist() {
+
+    @ApiOperation(
+            value = "Hides introduction screen",
+            response = MessageRestful.class)
+    @POST
+    @Path("/hideintroduction")
+    public Restful hideWelcomeScreen(@Context ServletContext servletContext) {
         try {
+            final Plugin plugin = getPluginById(ProjectSetupPlugin.class.getName(), servletContext);
+            final PluginContext context = new DefaultPluginContext(plugin);
+            try (PluginConfigService configService = context.getConfigService()) {
+                final ProjectSettingsBean document = configService.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
+                document.setSetupDone(true);
+                configService.write(document);
+                return new KeyValueRestful("message", "Saved property for welcome screen");
+            }
 
 
-
-
-            final RestClient client = new RestClient("https://api.github.com/gists/8453217");
-            final String pluginList = client.getPluginList();
-            final Gson gson = new Gson();
-            final Gist gist = gson.fromJson(pluginList, Gist.class);
-            final Map<String, GistFile> files = gist.getFiles();
-            final GistFile gistFile = files.get("gistfile1.json");
-            final String json = gistFile.getContent();
-
-            final Type listType = new TypeToken<RestfulList<PluginRestful>>() {
-            }.getType();
-            final RestfulList<PluginRestful> restfulList = gson.fromJson(json, listType);
-            return restfulList.getItems();
         } catch (Exception e) {
-            log.error("Error parsing gist", e);
-        }
-        return Collections.emptyList();
 
+            log.error("Error checking InstructionPackage status", e);
+        }
+
+        final MessageRestful messageRestful = new MessageRestful();
+        messageRestful.setSuccessMessage(false);
+        return messageRestful;
     }
-*/
 
     @ApiOperation(
             value = "Adds a plugin to recently installed list of plugins",
@@ -379,13 +368,11 @@ public static List<PluginRestful> parseGist() {
 
                 if (notInstalled.size() == 0) {
                     final PluginContext context = getContext(servletContext);
-                    try (DocumentManager manager = new DefaultDocumentManager(context.createSession(), context)) {
+                    try (PluginConfigService service = new FilePluginService(context)) {
                         final InstallerDocument document = new InstallerDocument();
                         document.setName(id);
-                        document.setParentPath(GlobalUtils.getParentConfigPath(id));
                         document.setDateInstalled(Calendar.getInstance());
-
-                        manager.saveDocument(document);
+                        service.write(document);
                     }
                     message.setValue("Plugin successfully installed. Please rebuild and restart your application");
                     return message;
@@ -453,17 +440,17 @@ public static List<PluginRestful> parseGist() {
 
     @ApiOperation(
             value = "Populated StatusRestful object",
-            notes = "Status contains true value if one of the Powerpacks is installed",
+            notes = "Status contains true value if one of the InstructionPackage is installed",
             response = StatusRestful.class)
     @GET
-    @Path("/status/powerpack")
+    @Path("/status/package")
     public StatusRestful getMenu(@Context ServletContext servletContext) {
         final StatusRestful status = new StatusRestful();
         try {
             final Plugin plugin = getPluginById(ProjectSetupPlugin.class.getName(), servletContext);
             final PluginContext context = new DefaultPluginContext(plugin);
             try (PluginConfigService configService = context.getConfigService()) {
-                final ProjectSettingsBean document = configService.read(ProjectSetupPlugin.class.getName(), ProjectSettingsBean.class);
+                final ProjectSettingsBean document = configService.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
                 if (document != null && document.getSetupDone()) {
                     status.setStatus(true);
                     return status;
@@ -473,14 +460,14 @@ public static List<PluginRestful> parseGist() {
 
         } catch (Exception e) {
 
-            log.error("Error checking powerpack status", e);
+            log.error("Error checking InstructionPackage status", e);
         }
         return status;
     }
 
     @ApiOperation(
             value = "Returns list of plugin Javascript modules",
-            notes = "Modules are prefixed with tool, plugin or powerpack dependent on their plugin type",
+            notes = "Modules are prefixed with tool, plugin or InstructionPackage dependent on their plugin type",
             response = PluginModuleRestful.class)
     @GET
     @Path("/modules")
@@ -501,6 +488,49 @@ public static List<PluginRestful> parseGist() {
             }
         }
         return modules;
+    }
+
+
+    @ApiOperation(
+            value = "Returns a list of messages about the changes plugin would made for specific choice",
+            notes = "Messages are only indication what might change, because a lot of operations are not executed, e.g. file copy if is not executed" +
+                    "if file already exists.",
+            response = PluginModuleRestful.class)
+    @POST
+    @Path("/changes/")
+    public RestfulList<MessageRestful> getInstructionPackageChanges(final PostPayloadRestful payload, @Context ServletContext servletContext) {
+
+        final Map<String, String> values = payload.getValues();
+        final String pluginId = values.get(PLUGIN_ID);
+        final Plugin myPlugin = getPluginById(pluginId, servletContext);
+
+        final RestfulList<MessageRestful> list = new RestfulList<>();
+        if (Strings.isNullOrEmpty(pluginId) || myPlugin == null) {
+            final MessageRestful resource = new MessageRestful("No valid InstructionPackage was selected");
+            resource.setSuccessMessage(false);
+            list.add(resource);
+            return list;
+        }
+
+        final InstructionPackage instructionPackage = instructionPackageInstance(myPlugin);
+        if(instructionPackage==null){
+            final MessageRestful resource = new MessageRestful("Could not create Instruction Package");
+            resource.setSuccessMessage(false);
+            list.add(resource);
+            return list;
+        }
+
+
+        instructionPackage.setProperties(new HashMap<String, Object>(values));
+        @SuppressWarnings("unchecked")
+        final Multimap<MessageGroup, MessageRestful> messages = (Multimap<MessageGroup, MessageRestful>) instructionPackage.getInstructionsMessages(getContext(servletContext));
+        final Collection<Map.Entry<MessageGroup, MessageRestful>> entries = messages.entries();
+        for (Map.Entry<MessageGroup, MessageRestful> entry : entries) {
+            final MessageRestful value = entry.getValue();
+            value.setGroup(entry.getKey());
+            list.add(value);
+        }
+        return list;
     }
 
 

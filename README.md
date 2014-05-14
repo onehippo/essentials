@@ -1,5 +1,13 @@
 #Hippo Essentials
 
+#BETA notice
+
+```
+Hippo Essentials is in BETA stage and is still undergoing testing and changes before its official release.
+Please use the Hippo Essentials feedback form to inform us if you encounter any bugs/glithces or if you have any suggestions
+for improvements.
+```
+
 
 Hippo Essentials is a project aimed at speeding up [Hippo CMS](http://www.onehippo.org) project implementations.
 It allows developers to easily install and configure Hippo CMS functionalities.
@@ -27,6 +35,11 @@ $ git clone git@github.com:onehippo/essentials.git
 ```
 $ cd essentials
 $ mvn clean install
+```
+
+### Validate license headers:
+```
+$ mvn clean && mvn validate -Ppedantic
 ```
 
 ### Create and install archetype locally :
@@ -147,7 +160,7 @@ as the default for your project edit the file
 
 ##Copyright and license
 
-Copyright 2013 Hippo B.V under the [Apache 2.0 license](https://github.com/onehippo/essentials/blob/master/LICENSE).
+Copyright 2013-2014 Hippo B.V under the [Apache 2.0 license](https://github.com/onehippo/essentials/blob/master/LICENSE).
 
 
 

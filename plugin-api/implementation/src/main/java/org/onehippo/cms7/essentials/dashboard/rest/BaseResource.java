@@ -31,9 +31,12 @@ import org.onehippo.cms7.essentials.dashboard.config.ProjectSettingsBean;
 import org.onehippo.cms7.essentials.dashboard.ctx.DefaultPluginContext;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.event.DisplayEvent;
+import org.onehippo.cms7.essentials.dashboard.model.DependencyType;
 import org.onehippo.cms7.essentials.dashboard.model.EssentialsDependency;
 import org.onehippo.cms7.essentials.dashboard.model.Plugin;
 import org.onehippo.cms7.essentials.dashboard.model.PluginRestful;
+import org.onehippo.cms7.essentials.dashboard.packaging.InstructionPackage;
+import org.onehippo.cms7.essentials.dashboard.packaging.TemplateSupportInstructionPackage;
 import org.onehippo.cms7.essentials.dashboard.setup.ProjectSetupPlugin;
 import org.onehippo.cms7.essentials.dashboard.utils.DependencyUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
@@ -60,6 +63,28 @@ public class BaseResource {
     private ApplicationContext applicationContext;
 
 
+    /**
+     * Instantiate InstructionPackage for plugin.
+     * @param plugin Plugin instance
+     * @return   null if packageClass & packageFile are null or empty
+     */
+    protected InstructionPackage instructionPackageInstance(final Plugin plugin) {
+        final String packageClass = plugin.getPackageClass();
+        final String packageFile = plugin.getPackageFile();
+        InstructionPackage instructionPackage;
+        if (Strings.isNullOrEmpty(packageClass)) {
+            if (Strings.isNullOrEmpty(packageFile)) {
+                return null;
+            }
+            instructionPackage = GlobalUtils.newInstance(TemplateSupportInstructionPackage.class);
+            instructionPackage.setInstructionPath(packageFile);
+        } else {
+            instructionPackage = GlobalUtils.newInstance(packageClass);
+        }
+        getInjector().autowireBean(instructionPackage);
+        return instructionPackage;
+    }
+
     protected boolean isInstalled(final Plugin plugin) {
         final List<EssentialsDependency> dependencies = plugin.getDependencies();
         for (EssentialsDependency dependency : dependencies) {
@@ -77,7 +102,7 @@ public class BaseResource {
         // inject project settings:
         try (final PluginConfigService configService = context.getConfigService()) {
 
-            final ProjectSettingsBean document = configService.read(ProjectSetupPlugin.class.getName(), ProjectSettingsBean.class);
+            final ProjectSettingsBean document = configService.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
 
             if (document != null) {
                 projectRestful.setNamespace(document.getProjectNamespace());
@@ -98,6 +123,9 @@ public class BaseResource {
 
             @SuppressWarnings("unchecked")
             final RestfulList<PluginRestful> restfulList = mapper.readValue(json, RestfulList.class);
+
+            postProcessPlugins(restfulList);
+
             return restfulList.getItems();
         } catch (IOException e) {
             log.error("Error parsing plugins", e);
@@ -105,12 +133,35 @@ public class BaseResource {
         return Collections.emptyList();
     }
 
+    /**
+     * Post-process the list of available plugins to provide additional, project-specific information to the front-end.
+     *
+     * @param plugins list of plugins.
+     */
+    protected void postProcessPlugins(final RestfulList<PluginRestful> plugins) {
+
+        // Populate the "needsInstallation" flag based on other plugin descriptor fields.
+        for (PluginRestful plugin : plugins.getItems()) {
+            if ("plugins".equals(plugin.getType())) {
+                final List<EssentialsDependency> deps = plugin.getDependencies();
+                boolean needsInstallation = false;
+                for (EssentialsDependency dep : deps) {
+                    final DependencyType depType = dep.getDependencyType();
+                    if (depType == DependencyType.ESSENTIALS) {
+                        plugin.setNeedsInstallation(!ProjectUtils.isInstalled(depType, dep.createMavenDependency()));
+                        break;
+                    }
+                }
+            }
+        }
+    }
+
     public PluginContext getContext(ServletContext servletContext) {
         final String className = ProjectSetupPlugin.class.getName();
         final PluginContext context = new DefaultPluginContext(new PluginRestful(className));
 
         try (final PluginConfigService service = context.getConfigService()) {
-            final ProjectSettingsBean document = service.read(className, ProjectSettingsBean.class);
+            final ProjectSettingsBean document = service.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
             if (document != null) {
                 context.setBeansPackageName(document.getSelectedBeansPackage());
                 context.setComponentsPackageName(document.getSelectedComponentsPackage());
@@ -136,7 +187,7 @@ public class BaseResource {
         eventBus.post(new DisplayEvent(DisplayEvent.DisplayType.BR.name(), DisplayEvent.DisplayType.BR, true));
 
         eventBus.post(new DisplayEvent(DisplayEvent.DisplayType.BR.name(), DisplayEvent.DisplayType.BR, true));
-        eventBus.post(new DisplayEvent("http://www.onehippo.org/7_8/trails/essentials-trail/hippo-developer-essentials-and-power-packs", DisplayEvent.DisplayType.A, true));
+        eventBus.post(new DisplayEvent("http://www.onehippo.org/trails/essentials-trail/hippo-developer-essentials-and-power-packs", DisplayEvent.DisplayType.A, true));
 
         eventBus.post(new DisplayEvent(DisplayEvent.DisplayType.BR.name(), DisplayEvent.DisplayType.BR, true));
         eventBus.post(new DisplayEvent("After that, you are all set to start customizing your application. For more information, also see: ", DisplayEvent.DisplayType.P, true));

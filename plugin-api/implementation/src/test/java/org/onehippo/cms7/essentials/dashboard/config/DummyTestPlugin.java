@@ -95,17 +95,27 @@ public class DummyTestPlugin implements Plugin {
     }
 
     @Override
+    public String getPackageFile() {
+        return null;
+    }
+
+    @Override
+    public void setPackageFile(final String packageFile) {
+
+    }
+
+    @Override
     public Vendor getVendor() {
         return new VendorRestful();
     }
 
     @Override
-    public String getPowerpackClass() {
+    public String getPackageClass() {
         return null;
     }
 
     @Override
-    public void setPowerpackClass(final String powerpackClass) {
+    public void setPackageClass(final String packageClass) {
 
     }
 

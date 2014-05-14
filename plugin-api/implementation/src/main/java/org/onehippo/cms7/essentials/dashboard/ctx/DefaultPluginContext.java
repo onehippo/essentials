@@ -32,7 +32,7 @@ import javax.jcr.RepositoryException;
 import javax.jcr.Session;
 
 import org.apache.jackrabbit.value.ValueFactoryImpl;
-import org.onehippo.cms7.essentials.dashboard.config.JcrPluginConfigService;
+import org.onehippo.cms7.essentials.dashboard.config.FilePluginService;
 import org.onehippo.cms7.essentials.dashboard.config.PluginConfigService;
 import org.onehippo.cms7.essentials.dashboard.model.Plugin;
 import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
@@ -107,6 +107,17 @@ public class DefaultPluginContext implements PluginContext {
     public File getCmsDirectory() {
         return ProjectUtils.getCms();
     }
+
+    @Override
+    public File getEssentialsDirectory() {
+        return ProjectUtils.getEssentialsFolder();
+    }
+
+    @Override
+    public String getEssentialsResourcePath() {
+        return ProjectUtils.getEssentialsFolder().getAbsolutePath() + MAIN_RESOURCE_PART;
+    }
+
 
     @Override
     public boolean isEnterpriseProject() {
@@ -197,7 +208,7 @@ public class DefaultPluginContext implements PluginContext {
 
     @Override
     public PluginConfigService getConfigService() {
-        return new JcrPluginConfigService(this);
+        return new FilePluginService(this);
     }
 
     @Override
@@ -279,9 +290,15 @@ public class DefaultPluginContext implements PluginContext {
         placeholderData.put(EssentialConst.PLACEHOLDER_CMS_RESOURCES, getCmsDirectory() + MAIN_RESOURCE_PART);
         placeholderData.put(EssentialConst.PLACEHOLDER_SITE_OVERRIDE_FOLDER, ProjectUtils.getSite().getAbsolutePath()
                 + File.separator + EssentialConst.PATH_REL_OVERRIDE);
+
+        placeholderData.put(EssentialConst.PLACEHOLDER_SITE_WEB_INF_ROOT, ProjectUtils.getSite().getAbsolutePath()
+                + File.separator + EssentialConst.PATH_REL_WEB_INF);
+        placeholderData.put(EssentialConst.PLACEHOLDER_CMS_WEB_INF_ROOT, ProjectUtils.getCms().getAbsolutePath()
+                + File.separator + EssentialConst.PATH_REL_WEB_INF);
         placeholderData.put(EssentialConst.PLACEHOLDER_SITE_FREEMARKER_ROOT, ProjectUtils.getSite().getAbsolutePath() + File.separator + EssentialConst.FREEMARKER_RELATIVE_FOLDER);
         placeholderData.put(EssentialConst.PLACEHOLDER_JSP_ROOT, ProjectUtils.getSiteJspFolder());
         placeholderData.put(EssentialConst.PLACEHOLDER_JAVASCRIPT_ROOT, siteWebRoot + File.separator + "js");
+        placeholderData.put(EssentialConst.PLACEHOLDER_IMAGES_ROOT, siteWebRoot + File.separator + "images");
         placeholderData.put(EssentialConst.PLACEHOLDER_CSS_ROOT, siteWebRoot + File.separator + "css");
         placeholderData.put(EssentialConst.PLACEHOLDER_CMS_ROOT, ProjectUtils.getCms().getAbsolutePath());
         // packages
@@ -296,6 +313,8 @@ public class DefaultPluginContext implements PluginContext {
             placeholderData.put(EssentialConst.PLACEHOLDER_COMPONENTS_FOLDER, componentsPackagePath.toString());
         }
         placeholderData.put(EssentialConst.PLACEHOLDER_TMP_FOLDER, System.getProperty("java.io.tmpdir"));
+        // essentials
+        placeholderData.put(EssentialConst.PLACEHOLDER_ESSENTIALS_ROOT, getEssentialsDirectory().getAbsolutePath());
 
 
         return placeholderData;
