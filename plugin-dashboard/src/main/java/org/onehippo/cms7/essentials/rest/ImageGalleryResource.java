@@ -440,14 +440,14 @@ public class ImageGalleryResource extends BaseResource {
             final ImageVariantRestful variant = imageSet.getVariantByName(variantFieldNode.getName());
             if (variant == null) {
                 // TODO or add to list of nodes to delete-
-                variantFieldNode.remove();
                 log.debug("Remove {}", variantFieldNode.getPath());
 
                 if (imageSetNode.hasNode("editor:templates/_default_/" + variantFieldNode.getName())) {
                     final Node templateNode = imageSetNode.getNode("editor:templates/_default_/" + variantFieldNode.getName());
-                    templateNode.remove();
                     log.debug("Remove {}", templateNode.getPath());
+                    templateNode.remove();
                 }
+                variantFieldNode.remove();
             }
         }
 
@@ -471,6 +471,7 @@ public class ImageGalleryResource extends BaseResource {
                 log.debug("Unable to process variant without name");
                 continue;
             }
+            // TODO check this
             if (imageSetNodeTypeNode.hasNode(variant.getName())) {
                 log.debug("Variant {} already defined in node type; no need to update", imageSetNode.getName());
                 continue;
@@ -496,6 +497,8 @@ public class ImageGalleryResource extends BaseResource {
             log.debug("Store '{}' translation for image set: {}", translation.getLocale(), imageSetNodeType);
             TranslationUtils.setTranslationForNode(imageSetNode, null, translation.getLocale(), translation.getMessage());
         }
+
+
 
 /*
         for(final ImageVariantRestful variant : imageSet.getVariants()) {
