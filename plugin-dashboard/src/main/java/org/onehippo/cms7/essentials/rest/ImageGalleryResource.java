@@ -471,14 +471,16 @@ public class ImageGalleryResource extends BaseResource {
                 log.debug("Unable to process variant without name");
                 continue;
             }
-            // TODO check this
+
+            // Only add node type and template for variant when there is no field available
             if (imageSetNodeTypeNode.hasNode(variant.getName())) {
                 log.debug("Variant {} already defined in node type; no need to update", imageSetNode.getName());
-                continue;
+            } else {
+                setTemplateNodeTypeForVariant(session, imageSetNode, variant);
+                setTemplateFieldForVariant(session, imageSetNode, variant);
             }
-            setTemplateNodeTypeForVariant(session, imageSetNode, variant);
-            setTemplateFieldForVariant(session, imageSetNode, variant);
 
+            // Update variant translations for image set
             final String variantNodeType = HippoNodeUtils.getTypeFromPrefixAndName(variant.getNamespace(), variant.getName());
             final ImageVariantRestful processorVariant = imageProcessor.getVariant(variant.getNamespace(), variant.getName());
             if (processorVariant != null) {
@@ -497,29 +499,6 @@ public class ImageGalleryResource extends BaseResource {
             log.debug("Store '{}' translation for image set: {}", translation.getLocale(), imageSetNodeType);
             TranslationUtils.setTranslationForNode(imageSetNode, null, translation.getLocale(), translation.getMessage());
         }
-
-
-
-/*
-        for(final ImageVariantRestful variant : imageSet.getVariants()) {
-            final Node fieldNode;
-            if(processorNode.hasNode(variant.getNodeType())) {
-                variantNode = processorNode.getNode(variant.getNodeType());
-            } else {
-                variantNode = processorNode.addNode(variant.getNodeType(), "frontend:pluginconfig");
-            }
-            final Node templateNode;
-            if(imageSetNode.hasNode("editor:templates/_default_/" + variant.getName())) {
-                templateNode = imageSetNode.hasNode("editor:templates/_default_/" + variant.getName());
-            } else {
-                templateNode = imageSetNode.getNode("editor:templates/_default_/" + variant.getName());
-            }
-                updateVariantNode(variantNode, variant);
-        }
-*/
-        // TODO check
-        // TODO save translations
-        //session.save();
         return true;
     }
 
