@@ -67,6 +67,7 @@ public class PropertyRestful implements Restful {
         this.value = value;
     }
 
+/*
     public Object getPropertyValue() {
         switch (getType()) {
             case BOOLEAN:
@@ -77,6 +78,7 @@ public class PropertyRestful implements Restful {
                 return getValue();
         }
     }
+*/
 
 
     public PropertyType getType() {

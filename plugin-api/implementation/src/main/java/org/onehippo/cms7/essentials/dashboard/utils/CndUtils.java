@@ -181,7 +181,7 @@ public final class CndUtils {
      * @return the node representing the namespace
      * @throws RepositoryException when hippo namespace can't be created
      */
-    public static Node createHippoNamespace(final PluginContext context, final String prefix) throws RepositoryException {
+    public static void createHippoNamespace(final PluginContext context, final String prefix) throws RepositoryException {
         if (StringUtils.isBlank(prefix)) {
             throw new RepositoryException("Unable to create namespace for empty prefix");
         }
@@ -191,15 +191,28 @@ public final class CndUtils {
             final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
             if (namespaces.hasNode(prefix)) {
                 log.info("Namespace '{}' already registered", prefix);
-                return namespaces.getNode(prefix);
+                session.save();
+                //return namespaces.getNode(prefix);
             }
-            return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
+            //return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
         } finally {
             GlobalUtils.cleanupSession(session);
         }
     }
 
-    // TODO merge with above
+    public static Node createHippoNamespace(final Session session, final String prefix) throws RepositoryException {
+        if (StringUtils.isBlank(prefix)) {
+            throw new RepositoryException("Unable to create namespace for empty prefix");
+        }
+        final Node namespaces = session.getRootNode().getNode(HippoNodeType.NAMESPACES_PATH);
+        if (namespaces.hasNode(prefix)) {
+            log.info("Namespace '{}' already registered", prefix);
+            return namespaces.getNode(prefix);
+        }
+        return namespaces.addNode(prefix, HippoNodeType.NT_NAMESPACE);
+    }
+
+        // TODO merge with above
     public static Node getHippoNamespaceNode(final PluginContext context, final String prefix) throws RepositoryException {
         if (StringUtils.isBlank(prefix)) {
             throw new RepositoryException("Unable to fetch namespace for empty prefix");
