@@ -24,7 +24,7 @@
 
         $scope.invalidated = false;
 
-      // TODO populate languages from rest service
+        // TODO populate languages from rest service
         $http.get('tools/galleryPlugin/cmslanguages.json').success(function (data) {
             $scope.cmsLanguages = data;
         });
@@ -34,7 +34,8 @@
 
 
 
-        // TODO change this
+        // TODO determine gallery namespace dynamically based on project settings
+        // (currently projectgallery namespace needs to be added manually)
         $scope.projectGalleryNamespace = "projectgallery";
 
 
