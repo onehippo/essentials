@@ -25,7 +25,7 @@
         $scope.invalidated = false;
 
       // TODO populate languages from rest service
-        $http.get('plugins/galleryPlugin/cmslanguages.json').success(function (data) {
+        $http.get('tools/galleryPlugin/cmslanguages.json').success(function (data) {
             $scope.cmsLanguages = data;
         });
 
