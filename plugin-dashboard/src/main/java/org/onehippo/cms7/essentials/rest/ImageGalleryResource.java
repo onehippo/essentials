@@ -51,7 +51,6 @@ import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.HippoNodeUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.TranslationUtils;
 import org.onehippo.cms7.essentials.rest.exc.RestException;
-import org.onehippo.cms7.essentials.rest.model.PropertyRestful;
 import org.onehippo.cms7.essentials.rest.model.TranslationRestful;
 import org.onehippo.cms7.essentials.rest.model.gallery.ImageGalleryDataRestful;
 import org.onehippo.cms7.essentials.rest.model.gallery.ImageProcessorRestful;
@@ -200,7 +199,7 @@ public class ImageGalleryResource extends BaseResource {
         } catch (RepositoryException e) {
             log.error("Error while fetching image procossor: {}", imageProcessorId, e);
         }
-        log.warn("Unable to fetch image procossor: {}", imageProcessorId);
+        log.warn("Unable to fetch image processor: {}", imageProcessorId);
         return null;
     }
 
@@ -249,7 +248,7 @@ public class ImageGalleryResource extends BaseResource {
                 nodesToDelete.add(variantNode);
             }
         }
-        // Delete then nodes
+        // Delete the nodes
         for (final Node nodeToDelete : nodesToDelete) {
             log.info("Remove variant node {}", nodeToDelete.getPath());
             nodeToDelete.remove();
@@ -292,14 +291,6 @@ public class ImageGalleryResource extends BaseResource {
         } else {
             variantNode.setProperty(PROPERTY_COMPRESSION, compression);
         }
-
-        // Set available properties
-        for (final PropertyRestful property : variant.getProperties()) {
-            // TODO check support for additional props
-            //setProperty(variantNode, property);
-        }
-
-        // TODO: translations should be stored in relation to the variants (e.g. not stored underneath image sets)
     }
 
     private void removeProperty(final Node node, final String propertyName) throws RepositoryException {
@@ -434,14 +425,16 @@ public class ImageGalleryResource extends BaseResource {
         }
 
         // Remove all old non used variants
-        final List<Node> nodes = fetchFieldsFromNamespaceNode(imageSetNode, "hippogallery:image");
+        final List<Node> nodes = fetchFieldsFromNamespaceNode(imageSetNode, HippoGalleryNodeType.IMAGE);
         for (final Node variantFieldNode : nodes) {
+            if ("original".equals(variantFieldNode.getName()) || "thumbnail".equals(variantFieldNode.getName())) {
+                log.debug("Do not delete original and thumbnail variants");
+                continue;
+            }
             log.debug("Check variant {}", variantFieldNode.getName());
             final ImageVariantRestful variant = imageSet.getVariantByName(variantFieldNode.getName());
             if (variant == null) {
-                // TODO or add to list of nodes to delete-
                 log.debug("Remove {}", variantFieldNode.getPath());
-
                 if (imageSetNode.hasNode("editor:templates/_default_/" + variantFieldNode.getName())) {
                     final Node templateNode = imageSetNode.getNode("editor:templates/_default_/" + variantFieldNode.getName());
                     log.debug("Remove {}", templateNode.getPath());
@@ -453,7 +446,7 @@ public class ImageGalleryResource extends BaseResource {
 
         if (!imageSetNode.hasNode("hipposysedit:nodetype/hipposysedit:nodetype")) {
             log.error("Node type node not available for {}", imageSetNode.getPath());
-            return false;
+            throw new RepositoryException("Unable to save image set; no node type available at '" + imageSetNode.getPath());
         }
         final Node imageSetNodeTypeNode = imageSetNode.getNode("hipposysedit:nodetype/hipposysedit:nodetype");
 
@@ -491,7 +484,7 @@ public class ImageGalleryResource extends BaseResource {
                     TranslationUtils.setTranslationForNode(imageSetNode, variantNodeType, translation.getLocale(), translation.getMessage());
                 }
             } else {
-                log.debug("No variant () found in image processor" + variantNodeType);
+                log.debug("No variant {} found in image processor", variantNodeType);
             }
         }
 
@@ -676,9 +669,9 @@ public class ImageGalleryResource extends BaseResource {
         final Collection<Node> variantTranslations = new ArrayList<>();
         final PluginContext pluginContext = getPluginContext();
         final List<Node> nodes = fetchImageSetNamespaceNodes(session, listImageSetTypes(pluginContext));
-        log.info("Image set nodes: " + nodes.size());
+        log.debug("Image set nodes: {}", nodes.size());
         for (final Node imageSetNSNode : nodes) {
-            log.info("Image set node: {}", imageSetNSNode.getPath());
+            log.debug("Image set node: {}", imageSetNSNode.getPath());
             variantTranslations.addAll(TranslationUtils.getTranslationsFromNode(imageSetNSNode));
         }
         return variantTranslations;
@@ -687,7 +680,7 @@ public class ImageGalleryResource extends BaseResource {
     private List<Node> fetchImageSetNamespaceNodes(final Session session, final Iterable<String> imageSets) throws RepositoryException {
         final List<Node> nodes = new ArrayList<>();
         for (final String imageSet : imageSets) {
-            log.info("Fetch Image set NS node for: {}", imageSet);
+            log.debug("Fetch Image set NS node for: {}", imageSet);
             final Node node = fetchImageSetNamespaceNode(session, imageSet);
             if (node != null) {
                 nodes.add(node);
@@ -698,7 +691,7 @@ public class ImageGalleryResource extends BaseResource {
 
     private Node fetchImageSetNamespaceNode(final Session session, final String imageSet) throws RepositoryException {
         if (!session.nodeExists(getPathToNamespaceNode(imageSet))) {
-            log.warn("Namespace node doest not exist for {}", imageSet);
+            log.warn("Namespace node does not exist for {}", imageSet);
             return null;
         }
         return session.getNode(getPathToNamespaceNode(imageSet));
