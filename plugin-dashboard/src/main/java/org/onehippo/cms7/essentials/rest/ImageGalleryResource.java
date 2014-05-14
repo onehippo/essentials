@@ -691,7 +691,7 @@ public class ImageGalleryResource extends BaseResource {
 
     private Node fetchImageSetNamespaceNode(final Session session, final String imageSet) throws RepositoryException {
         if (!session.nodeExists(getPathToNamespaceNode(imageSet))) {
-            log.warn("Namespace node does not exist for {}", imageSet);
+            log.warn("Namespace node doesn't exist for registered gallery node type: {}", imageSet);
             return null;
         }
         return session.getNode(getPathToNamespaceNode(imageSet));
