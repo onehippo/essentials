@@ -16,15 +16,6 @@
 
 @import "variables.less";
 
-@brand-primary: #428bca;
-@brand-success: #5cb85c;
-@brand-warning: #f0ad4e;
-@brand-danger: #E7484C;
-@brand-info: #45B3E3;
-@brand-steel: #4F5E67;
-
-@color-hippo-footer: #35363A;
-@color-hippo-footer-text: #4F5E67;
 @body-bg: #FFF;
 @font-size-base: 16px;
 
@@ -44,23 +35,6 @@
 // HIPPO SPECIFIC  CSS
 //############################################
 */
-
-@footer-border: #eee;
-
-//
-//
-//
-.footer {
-  border-top: 1px solid @footer-border;
-  margin-top: 400px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  text-align: center;
-  color: @color-hippo-footer-text;
-  font-size: 13px;
-  min-height: 600px;
-
-}
 
 /* Responsive: Portrait tablets and up */
 @media screen and (min-width: 768px) {
@@ -82,123 +56,6 @@
 }
 
 
-
-/*
-//############################################
-// WIZARD STEPS
-//############################################
-
-*/
-/* wizard */
-.wizard-steps {
-  list-style: none;
-  display: block;
-  width: 100%;
-  padding: 0;
-  margin: 12px 0 0;
-  position: relative;
-}
-
-.wizard-steps li {
-  display: block;
-  text-align: center;
-  float: left;
-}
-
-.wizard-steps li .step {
-  text-align: center;
-  border: 5px solid #CED1D6;
-  color: #546474;
-  font-size: 15px;
-  border-radius: 32px;
-  line-height: 12px;
-  padding: 5px 10px;
-  background-color: #FFF;
-  position: relative;
-  z-index: 2;
-  display: inline;
-}
-
-.wizard-steps li:before {
-  /* the line running through each step*/
-
-  display: block;
-  content: "";
-  width: 100%;
-  height: 1px;
-  font-size: 0;
-  overflow: hidden;
-  border-top: 4px solid #CED1D6;
-  position: relative;
-  top: 12px;
-  z-index: 1;
-}
-
-.wizard-steps li:last-child:before {
-  max-width: 50%;
-  width: 50%;
-}
-
-.wizard-steps li:first-child:before {
-  max-width: 50%;
-  left: 50%;
-}
-
-.wizard-steps li.active:before,
-.wizard-steps li.complete:before,
-.wizard-steps li.active .step,
-.wizard-steps li.complete .step {
-  border-color: @brand-primary;
-}
-
-.wizard-steps li.complete .step:before {
-  display: block;
-  position: absolute;
-  top: 0;
-  left: 0;
-  bottom: 0;
-  right: 0;
-  padding: 8px 0px;
-  border-radius: 32px;
-  content: "\2713";
-  background-color: #FFF;
-  z-index: 103;
-  font-size: 20px;
-  color: @brand-success;
-}
-
-.wizard-steps li .title {
-  display: block;
-  margin-top: 12px;
-  max-width: 100%;
-  color: @brand-steel;
-  font-size: 14px;
-  z-index: 104;
-  text-align: center;
-  table-layout: fixed;
-  word-wrap: break-word;
-  min-width: 200px;
-}
-
-.wizard-steps li.complete .title,
-.wizard-steps li.active .title {
-  color: @brand-steel;
-}
-
-.step-content .step-pane {
-  display: none;
-  min-height: 200px;
-  padding: 4px 8px 12px;
-}
-
-.step-content .active {
-  display: block;
-}
-
-.wizard-actions {
-  text-align: right;
-}
-
 //############################################
 // HEADER
 //############################################
@@ -206,14 +63,11 @@
 .hippo-header {
   width: 100%;
   height: 80px;
-  /*background-color: #C84A4B;*/
   text-align: center;
   vertical-align: middle;
   table-layout: fixed;
   font-size: 20px;
   font-weight: bold;
-  /*background: url("../images/top-back.png") repeat;*/
-  color: @brand-steel;
 }
 
 .hippo-header-logo, .hippo-header-text {

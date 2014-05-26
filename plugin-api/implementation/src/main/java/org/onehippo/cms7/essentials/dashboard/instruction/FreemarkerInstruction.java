@@ -99,6 +99,7 @@ public class FreemarkerInstruction extends FileInstruction {
                 final String content = GlobalUtils.readStreamAsText(stream);
                 final String replacedData = TemplateUtils.replaceTemplateData(content, context.getPlaceholderData());
                 templateNode.setProperty("hst:script", replacedData);
+                session.save();
                 return InstructionStatus.SUCCESS;
 
             } catch (RepositoryException e) {
