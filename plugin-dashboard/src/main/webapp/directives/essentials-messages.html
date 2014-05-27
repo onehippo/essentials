@@ -14,23 +14,31 @@
   limitations under the License.
   -->
 
-<accordion close-others="oneAtATime"> 
-  <accordion-group is-open="isopen"> 
-    <accordion-heading ng-class="active"> 
-      {{label ? label : "Display changes made by this plugin"}}
-      <i class="pull-right glyphicon" ng-class="{'glyphicon-chevron-down': isopen, 'glyphicon-chevron-right': !isopen}"></i> 
-    </accordion-heading> 
-    <div class="alert-info"  ng-repeat="message in packageMessages.items" ng-switch="message.group"> 
-      <div ng-switch-when="FILE_CREATE">{{message.value}}</div> 
-    </div> 
-    <div class="alert-success"  ng-repeat="message in packageMessages.items" ng-switch="message.group"> 
-      <div ng-switch-when="DOCUMENT_REGISTER">{{message.value}}</div> 
-    </div> 
-    <div class="alert-warning"  ng-repeat="message in packageMessages.items" ng-switch="message.group"> 
-      <div ng-switch-when="XML_NODE_CREATE">{{message.value}}</div> 
-    </div> 
-    <div class="alert-danger"  ng-repeat="message in packageMessages.items" ng-switch="message.group"> 
-      <div ng-switch-when="XML_NODE_FOLDER_CREATE">{{message.value}}</div> 
-    </div> 
-  </accordion-group> 
-</accordion>
+<ul class="nav navbar-nav">
+    <li class="dropdown messages-menu">
+        <a href="#" class="dropdown-toggle" data-toggle="dropdown">
+            <i class="fa fa-warning"></i>
+            <span class="label label-warning">{{packageMessages.items.length}} changes</span>
+        </a>
+        <ul class="dropdown-menu">
+            <li class="header">
+                <strong>{{packageMessages.items.length}}</strong> project changes will be made by this plugin:
+            </li>
+            <li>
+                <ul class="menu">
+                    <li ng-repeat="message in packageMessages.items" ng-switch="message.group">
+                        <a href="javascript:void(0);">
+                            <!--<i ng-switch-when="DOCUMENT_REGISTER" class="fa fa-archive warning"></i>
+
+                            <i ng-switch-when="XML_NODE_FOLDER_CREATE" class="fa fa-file default"></i>
+                            <i ng-switch-when="XML_NODE_FOLDER_CREATE" class="fa fa-folder info"></i>-->
+                            <i ng-switch-when="FILE_CREATE" class="fa fa-gears success"></i>
+                            {{message.value}}</a>
+                    </li>
+                </ul>
+            </li>
+            <li class="footer"><a href="javascript:void(0); " class="dropdown-toggle" data-toggle="dropdown">Close</a></li>
+        </ul>
+    </li>
+</ul>
+

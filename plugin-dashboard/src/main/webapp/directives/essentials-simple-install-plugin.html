@@ -19,66 +19,96 @@
     <div class="box-header">
         <i class="fa fa-gear"></i>
         <h3 class="box-title">{{pluginTitle}}</h3>
+      <!--  <div class="pull-right box-tools">
+            <essentials-messages payload="payload" label="{{label}}"/>
+        </div>-->
     </div>
     <div class="box-body">
-        <div>
-            <table class="table table-striped table-bordered table-condensed">
-                <thead>
-                <tr>
-                    <th>Settings:</th>
-                    <th>
-                        <button class="btn-primary" ng-click="toggleForm()">{{settingsButtonText}}</button>
-                    </th>
-                </tr>
-                </thead>
-                <tbody>
-                <tr>
-                    <td>Templating language:</td>
-                    <td>{{templateName}}</td>
-                </tr>
-                <tr ng-show="sample">
-                    <td>Sample data:</td>
-                    <td ng-show="sample">{{sampleData ? "Add sample data": "No sample data"}}</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-        <form novalidate name="templateForm" ng-show="showForm">
-            <div class="form-group">
-                <label>Please select templating language:</label>
-            </div>
-            <div class="radio">
-                <label>
-                    <input type="radio" ng-model="templateName" required value="jsp"/>
-                    JSP template
-                </label>
-            </div>
-            <div class="radio">
-                <label>
-                    <input type="radio" ng-model="templateName" required value="freemarker"/>
-                    Freemarker template
-                </label>
-            </div>
-            <div class="radio">
-                <label>
-                    <input type="radio" ng-model="templateName" required value="repository"/>
-                    Repository freemarker template
-                </label>
-            </div>
-            <div ng-show="sample" class="form-group">
-                <label> Content: </label>
-            </div>
-            <div ng-show="sample" class="checkbox">
-                <label>
-                    Add sample content <input type="checkbox" ng-model="sampleData"/>
-                </label>
-            </div>
+        <div class="box box-solid">
+            <div class="box-header">
 
-        </form>
+                <!--<div class="pull-right box-tools">
+                    <i class="fa fa-gear"></i>
+                    <h4>Change default settings</h4>
+                </div>-->
+            </div>
+            <div class="box-body">
+                <div class="box-group" id="accordion">
+                    <div class="panel box box-success">
+                        <div class="box-header">
+                            <h4 class="box-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseChanges">
+                                    Current settings:
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseChanges" class="panel-collapse collapse in">
+                            <div class="box-body">
+                                <div class="infoblock infoblock-info">
+                                    <h4>Selected Templating language:</h4>
+                                    <p><strong>{{templateName}}</strong></p>
+                                </div>
+                                <div ng-show="sample" class="infoblock infoblock-danger">
+                                    <h4>Sample data:</h4>
+                                    <p><strong>{{sampleData ? "Add sample data": "No sample data"}}</strong></p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel box box-info">
+                        <div class="box-header">
+                            <h4 class="box-title">
+                                <a data-toggle="collapse" data-parent="#accordion" href="#collapseSettings">
+                                    Change settings
+                                </a>
+                            </h4>
+                        </div>
+                        <div id="collapseSettings" class="panel-collapse collapse">
+                            <div class="box-body">
+                                <div>
+                                    <form novalidate name="templateForm">
+                                        <div class="form-group">
+                                            <label>Please select templating language:</label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" ng-model="templateName" required value="jsp"/>
+                                                JSP template
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" ng-model="templateName" required value="freemarker"/>
+                                                Freemarker template
+                                            </label>
+                                        </div>
+                                        <div class="radio">
+                                            <label>
+                                                <input type="radio" ng-model="templateName" required value="repository"/>
+                                                Repository freemarker template
+                                            </label>
+                                        </div>
+                                        <div ng-show="sample" class="form-group">
+                                            <label> Content: </label>
+                                        </div>
+                                        <div ng-show="sample" class="checkbox">
+                                            <label>
+                                                Add sample content <input type="checkbox" ng-model="sampleData"/>
+                                            </label>
+                                        </div>
+                                    </form>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
 
 
     </div>
-    <div><essentials-messages payload="payload" label="{{label}}"/></div>
+
     <div class="input-group">
       <span class="input-group-btn">
         <button class="btn btn-primary pull-right" type="submit" ng-click="run()">{{buttonText}}</button>
