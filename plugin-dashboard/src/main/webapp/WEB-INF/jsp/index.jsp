@@ -128,7 +128,7 @@
     <section class="content-header">
     </section>
     <section class="content">
-      <div ui-view></div>
+      <div ui-view autoscroll="false"></div>
     </section>
   </aside>
 </div>
