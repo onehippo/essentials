@@ -126,8 +126,8 @@
     </section>
   </aside>
   <aside class="right-side" ng-controller="homeCtrl">
-    <section class="content-header">
-    </section>
+    <%--<section class="content-header">
+    </section>--%>
     <section class="content">
       <div ui-view autoscroll="false"></div>
     </section>
