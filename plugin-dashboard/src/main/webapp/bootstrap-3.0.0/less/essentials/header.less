@@ -1,0 +1,261 @@
+/*
+ * Copyright 2014 Hippo B.V. (http://www.onehippo.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+@import "hippovars.less";
+
+body > .header {
+  position: relative;
+  max-height: 100px;
+  z-index: 1030;
+  .navbar {
+    height: 50px;
+    margin-bottom: 0;
+    margin-left: @sidebar-width;
+  }
+
+  .navbar .sidebar-toggle {
+    float: left;
+    padding: 9px 5px;
+    margin: 8px 0 8px 5px;
+    background: transparent none;
+    border: 1px solid transparent;
+    .border-radius(0) !important;
+  }
+
+  .navbar .sidebar-toggle:hover .icon-bar {
+    background: #f6f6f6;
+  }
+  .navbar .sidebar-toggle .icon-bar {
+    display: block;
+    width: 22px;
+    height: 2px;
+
+    .border-radius(4px);
+
+  }
+
+  .navbar .sidebar-toggle .icon-bar + .icon-bar {
+    margin-top: 4px;
+  }
+
+  .navbar .nav > li > a > .label {
+    .border-radius(50%);
+    position: absolute;
+    top: 7px;
+    right: 2px;
+    font-size: 10px;
+    font-weight: normal;
+    width: 15px;
+    height: 15px;
+    line-height: 1.0em;
+    text-align: center;
+    padding: 2px;
+  }
+  .navbar .nav > li > a:hover > .label {
+    top: 3px;
+  }
+
+  .logo {
+    float: left;
+    height: 50px;
+    font-size: 20px;
+    line-height: 50px;
+    text-align: center;
+    padding: 0 10px;
+    width: @sidebar-width;
+    font-weight: 500;
+    display: block;
+    .icon {
+      margin-right: 10px;
+    }
+  }
+
+}
+
+.right-side > .content-header {
+  position: relative;
+  padding: 15px 15px 10px 20px;
+  > h1 {
+    margin: 0;
+    font-size: 24px;
+    > small {
+      font-size: 15px;
+      display: inline-block;
+      padding-left: 4px;
+      font-weight: 300;
+    }
+  }
+
+  > .breadcrumb {
+    float: right;
+    background: transparent;
+    margin-top: 0px;
+    margin-bottom: 0;
+    font-size: 12px;
+    padding: 7px 5px;
+    position: absolute;
+    top: 15px;
+    right: 10px;
+    .border-radius(2px);
+    > li > a {
+      color: #444;
+      text-decoration: none;
+      > .fa, > .glyphicon, > .ion {
+        margin-right: 5px;
+      }
+    }
+    > li + li:before {
+      content: '>\00a0';
+    }
+  }
+
+  @media screen and (max-width: @screen-sm) {
+    > .breadcrumb {
+      position: relative;
+      margin-top: 5px;
+      top: 0;
+      right: 0;
+      float: none;
+      background: #efefef;
+    }
+  }
+}
+
+@media (max-width: @screen-sm) {
+  .navbar .navbar-nav > li {
+    float: left;
+  }
+
+  .navbar-nav {
+    margin: 0;
+    float: left;
+  }
+
+  .navbar-nav > li > a {
+    padding-top: 15px;
+    padding-bottom: 15px;
+    line-height: 20px;
+  }
+
+  .navbar .navbar-right {
+    float: right;
+  }
+}
+
+
+@media screen and (max-width: @screen-header-collapse) {
+  body > .header {
+    position: relative;
+    .logo, .navbar {
+      width: 100%;
+      float: none;
+      position: relative !important;
+    }
+    .navbar {
+      margin: 0;
+    }
+  }
+
+  body.fixed {
+    > .header {
+      position: fixed;
+    }
+    > .wrapper, .sidebar-offcanvas {
+      margin-top: 100px !important;
+    }
+  }
+}
+
+body.fixed {
+  > .header, .left-side, .navbar {
+    position: fixed;
+  }
+  > .header {
+    top: 0;
+    right: 0;
+    left: 0;
+  }
+  .navbar {
+    left: 0;
+    right: 0;
+  }
+
+  .wrapper {
+    margin-top: 50px;
+  }
+
+}
+
+.content {
+  padding: 20px 15px;
+  background: @body-bg;
+}
+
+.page-header {
+  margin: 10px 0 20px 0;
+  font-size: 22px;
+
+  > small {
+    color: #666;
+    display: block;
+    margin-top: 5px;
+  }
+}
+
+.sort-highlight {
+  background: #f4f4f4;
+  border: 1px dashed #ddd;
+  margin-bottom: 10px;
+}
+
+.pad {
+  padding: 10px;
+}
+
+.margin {
+  margin: 10px;
+}
+
+.inline {
+  display: inline;
+  width: auto;
+}
+
+.hide {
+  display: none !important;
+}
+
+.no-border {
+  border: 0px !important;
+}
+
+.no-padding {
+  padding: 0px !important;
+}
+
+.no-margin {
+  margin: 0px !important;
+}
+
+.no-shadow {
+  box-shadow: none !important;
+}
+
+.flat {
+  .border-radius(0) !important;
+}
+
+
+

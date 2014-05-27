@@ -21,13 +21,35 @@
         //############################################
         // MENU DATA
         //############################################
-        .service('menuService', function () {
+        .service('menuService', function ($http, $rootScope) {
             this.getMenu = function () {
                 return [
                     {name: "Plugins", link: "#/plugins"},
                     {name: "Tools", link: "#/tools"}
                 ];
             };
+            this.getPlugins = function(){
+                if ($rootScope.pluginsCache) {
+                    return processItems($rootScope.pluginsCache);
+                } else {
+                    $http.get($rootScope.REST.plugins).success(function (data) {
+                        $rootScope.pluginsCache = data.items;
+                        return processItems(data.items);
+                    });
+                }
+
+                function processItems(items) {
+/*
+                    $scope.plugins = items;
+                    $scope.pluginNeedsInstall = [];
+                    angular.forEach(items, function (obj) {
+                        if (obj.needsInstallation) {
+                            $scope.pluginNeedsInstall.push(obj);
+                        }
+                    });*/
+                    return items;
+                }
+            }
 
         })
 
@@ -185,12 +207,18 @@
          */
         .controller('mainMenuCtrl', ['$scope', '$location', '$rootScope', 'menuService', function ($scope, $location, $rootScope, menuService) {
 
+
             $scope.$watch(function () {
                 return $rootScope.busyLoading;
             }, function () {
                 $scope.menu = menuService.getMenu();
+                $scope.plugins = menuService.getPlugins();
             });
 
+            $scope.showPluginDetail = function (pluginId) {
+                $scope.selectedPlugin = extracted(pluginId);
+                $rootScope.selectedPlugin = extracted(pluginId);
+            };
             $scope.isPageSelected = function (path) {
                 var myPath = $location.path();
                 // stay in plugins for all /plugin paths
@@ -206,6 +234,15 @@
             $scope.onMenuClick = function (menuItem) {
                 //
             };
+            function extracted(pluginId) {
+                var sel = null;
+                angular.forEach($scope.plugins, function (selected) {
+                    if (selected.pluginId == pluginId) {
+                        sel = selected;
+                    }
+                });
+                return sel;
+            }
 
         }]);
 

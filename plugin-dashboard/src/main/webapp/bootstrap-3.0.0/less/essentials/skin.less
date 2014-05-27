@@ -1,0 +1,194 @@
+/*
+ * Copyright 2014 Hippo B.V. (http://www.onehippo.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "hippovars.less";
+
+//############################################
+// ESSENTIALS SKIN
+//############################################
+
+.essentials-skin .navbar {
+  //.navbar-variant(@essentials-skin-color);
+  .navbar-variant(@essentials-skin-color);
+}
+
+.essentials-skin .logo {
+  .logo-mixin(@essentials-skin-color);
+  //.logo-mixin(darken(@essentials-skin-color, 5%));
+}
+
+
+.essentials-skin .right-side > .content-header {
+  background: #fbfbfb;
+  box-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+
+
+.essentials-skin {
+  .sidebar {
+    border-bottom: 1px solid #fff;
+  }
+  .sidebar > .sidebar-menu > li {
+    border-top: 1px solid #fff;
+    border-bottom: 1px solid @sidebar-light-border;
+
+    &:first-of-type {
+      border-top: 1px solid @sidebar-light-border;
+      > a {
+        border-top: 1px solid #fff;
+      }
+    }
+    > a {
+      margin-right: 1px;
+    }
+    > a:hover, &.active > a {
+      color: #222;
+      background: @sidebar-light-hover-bg;
+    }
+
+    > .treeview-menu {
+      margin: 0 1px;
+      background: @body-bg;
+    }
+  }
+
+  .left-side {
+    background: @sidebar-light-bg;
+    -webkit-box-shadow: inset -3px 0px 8px -4px rgba(0, 0, 0, 0.1);
+    -moz-box-shadow: inset -3px 0px 8px -4px rgba(0, 0, 0, 0.1);
+    box-shadow: inset -3px 0px 8px -4px rgba(0, 0, 0, 0.07);
+  }
+
+  .sidebar a {
+    color: @sidebar-light-font;
+    &:hover {
+      text-decoration: none;
+    }
+  }
+  .treeview-menu {
+    > li {
+      > a {
+        color: #777;
+      }
+      &.active > a, > a:hover {
+        color: #111;
+      }
+    }
+  }
+
+  .sidebar-form {
+    .border-radius(2px);
+    border: 1px solid @sidebar-light-border;
+    margin: 10px 10px;
+    input[type="text"], .btn {
+      box-shadow: none;
+      background-color: #fafafa;
+      border: 1px solid #fafafa;
+      height: 35px;
+
+    }
+    input[type="text"] {
+      color: #666;
+      .border-radius(2px, 0, 2px, 0) !important;
+      &:focus, &:focus + .input-group-btn .btn {
+        background-color: #fff;
+        color: #666;
+      }
+      &:focus + .input-group-btn .btn {
+        border-left-color: #fff;
+      }
+    }
+    .btn {
+      color: #999;
+      .border-radius(0, 2px, 0, 2px) !important;
+    }
+  }
+}
+
+//############################################
+//
+//############################################
+
+html, body {
+  overflow-x: hidden !important;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100%;
+  background: @body-bg;
+}
+
+a {
+  color: @link-color;
+}
+
+a:hover, a:active, a:focus {
+  outline: none;
+  text-decoration: none;
+  color: @link-hover-color;
+}
+
+.wrapper {
+  min-height: 100%;
+  .clearfix();
+}
+
+body > .header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 1030;
+}
+
+.right-side, .left-side {
+  min-height: 100%;
+  display: block;
+}
+
+.right-side {
+  background-color: @body-bg;
+  margin-left: @sidebar-width;
+}
+.left-side {
+  position: absolute;
+  width: @sidebar-width;
+  top: 0;
+}
+
+@media screen and (min-width: @screen-md) {
+  .left-side {
+    top: 50px;
+  }
+
+  .right-side.strech {
+    margin-left: 0;
+    > .content-header {
+      margin-top: 0px;
+    }
+  }
+
+  .left-side.collapse-left {
+    left: -@sidebar-width;
+  }
+}
+
+@media screen and (max-width: @screen-md) {
+  .right-side {
+    margin-left: 0;
+  }
+
+}
+

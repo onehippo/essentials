@@ -1,0 +1,141 @@
+/*
+ * Copyright 2014 Hippo B.V. (http://www.onehippo.com)
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *  http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
+@import "hippovars.less";
+
+
+.sidebar {
+  margin-bottom: 5px;
+  .sidebar-form {
+    input:focus {
+      -webkit-box-shadow: none;
+      -moz-box-shadow: none;
+      box-shadow: none;
+      border-color: transparent !important;
+    }
+  }
+
+  .sidebar-menu {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    > li {
+      margin: 0;
+      padding: 0;
+      > a {
+        padding: 12px 5px 12px 15px;
+        display: block;
+        > .fa, > .glyphicon, > .ion {
+          width: 20px;
+        }
+      }
+    }
+    .treeview-menu {
+      display: none;
+      list-style: none;
+      padding: 0;
+      margin: 0;
+      > li {
+        margin: 0;
+        > a {
+          padding: 5px 5px 5px 15px;
+          display: block;
+          font-size: 14px;
+          margin: 0px 0px;
+          > .fa, > .glyphicon, > .ion {
+            width: 20px;
+          }
+        }
+      }
+    }
+  }
+}
+
+.user-panel {
+  padding: 10px;
+  .clearfix();
+  > .image > img {
+    width: 45px;
+    height: 45px;
+  }
+  > .info {
+    font-weight: 600;
+    padding: 5px 5px 5px 15px;
+    font-size: 14px;
+    line-height: 1;
+  }
+  > .info > p {
+    margin-bottom: 9px;
+  }
+  > .info > a {
+    text-decoration: none;
+    padding-right: 5px;
+    margin-top: 3px;
+    font-size: 11px;
+    font-weight: normal;
+    > .fa, > .ion, > .glyphicon {
+      margin-right: 3px;
+    }
+  }
+}
+
+
+@media screen and (max-width: @screen-md) {
+
+  .relative {
+    position: relative;
+  }
+
+  .row-offcanvas-right
+  .sidebar-offcanvas {
+    right: -@sidebar-width;
+  }
+
+  .row-offcanvas-left
+  .sidebar-offcanvas {
+    left: -@sidebar-width;
+  }
+
+  .row-offcanvas-right.active {
+    right: @sidebar-width;
+  }
+
+  .row-offcanvas-left.active {
+    left: @sidebar-width;
+  }
+
+  .sidebar-offcanvas {
+    left: 0;
+  }
+
+  body.fixed {
+    .sidebar-offcanvas {
+      margin-top: 50px;
+      left: -@sidebar-width;
+    }
+    .row-offcanvas-left.active {
+      .navbar {
+        left: @sidebar-width !important;
+        right: 0;
+
+      }
+      .sidebar-offcanvas {
+        left: 0px;
+      }
+
+    }
+  }
+}

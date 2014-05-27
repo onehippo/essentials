@@ -46,75 +46,106 @@
   <script src="${pageContext.request.contextPath}/js/app.js"></script>
   <script src="${pageContext.request.contextPath}/js/routes.js"></script>
   <script src="${pageContext.request.contextPath}/js/controllers.js"></script>
+  <script src="${pageContext.request.contextPath}/js/layout.js"></script>
 
   <link rel="icon" href="${pageContext.request.contextPath}/images/favicon.ico" type="image/x-icon"/>
   <link rel="shortcut icon" href="${pageContext.request.contextPath}/images/favicon.ico" type="image/x-icon"/>
 </head>
-<body id="container">
+<body class="essentials-skin" ng-app="hippo.essentials">
 
-<!-- LOADER ON HTTP REQUESTS -->
-<div class="busy-loader ng-hide" ng-show="busyLoading">
-  <%--<span class="fa fa-spin fa-refresh"></span>&nbsp;--%>
-  <img src="${pageContext.request.contextPath}/images/loader.gif"/>
-</div>
-<!-- ERROR MESSAGES -->
-<div class="alert-danger messages ng-hide" ng-show="globalError.length > 0">
-  <strong>An error occurred:</strong>
-  <div ng-repeat="message in globalError">
-    {{message}}
-  </div>
-</div>
-<div class="alert-success messages ng-hide" ng-show="feedbackMessages.length > 0">
-  <div ng-repeat="message in feedbackMessages">
-    <strong>{{message}}</strong>
-  </div>
-</div>
-<%--
-  CONTENT
---%>
+<header class="header">
+  <a href="/essentials" class="logo">Hippo Essentials</a>
+  <nav class="navbar navbar-static-top" role="navigation">
+    <a href="#" class="navbar-btn sidebar-toggle" data-toggle="offcanvas" role="button">
+      <span class="sr-only">Toggle navigation</span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
+      <span class="icon-bar"></span>
 
-<div  class="container">
-  <div class="row">
-    <h1 class="page-header">
-      <div class="pull-left hippo-header-logo">
-        <a href="${pageContext.request.contextPath}"><img src="${pageContext.request.contextPath}/images/hippo-logo.png"></a>
-      </div>
-      <div class="text-center">Hippo CMS<small>Essentials</small></div>
-    </h1>
-  </div>
-
-  <div class="row">
-    <div class="col-sm-2" style="margin-right: 20px;" ng-controller="mainMenuCtrl">
-      <ul class="nav nav-stacked nav-pills" ng-show="packsInstalled">
-        <li ng-repeat="item in menu" ng-class="{true:'active', false:''}[isPageSelected('{{item.link}}')]">
-          <a href="{{item.link}}" ng-click="onMenuClick(item)">{{item.name}}</a>
+    </a>
+    <div class="navbar-right">
+      <ul class="nav navbar-nav">
+      </ul>
+    </div>
+  </nav>
+</header>
+<div class="wrapper row-offcanvas row-offcanvas-left">
+  <aside class="left-side sidebar-offcanvas">
+    <section class="sidebar" ng-controller="mainMenuCtrl">
+      <ul class="sidebar-menu" ng-show="packsInstalled">
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-bar-chart-o"></i>
+            <span>Plugins</span>
+            <i class="fa fa-angle-left pull-right"></i>
+          </a>
+          <ul class="treeview-menu">
+            <li ng-repeat="plugin in plugins | filter:{needsInstallation:false} | filter:{type:'plugins'} | orderBy:'name'"><a href="#/plugins/{{plugin.pluginId}}" ng-click="showPluginDetail(plugin.pluginId)"><i class="fa fa-angle-double-right"></i>{{plugin.name}}</a></li>
+          </ul>
         </li>
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-bar-chart-o"></i>
+            <span>Install plugins</span>
+            <i class="fa fa-angle-left pull-right"></i>
+          </a>
+          <ul class="treeview-menu">
+            <li ng-repeat="plugin in plugins | filter:{needsInstallation:true} | filter:{type:'plugins'} | orderBy:'name'"><a href="#/plugins/{{plugin.pluginId}}" ng-click="showPluginDetail(plugin.pluginId)"><i class="fa fa-angle-double-right"></i>{{plugin.name}}</a></li>
+          </ul>
+        </li>
+        <li class="treeview">
+          <a href="#">
+            <i class="fa fa-bar-chart-o"></i>
+            <span>Tools</span>
+            <i class="fa fa-angle-left pull-right"></i>
+          </a>
+          <ul class="treeview-menu">
+            <li ng-repeat="plugin in plugins | filter:{needsInstallation:false} | filter:{type:'tools'} | orderBy:'name'">
+              <a href="#/tools/{{plugin.pluginId}}" ng-click="showPluginDetail(plugin.pluginId)"><i class="fa fa-angle-double-right"></i>{{plugin.name}}</a>
+            </li>
+          </ul>
+        </li>
+
         <li>
           <a target="API" href="${pageContext.request.contextPath}/docs/rest-api/index.html">REST API</a>
         </li>
         <li>
-          <a target="FEEDBACK" href="https://issues.onehippo.com/rest/collectors/1.0/template/form/a23eddf8?os_authType=none">Feedback</a>
+          <a target="FEEDBACK" href="https://issues.onehippo.com/rest/collectors/1.0/template/form/a23eddf8?os_authType=none">
+            <i class="fa fa-envelope"></i> <span>Feedback</span>
+          </a>
         </li>
       </ul>
-    </div>
-
-    <div class="col-sm-9" ng-controller="homeCtrl">
+    </section>
+  </aside>
+  <aside class="right-side" ng-controller="homeCtrl">
+    <section class="content-header">
+      <div class="busy-loader ng-hide" ng-show="busyLoading">
+        <img src="${pageContext.request.contextPath}/images/loader.gif"/>
+      </div>
+      <!-- ERROR MESSAGES -->
+      <div class="alert-danger messages ng-hide" ng-show="globalError.length > 0">
+        <strong>An error occurred:</strong>
+        <div ng-repeat="message in globalError">
+          {{message}}
+        </div>
+      </div>
+      <div class="alert-success messages ng-hide" ng-show="feedbackMessages.length > 0">
+        <div ng-repeat="message in feedbackMessages">
+          <strong>{{message}}</strong>
+        </div>
+      </div>
       <div ui-view="submenu" autoscroll="false"></div>
-      <div ui-view="plugintabs" autoscroll="false"></div>
-      <div style="margin-left: 220px;" ui-view="plugininstance" autoscroll="false"></div>
-      <div ui-view autoscroll="false"></div>
-      <%--<div ng-view></div>--%>
-    </div>
-  </div>
-  <div class="row footer">
-    <p class="text-center">
-      (C) 2013-2014 <a href="http://www.onehippo.com">Hippo B.V.</a>, All Rights Reserved
-    </p>
-  </div>
+    </section>
+    <section class="content">
 
+      <div ui-view="plugintabs" autoscroll="false"></div>
+      <div style="margin-left: 380px;" ui-view="plugininstance" autoscroll="false"></div>
+      <div ui-view autoscroll="false"></div>
+    </section>
+  </aside>
 </div>
 
-<!-- Include the loader.js script -->
+
 <script src="${pageContext.request.contextPath}/js/loader.js" data-modules="http://localhost:8080/essentials/rest/plugins/modules"></script>
 
 </body>
