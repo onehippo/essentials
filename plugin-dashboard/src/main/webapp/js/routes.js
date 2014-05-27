@@ -56,8 +56,6 @@
                     url: '/plugins',
                     templateUrl: 'pages/plugins.html',
                     controller: 'pluginCtrl'
-
-
                 })
                 .state('find-plugins', {
                     url: '/find-plugins',
@@ -67,20 +65,10 @@
             )
                 .state('plugin', {
                     url: '/plugins/:id',
-                    views: {
-                        "submenu": {
-                            templateUrl: 'pages/plugins-menu-find.html',
-                            controller: 'pluginCtrl'
-                        }, "plugintabs": {
-                            templateUrl: 'pages/plugins-installed-tabs.html',
-                            controller: 'pluginCtrl'
-                        }, "plugininstance": {
-                            url: '/plugins/:id',
-                            templateUrl: function ($stateParams) {
-                                return 'plugins/' + $stateParams.id + '/' + $stateParams.id + '.html';
-                            }
-                        }
-                    }
+                    templateUrl: function ($stateParams) {
+                        return 'plugins/' + $stateParams.id + '/' + $stateParams.id + '.html';
+                    },
+                    controller: 'pluginCtrl'
                 }
             );
         });
