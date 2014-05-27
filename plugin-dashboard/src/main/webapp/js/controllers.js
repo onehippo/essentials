@@ -56,6 +56,9 @@
         //############################################
         // PLUGINS CONTROLLER LOADER
         //############################################
+        .controller('pluginLoaderCtrl', function ($scope, $sce, $log, $rootScope, $http, $filter) {
+
+        })
         .controller('introductionCtrl', function ($scope, $location, $sce, $log, $rootScope, $http) {
             // just sets a hide screen boolean flag to true
             $scope.addUrl = function () {

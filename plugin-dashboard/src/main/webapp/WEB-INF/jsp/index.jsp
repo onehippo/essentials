@@ -47,11 +47,10 @@
   <script src="${pageContext.request.contextPath}/js/routes.js"></script>
   <script src="${pageContext.request.contextPath}/js/controllers.js"></script>
   <script src="${pageContext.request.contextPath}/js/layout.js"></script>
-
   <link rel="icon" href="${pageContext.request.contextPath}/images/favicon.ico" type="image/x-icon"/>
   <link rel="shortcut icon" href="${pageContext.request.contextPath}/images/favicon.ico" type="image/x-icon"/>
 </head>
-<body class="essentials-skin" ng-app="hippo.essentials">
+<body id="container" class="essentials-skin">
 
 <header class="header">
   <a href="/essentials" class="logo">Hippo Essentials</a>
@@ -61,10 +60,24 @@
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
       <span class="icon-bar"></span>
-
     </a>
+    <form action="#" method="get" class="search-form">
+      <div class="input-group">
+        <input type="text" name="q" class="form-control" placeholder="Find plugins..."/>
+        <span class="input-group-btn">
+        <button type='submit' name='search' id='search-btn' class="btn btn-primary">
+            <i class="fa fa-search"></i></button>
+        </span>
+      </div>
+    </form>
+
     <div class="navbar-right">
       <ul class="nav navbar-nav">
+        <li class="dropdown messages-menu ng-hide" ng-show="busyLoading">
+          <div class="busy-loader ng-hide" >
+            <img src="${pageContext.request.contextPath}/images/loader.gif"/>
+          </div>
+        </li>
       </ul>
     </div>
   </nav>
@@ -80,22 +93,14 @@
             <i class="fa fa-angle-left pull-right"></i>
           </a>
           <ul class="treeview-menu">
-            <li ng-repeat="plugin in plugins | filter:{needsInstallation:false} | filter:{type:'plugins'} | orderBy:'name'"><a href="#/plugins/{{plugin.pluginId}}" ng-click="showPluginDetail(plugin.pluginId)"><i class="fa fa-angle-double-right"></i>{{plugin.name}}</a></li>
+            <li ng-repeat="plugin in plugins | filter:{needsInstallation:false} | filter:{type:'plugins'} | orderBy:'name'">
+              <a href="#/plugins/{{plugin.pluginId}}" ng-click="showPluginDetail(plugin.pluginId)"><i class="fa fa-angle-double-right"></i>{{plugin.name}}</a>
+            </li>
           </ul>
         </li>
         <li class="treeview">
           <a href="#">
-            <i class="fa fa-bar-chart-o"></i>
-            <span>Find plugins</span>
-            <i class="fa fa-angle-left pull-right"></i>
-          </a>
-          <ul class="treeview-menu">
-            <li ng-repeat="plugin in plugins | filter:{needsInstallation:true} | filter:{type:'plugins'} | orderBy:'name'"><a href="#/plugins/{{plugin.pluginId}}" ng-click="showPluginDetail(plugin.pluginId)"><i class="fa fa-angle-double-right"></i>{{plugin.name}}</a></li>
-          </ul>
-        </li>
-        <li class="treeview">
-          <a href="#">
-            <i class="fa fa-bar-chart-o"></i>
+            <i class="fa fa-gears"></i>
             <span>Tools</span>
             <i class="fa fa-angle-left pull-right"></i>
           </a>
@@ -105,9 +110,11 @@
             </li>
           </ul>
         </li>
-
         <li>
-          <a target="API" href="${pageContext.request.contextPath}/docs/rest-api/index.html">REST API</a>
+          <a target="API" href="${pageContext.request.contextPath}/docs/rest-api/index.html">
+            <i class="fa fa-external-link"></i>
+            <span>REST API</span>
+          </a>
         </li>
         <li>
           <a target="FEEDBACK" href="https://issues.onehippo.com/rest/collectors/1.0/template/form/a23eddf8?os_authType=none">
@@ -119,31 +126,13 @@
   </aside>
   <aside class="right-side" ng-controller="homeCtrl">
     <section class="content-header">
-      <div class="busy-loader ng-hide" ng-show="busyLoading">
-        <img src="${pageContext.request.contextPath}/images/loader.gif"/>
-      </div>
-      <!-- ERROR MESSAGES -->
-      <div class="alert-danger messages ng-hide" ng-show="globalError.length > 0">
-        <strong>An error occurred:</strong>
-        <div ng-repeat="message in globalError">
-          {{message}}
-        </div>
-      </div>
-      <div class="alert-success messages ng-hide" ng-show="feedbackMessages.length > 0">
-        <div ng-repeat="message in feedbackMessages">
-          <strong>{{message}}</strong>
-        </div>
-      </div>
     </section>
     <section class="content">
-
-      <div ui-view autoscroll="false"></div>
+      <div ui-view></div>
     </section>
   </aside>
 </div>
-
-
 <script src="${pageContext.request.contextPath}/js/loader.js" data-modules="http://localhost:8080/essentials/rest/plugins/modules"></script>
-
 </body>
+
 </html>
