@@ -20,8 +20,10 @@ import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import javax.inject.Inject;
 import javax.servlet.ServletContext;
@@ -35,6 +37,7 @@ import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.ext.RuntimeDelegate;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.cxf.Bus;
 import org.apache.cxf.BusFactory;
 import org.apache.cxf.endpoint.Server;
@@ -51,7 +54,7 @@ import org.onehippo.cms7.essentials.dashboard.event.listeners.MemoryPluginEventL
 import org.onehippo.cms7.essentials.dashboard.model.EssentialsDependency;
 import org.onehippo.cms7.essentials.dashboard.model.Plugin;
 import org.onehippo.cms7.essentials.dashboard.model.PluginRestful;
-import org.onehippo.cms7.essentials.dashboard.model.Restful;
+import org.onehippo.cms7.essentials.dashboard.model.ProjectSettings;
 import org.onehippo.cms7.essentials.dashboard.packaging.CommonsInstructionPackage;
 import org.onehippo.cms7.essentials.dashboard.packaging.InstructionPackage;
 import org.onehippo.cms7.essentials.dashboard.packaging.MessageGroup;
@@ -64,6 +67,7 @@ import org.onehippo.cms7.essentials.dashboard.rest.RestfulList;
 import org.onehippo.cms7.essentials.dashboard.setup.ProjectSetupPlugin;
 import org.onehippo.cms7.essentials.dashboard.utils.DependencyUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
+import org.onehippo.cms7.essentials.rest.client.RestClient;
 import org.onehippo.cms7.essentials.rest.model.ControllerRestful;
 import org.onehippo.cms7.essentials.rest.model.RestList;
 import org.onehippo.cms7.essentials.rest.model.StatusRestful;
@@ -117,6 +121,24 @@ public class PluginResource extends BaseResource {
 
 
         final List<PluginRestful> items = getPlugins(servletContext);
+        // check if we have other repos:
+        final ProjectSettings projectSettings = getContext(servletContext).getProjectSettings();
+        final Set<String> pluginRepositories = projectSettings.getPluginRepositories();
+        for (String pluginRepository : pluginRepositories) {
+            if (pluginRepository.startsWith("http")) {
+                try {
+                    RestClient client = new RestClient(pluginRepository);
+                    final RestfulList<PluginRestful> myPlugins = client.getPlugins();
+                    if(myPlugins !=null){
+                        final List<PluginRestful> myPluginsItems = myPlugins.getItems();
+                        CollectionUtils.addAll(items, myPluginsItems.iterator());
+                    }
+                } catch (Exception e) {
+                    log.error("Error loading plugins from repository: " + pluginRepository, e);
+                }
+            }
+        }
+
 
         final Collection<String> restClasses = new ArrayList<>();
         final PluginContext context = getContext(servletContext);
@@ -202,67 +224,61 @@ public class PluginResource extends BaseResource {
             resource.setSuccessMessage(false);
             return resource;
         }
-
+        final Map<String, Object> properties = new HashMap<String, Object>(values);
         final PluginContext context = new DefaultPluginContext(new PluginRestful(ProjectSettingsBean.DEFAULT_NAME));
-        // inject project settings:
-        try (PluginConfigService configService = context.getConfigService()) {
+        context.addPlaceholderData(properties);
+        //############################################
+        // EXECUTE SKELETON:
+        //############################################
+        final InstructionPackage commonPackage = new CommonsInstructionPackage();
+        getInjector().autowireBean(commonPackage);
 
+        commonPackage.setProperties(properties);
+        commonPackage.execute(context);
 
-            final ProjectSettingsBean document = configService.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
-            if (document != null) {
-                context.setBeansPackageName(document.getSelectedBeansPackage());
-                context.setComponentsPackageName(document.getSelectedComponentsPackage());
-                context.setRestPackageName(document.getSelectedRestPackage());
-                context.setProjectNamespacePrefix(document.getProjectNamespace());
-            }
-            //############################################
-            // EXECUTE SKELETON:
-            //############################################
-            final InstructionPackage commonPackage = new CommonsInstructionPackage();
-            getInjector().autowireBean(commonPackage);
-            commonPackage.setProperties(new HashMap<String, Object>(values));
-            commonPackage.execute(context);
-
-            // execute InstructionPackage itself
-            InstructionPackage instructionPackage = instructionPackageInstance(myPlugin);
-            if(instructionPackage==null){
-                return new MessageRestful("Could not execute Installation package", DisplayEvent.DisplayType.STRONG);
-            }
-            instructionPackage.setProperties(new HashMap<String, Object>(values));
-            instructionPackage.execute(context);
-
-
+        // execute InstructionPackage itself
+        InstructionPackage instructionPackage = instructionPackageInstance(myPlugin);
+        if (instructionPackage == null) {
+            return new MessageRestful("Could not execute Installation package", DisplayEvent.DisplayType.STRONG);
         }
+        instructionPackage.setProperties(properties);
+        instructionPackage.execute(context);
+
+
         return new MessageRestful("Please rebuild and restart your application:", DisplayEvent.DisplayType.STRONG);
     }
 
 
-
     @ApiOperation(
-            value = "Hides introduction screen",
-            response = MessageRestful.class)
+            value = "Saves global project settings",
+            response = KeyValueRestful.class)
     @POST
-    @Path("/hideintroduction")
-    public Restful hideWelcomeScreen(@Context ServletContext servletContext) {
+    @Path("/savesettings")
+    public KeyValueRestful hideWelcomeScreen(final ProjectSettingsBean payload, @Context ServletContext servletContext) {
         try {
             final Plugin plugin = getPluginById(ProjectSetupPlugin.class.getName(), servletContext);
             final PluginContext context = new DefaultPluginContext(plugin);
             try (PluginConfigService configService = context.getConfigService()) {
-                final ProjectSettingsBean document = configService.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
-                document.setSetupDone(true);
-                configService.write(document);
+                final Set<String> pluginRepositories = payload.getPluginRepositories();
+                if (pluginRepositories !=null) {
+                    final Iterator<String> iterator = pluginRepositories.iterator();
+                    for(;iterator.hasNext();){
+                        final String next = iterator.next();
+                        if(Strings.isNullOrEmpty(next)){
+                            iterator.remove();
+                        }
+                    }
+                }
+                payload.setSetupDone(true);
+                configService.write(payload);
                 return new KeyValueRestful("message", "Saved property for welcome screen");
             }
-
-
         } catch (Exception e) {
 
             log.error("Error checking InstructionPackage status", e);
         }
 
-        final MessageRestful messageRestful = new MessageRestful();
-        messageRestful.setSuccessMessage(false);
-        return messageRestful;
+        return new KeyValueRestful("message", "Error saving welcome screen setting");
     }
 
     @ApiOperation(
@@ -416,6 +432,17 @@ public class PluginResource extends BaseResource {
         return list;
 
     }
+    
+    @ApiOperation(
+            value = "returns project settings",
+            notes = "Contains a list of all predefined project settings and project setup preferences",
+            response = ProjectSettings.class)
+    @GET
+    @Path("/projectsettings")
+    public ProjectSettings getProjectSettings(@Context ServletContext servletContext) {
+        final PluginContext context = getContext(servletContext);
+        return context.getProjectSettings();
+    }
 
     @GET
     @Path("/controllers")
@@ -499,8 +526,10 @@ public class PluginResource extends BaseResource {
     @POST
     @Path("/changes/")
     public RestfulList<MessageRestful> getInstructionPackageChanges(final PostPayloadRestful payload, @Context ServletContext servletContext) {
-
         final Map<String, String> values = payload.getValues();
+        final PluginContext context = getContext(servletContext);
+        context.addPlaceholderData(new HashMap<String, Object>(values));
+
         final String pluginId = values.get(PLUGIN_ID);
         final Plugin myPlugin = getPluginById(pluginId, servletContext);
 
@@ -511,19 +540,18 @@ public class PluginResource extends BaseResource {
             list.add(resource);
             return list;
         }
-
         final InstructionPackage instructionPackage = instructionPackageInstance(myPlugin);
-        if(instructionPackage==null){
+        if (instructionPackage == null) {
             final MessageRestful resource = new MessageRestful("Could not create Instruction Package");
             resource.setSuccessMessage(false);
             list.add(resource);
             return list;
         }
 
-
         instructionPackage.setProperties(new HashMap<String, Object>(values));
+
         @SuppressWarnings("unchecked")
-        final Multimap<MessageGroup, MessageRestful> messages = (Multimap<MessageGroup, MessageRestful>) instructionPackage.getInstructionsMessages(getContext(servletContext));
+        final Multimap<MessageGroup, MessageRestful> messages = (Multimap<MessageGroup, MessageRestful>) instructionPackage.getInstructionsMessages(context);
         final Collection<Map.Entry<MessageGroup, MessageRestful>> entries = messages.entries();
         for (Map.Entry<MessageGroup, MessageRestful> entry : entries) {
             final MessageRestful value = entry.getValue();

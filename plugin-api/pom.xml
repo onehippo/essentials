@@ -22,7 +22,7 @@
   <parent>
     <groupId>org.onehippo.cms7.essentials</groupId>
     <artifactId>hippo-essentials</artifactId>
-    <version>1.01.02-SNAPSHOT</version>
+    <version>1.01.03-SNAPSHOT</version>
   </parent>
 
   <name>Hippo Essentials plugins sdk</name>
@@ -66,6 +66,16 @@
         <version>${hippo.repository.version}</version>
       </dependency>
 
+      <dependency>
+        <groupId>org.onehippo.cms7</groupId>
+        <artifactId>hippo-services-contenttype</artifactId>
+        <version>${hippo.services.contenttype.version}</version>
+      </dependency>
+      <dependency>
+        <groupId>org.onehippo.cms7</groupId>
+        <artifactId>hippo-services</artifactId>
+        <version>${hippo.services.contenttype.version}</version>
+      </dependency>
       <dependency>
         <groupId>org.springframework</groupId>
         <artifactId>spring-core</artifactId>

@@ -16,11 +16,70 @@
 <div class="row" ng-controller="introductionCtrl">
     <h2>Welcome</h2>
     <p>You are about to use the Essentials Dashboard to add functionality to a new Hippo project.
-    To get some basic understanding about what the Dashboard is and how to use it, check
-    <a href="http://www.onehippo.org/library/essentials/hippo-developer-essentials.html">the documentation</a>.</p>
+        To get some basic understanding about what the Dashboard is and how to use it, check
+        <a href="http://www.onehippo.org/library/essentials/hippo-developer-essentials.html">the documentation</a>.</p>
     <p>We are happy to receive feedback on your experiences using the Dashboard. Please feel free to use the
-    built-in feedback mechanism for this. Thanks and enjoy!</p>
+        built-in feedback mechanism for this. Thanks and enjoy!</p>
+    <h3>Please choose project setup preferences</h3>
 
-    <a class="btn btn-success" href="/essentials" ng-click="hide()">Get started</a>
+    <form name="settingsForm" novalidate>
+        <div class="form-group">
+            <label>Please select templating language:</label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" ng-model="projectSettings.templateLanguage" required value="jsp"/>
+                JSP template
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" ng-model="projectSettings.templateLanguage" required value="freemarker"/>
+                Freemarker template
+            </label>
+        </div>
+        <div class="radio">
+            <label>
+                <input type="radio" ng-model="projectSettings.templateLanguage" required value="repository"/>
+                Repository stored freemarker template
+            </label>
+        </div>
+        <div class="form-group">
+            <label> Content: </label>
+        </div>
+        <div class="checkbox">
+            <label>
+                Add sample content <input type="checkbox" ng-model="projectSettings.useSamples"/>
+            </label>
+        </div>
+        <!--
+            //############################################
+            //  REPO URLS
+            //############################################
+        -->
+        <div class="row form-group">
+            <label class="col-sm-2 control-label">Setup plugin repository urls:</label>
+            <label class="col-sm-6 control-label">
+                <button class="btn btn-success glyphicon glyphicon-plus" ng-click="addUrl()">Add repository url</button>
+            </label>
+        </div>
+        <div class="row" ng-repeat="url in projectSettings.pluginRepositories track by $index">
+            <div class="form-group">
+                <label class="col-sm-2 control-label">Repository URL {{$index +1}}</label>
+                <div class="col-sm-6">
+                    <input type="text" class="form-control"  ng-model="projectSettings.pluginRepositories[$index]">
+                </div>
+                <div class="col-sm-2">
+                    <button class="btn btn-danger glyphicon glyphicon-minus pull-right"  ng-click="removeUrl(url)">Remove url</button>
+                </div>
+            </div>
+        </div>
+        <div class="form-group">
+            <button class="btn btn-primary pull-right" ng-click="getStarted()">Get started</button>
+        </div>
+
+    </form>
+
+
 </div>
 

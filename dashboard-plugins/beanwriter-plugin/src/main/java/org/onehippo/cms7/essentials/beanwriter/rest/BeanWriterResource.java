@@ -16,9 +16,7 @@
 
 package org.onehippo.cms7.essentials.beanwriter.rest;
 
-import java.io.File;
 import java.util.Collection;
-import java.util.List;
 
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
@@ -28,8 +26,6 @@ import javax.ws.rs.Produces;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
 
-import org.onehippo.cms7.essentials.dashboard.config.PluginConfigService;
-import org.onehippo.cms7.essentials.dashboard.config.ProjectSettingsBean;
 import org.onehippo.cms7.essentials.dashboard.ctx.DefaultPluginContext;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
 import org.onehippo.cms7.essentials.dashboard.event.DisplayEvent;
@@ -38,13 +34,12 @@ import org.onehippo.cms7.essentials.dashboard.model.PluginRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.BaseResource;
 import org.onehippo.cms7.essentials.dashboard.rest.MessageRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.RestfulList;
+import org.onehippo.cms7.essentials.dashboard.services.ContentBeansService;
 import org.onehippo.cms7.essentials.dashboard.setup.ProjectSetupPlugin;
 import org.onehippo.cms7.essentials.dashboard.utils.BeanWriterUtils;
-import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
-import org.onehippo.cms7.essentials.dashboard.utils.ProjectUtils;
-import org.onehippo.cms7.essentials.dashboard.utils.beansmodel.MemoryBean;
 
 import com.google.common.collect.Multimap;
+
 
 /**
  * @version "$Id$"
@@ -57,31 +52,15 @@ public class BeanWriterResource extends BaseResource {
 
     @POST
     public RestfulList<MessageRestful> runBeanWriter(@Context ServletContext servletContext) throws Exception {
-        final String basePath = ProjectUtils.getBaseProjectDirectory();
-
-
         final String className = ProjectSetupPlugin.class.getName();
         final PluginContext context = new DefaultPluginContext(new PluginRestful(className));
+        //############################################
+        // USE SERVICES
+        //############################################
+        final ContentBeansService contentBeansService = new ContentBeansService(context);
+        contentBeansService.createBeans();
         // inject project settings:
         final RestfulList<MessageRestful> messages = new MyRestList();
-        try (PluginConfigService service = context.getConfigService()) {
-            final ProjectSettingsBean document = service.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
-            if (document != null) {
-                context.setBeansPackageName(document.getSelectedBeansPackage());
-                context.setComponentsPackageName(document.getSelectedComponentsPackage());
-                context.setRestPackageName(document.getSelectedRestPackage());
-                context.setProjectNamespacePrefix(document.getProjectNamespace());
-            }
-        }
-
-
-
-        /*messages.add(new MessageRestful("Not Enabled @see org.onehippo.cms7.essentials.rest.BeanWriterResource"));
-        messages.add(new MessageRestful("Not implemented yet"));*/
-        final java.nio.file.Path namespacePath = new File(basePath + File.separator + "bootstrap").toPath();
-
-        final List<MemoryBean> memoryBeans = BeanWriterUtils.buildBeansGraph(namespacePath, context, EssentialConst.SOURCE_PATTERN_JAVA);
-        BeanWriterUtils.addMissingMethods(context, memoryBeans, EssentialConst.FILE_EXTENSION_JAVA);
         final Multimap<String, Object> pluginContextData = context.getPluginContextData();
         final Collection<Object> objects = pluginContextData.get(BeanWriterUtils.CONTEXT_DATA_KEY);
         for (Object object : objects) {

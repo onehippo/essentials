@@ -14,21 +14,18 @@
  * limitations under the License.
  */
 
-package org.onehippo.cms7.essentials.dashboard.utils.annotations;
+package org.onehippo.cms7.essentials.beanwriter.rest;
 
-import java.lang.annotation.Documented;
-import java.lang.annotation.ElementType;
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-import java.lang.annotation.Target;
+import org.junit.Test;
 
-/**
- * Marker annotation for collection of JCR Node items
- *
- * @version "$Id$"
- */
-@Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD})
-@Documented
-public @interface PersistentCollection {
+public class BeanWriterResourceTest {
+
+
+    @Test
+    public void testRunBeanWriter() throws Exception {
+
+
+    }
+
+
 }

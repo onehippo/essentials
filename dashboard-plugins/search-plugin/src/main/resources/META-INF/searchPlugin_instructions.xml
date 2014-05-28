@@ -21,7 +21,7 @@
   <instructionSet>
     <xml action="copy" source="instructions/xml/hst/search-catalog.xml" target="/hst:hst/hst:configurations/hst:default/hst:catalog/essentials-catalog"/>
     <xml action="copy" source="instructions/xml/hst/search-page.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:pages"/>
-    <xml action="copy" source="instructions/xml/hst/search-sitemap.xml" target="/hst:hst/hst:configurations/common/hst:sitemap"/>
+    <xml action="copy" source="instructions/xml/hst/search-sitemap.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:sitemap"/>
     <file action="copy" binary="true" source="instructions/images/component-icon-search.png" target="{{siteWebRoot}}/images/component-icon-search.png"/>
   </instructionSet>
   <instructionSet group="jsp">
@@ -31,8 +31,8 @@
     <xml action="copy" source="instructions/xml/hst/search-main-jsp.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
   </instructionSet>
   <instructionSet group="freemarker">
-    <file action="copy" source="instructions/freemarker/search-main.ftl" target="{{freemarkerRoot}}/{{namespace}}/search-main.ftl"/>
-    <file action="copy" source="instructions/freemarker/search-box.ftl" target="{{freemarkerRoot}}/{{namespace}}/search-box.ftl"/>
+    <freemarker action="copy" source="instructions/freemarker/search-main.ftl" target="{{freemarkerRoot}}/{{namespace}}/search-main.ftl"/>
+    <freemarker action="copy" source="instructions/freemarker/search-box.ftl" target="{{freemarkerRoot}}/{{namespace}}/search-box.ftl"/>
     <xml action="copy" source="instructions/xml/hst/search-main-freemarker.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
     <xml action="copy" source="instructions/xml/hst/search-box-freemarker.xml" target="/hst:hst/hst:configurations/{{namespace}}/hst:templates"/>
   </instructionSet>

@@ -34,7 +34,9 @@ import javax.jcr.Session;
 import org.apache.jackrabbit.value.ValueFactoryImpl;
 import org.onehippo.cms7.essentials.dashboard.config.FilePluginService;
 import org.onehippo.cms7.essentials.dashboard.config.PluginConfigService;
+import org.onehippo.cms7.essentials.dashboard.config.ProjectSettingsBean;
 import org.onehippo.cms7.essentials.dashboard.model.Plugin;
+import org.onehippo.cms7.essentials.dashboard.model.ProjectSettings;
 import org.onehippo.cms7.essentials.dashboard.utils.EssentialConst;
 import org.onehippo.cms7.essentials.dashboard.utils.GlobalUtils;
 import org.onehippo.cms7.essentials.dashboard.utils.ProjectUtils;
@@ -69,6 +71,23 @@ public class DefaultPluginContext implements PluginContext {
 
     public DefaultPluginContext(final Plugin plugin) {
         this.plugin = plugin;
+        final ProjectSettings document = getProjectSettings();
+        if (document != null) {
+            setBeansPackageName(document.getSelectedBeansPackage());
+            setComponentsPackageName(document.getSelectedComponentsPackage());
+            setRestPackageName(document.getSelectedRestPackage());
+            setProjectNamespacePrefix(document.getProjectNamespace());
+        }
+    }
+
+    @Override
+    public ProjectSettings getProjectSettings() {
+        try (PluginConfigService service = getConfigService()) {
+            return service.read(ProjectSettingsBean.DEFAULT_NAME, ProjectSettingsBean.class);
+        } catch (Exception e) {
+            log.error("Error reading project settings", e);
+        }
+        return null;
     }
 
     @Override
@@ -84,6 +103,7 @@ public class DefaultPluginContext implements PluginContext {
     @Override
     public void addPluginContextData(final String key, final Object value) {
         contextData.put(key, value);
+
     }
 
     @Override
@@ -226,6 +246,7 @@ public class DefaultPluginContext implements PluginContext {
         if (data != null) {
             getPlaceholderData().putAll(data);
         }
+        fillInProperties();
     }
 
     /**
@@ -315,8 +336,6 @@ public class DefaultPluginContext implements PluginContext {
         placeholderData.put(EssentialConst.PLACEHOLDER_TMP_FOLDER, System.getProperty("java.io.tmpdir"));
         // essentials
         placeholderData.put(EssentialConst.PLACEHOLDER_ESSENTIALS_ROOT, getEssentialsDirectory().getAbsolutePath());
-
-
         return placeholderData;
     }
 
@@ -336,6 +355,27 @@ public class DefaultPluginContext implements PluginContext {
         } catch (RepositoryException e) {
             log.error("Error setting date instance", e);
             placeholderData.put(placeholderName, "1970-01-01T01:00:00.000+01:00");
+        }
+    }
+
+    private void fillInProperties() {
+        if(placeholderData==null){
+            return;
+        }
+        // check if already set:
+        if(placeholderData.containsKey(EssentialConst.TEMPLATE_PARAM_REPOSITORY_BASED)){
+            return;
+        }
+        // set boolean value for freemarker templates
+        final String templateName = (String) placeholderData.get(EssentialConst.PROP_TEMPLATE_NAME);
+        if (Strings.isNullOrEmpty(templateName) || templateName.equals(EssentialConst.TEMPLATE_JSP) || templateName.equals(EssentialConst.TEMPLATE_FREEMARKER)) {
+            addPlaceholderData(EssentialConst.TEMPLATE_PARAM_REPOSITORY_BASED, false);
+            addPlaceholderData(EssentialConst.TEMPLATE_PARAM_FILE_BASED, true);
+        } else {
+            // reset to freemarker
+            placeholderData.put(EssentialConst.PROP_TEMPLATE_NAME, EssentialConst.TEMPLATE_FREEMARKER);
+            addPlaceholderData(EssentialConst.TEMPLATE_PARAM_FILE_BASED, false);
+            addPlaceholderData(EssentialConst.TEMPLATE_PARAM_REPOSITORY_BASED, true);
         }
     }
 

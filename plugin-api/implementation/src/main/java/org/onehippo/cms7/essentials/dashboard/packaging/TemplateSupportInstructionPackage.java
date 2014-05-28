@@ -29,8 +29,8 @@ import com.google.common.collect.ImmutableSet;
  * <p>{@code templateName}</p>
  *
  * @version "$Id$"
- * @see DefaultInstructionPackage#PROP_SAMPLE_DATA
- * @see DefaultInstructionPackage#PROP_TEMPLATE_NAME
+ * @see org.onehippo.cms7.essentials.dashboard.utils.EssentialConst#PROP_SAMPLE_DATA
+ * @see org.onehippo.cms7.essentials.dashboard.utils.EssentialConst#PROP_TEMPLATE_NAME
  */
 public class TemplateSupportInstructionPackage extends DefaultInstructionPackage {
 
@@ -44,13 +44,13 @@ public class TemplateSupportInstructionPackage extends DefaultInstructionPackage
 
     @Override
     public Set<String> groupNames() {
-        final Boolean sampleData = Boolean.valueOf((String) getProperties().get(PROP_SAMPLE_DATA));
-        final String templateName = (String) getProperties().get(PROP_TEMPLATE_NAME);
+        final Boolean sampleData = Boolean.valueOf((String) getProperties().get(EssentialConst.PROP_SAMPLE_DATA));
+        final String templateName = (String) getProperties().get(EssentialConst.PROP_TEMPLATE_NAME);
         final String templateGroup = Strings.isNullOrEmpty(templateName) ? "jsp" : templateName;
         if (sampleData) {
             return new ImmutableSet.Builder<String>()
                     .add(EssentialConst.INSTRUCTION_GROUP_DEFAULT)
-                    .add(PROP_SAMPLE_DATA)
+                    .add(EssentialConst.PROP_SAMPLE_DATA)
                     .add(templateGroup).build();
         }
         return new ImmutableSet.Builder<String>()

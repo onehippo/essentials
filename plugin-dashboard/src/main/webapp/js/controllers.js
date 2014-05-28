@@ -39,10 +39,35 @@
         })
         .controller('introductionCtrl', function ($scope, $location, $sce, $log, $rootScope, $http) {
             // just sets a hide screen boolean flag to true
-            $scope.hide = function () {
-                $http.post($rootScope.REST.hide_introduction).success(function (data) {
+            $scope.addUrl = function () {
+                $scope.projectSettings.pluginRepositories.push('');
+            };
+
+            $scope.removeUrl = function (url) {
+                var idx = $scope.projectSettings.pluginRepositories.indexOf(url);
+                if (idx > -1) {
+                     $scope.projectSettings.pluginRepositories.splice(idx, 1);
+                }
+            };
+            $scope.getStarted = function () {
+                // mark setup as done...
+                $scope.projectSettings.setupDone = true;
+                $http.post($rootScope.REST.save_settings, $scope.projectSettings).success(function (data) {
+                    window.location = "/essentials";
+                });
+
+            }
+            $scope.setup = function () {
+                $http.get($rootScope.REST.project_settings).success(function (data) {
+                    $scope.projectSettings = data;
+                    // set some defaults
+                    $scope.projectSettings.templateLanguage = 'jsp';
+                    $scope.projectSettings.useSamples = true;
                 });
             }
+            // initialize
+            $scope.setup();
+
         })
         .controller('pluginCtrl', function ($scope, $location, $sce, $log, $rootScope, $http) {
 
