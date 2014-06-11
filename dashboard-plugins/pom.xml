@@ -68,6 +68,7 @@
     <module>faq-component-plugin</module>
     <module>ecm-tagging-plugin</module>
     <module>selection-plugin</module>
+    <module>tcmp-plugin</module>
   </modules>
   <dependencyManagement>
 
