@@ -39,6 +39,12 @@ import javax.ws.rs.core.MediaType;
 import org.hippoecm.repository.gallery.HippoGalleryNodeType;
 import org.hippoecm.repository.util.JcrUtils;
 import org.onehippo.cms7.essentials.dashboard.ctx.PluginContext;
+import org.onehippo.cms7.essentials.dashboard.instruction.PluginInstruction;
+import org.onehippo.cms7.essentials.dashboard.instruction.PluginInstructionSet;
+import org.onehippo.cms7.essentials.dashboard.instruction.XmlInstruction;
+import org.onehippo.cms7.essentials.dashboard.instruction.executors.PluginInstructionExecutor;
+import org.onehippo.cms7.essentials.dashboard.instructions.InstructionExecutor;
+import org.onehippo.cms7.essentials.dashboard.instructions.InstructionSet;
 import org.onehippo.cms7.essentials.dashboard.rest.BaseResource;
 import org.onehippo.cms7.essentials.dashboard.rest.MessageRestful;
 import org.onehippo.cms7.essentials.dashboard.rest.PostPayloadRestful;
@@ -183,9 +189,22 @@ public class GalleryPluginResource extends BaseResource {
                 while(nodes.hasNext()){
                     final Node imageFolderNode = nodes.nextNode();
                     imageFolderNode.setProperty("hippostd:foldertype", new String[]{folderName});
-                    imageFolderNode.setProperty("hippostd:gallerytype", new String[]{imageName});
+                    imageFolderNode.setProperty("hippostd:gallerytype", new String[]{newImageNamespace});
                 }
                 session.save();
+                // schedule updater script
+                final XmlInstruction instruction = new XmlInstruction();
+                instruction.setAction(PluginInstruction.COPY);
+                instruction.setSource("image_set_updater.xml");
+                instruction.setTarget("/hippo:configuration/hippo:update/hippo:queue");
+                final InstructionExecutor executor = new PluginInstructionExecutor();
+                final InstructionSet instructionSet = new PluginInstructionSet();
+                instructionSet.addInstruction(instruction);
+                getInjector().autowireBean(instruction);
+                getInjector().autowireBean(executor);
+                executor.execute(instructionSet, context);
+
+
             } catch (RepositoryException e) {
                 log.error("Error creating query nodes", e);
             } finally {
