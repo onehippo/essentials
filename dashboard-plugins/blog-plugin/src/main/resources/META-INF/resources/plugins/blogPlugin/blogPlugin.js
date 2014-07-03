@@ -43,7 +43,7 @@
             };
 
 
-            $scope.execute = function () {
+            $scope.configure = function () {
                 var payload = Essentials.addPayloadData("templateName", $scope.templateName, null);
                 Essentials.addPayloadData("sampleData", $scope.sampleData, payload);
                 Essentials.addPayloadData("pluginId", "blogPlugin", payload);
