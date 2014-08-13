@@ -17,7 +17,7 @@
 <div class="panel panel-default" ng-controller="contentBlocksCtrl">
     <div class="panel-heading">Content Blocks</div>
     <div class="panel-body">
-        <div class="infobox infobox-success"><p>{{introMessage}}</p>
+        <div class="alert alert-success"><p>{{introMessage}}</p>
             <p ng-bind-html="deliberatelyTrustDangerousSnippet"></p></div>
         <h4>Available Content Blocks</h4>
         <div class="alert-warning" ng-hide="providers.length > 0">
