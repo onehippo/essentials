@@ -74,16 +74,13 @@
       <%--<p class="navbar-text pull-left">
         version: ${project.version}
       </p>--%>
-      <div ng-show="NEEDS_REBUILD" class="navbar-text navbar-icons">
+      <div class="navbar-text navbar-icons">
         <a href="#/build" class="navbar-link">
-          <span class="fa fa-refresh"></span> System needs a rebuild
-        </a>
-        <a href="#/build" class="navbar-link">
-         <span  class="fa-stack">
-                            <span class="fa fa-circle fa-stack-2x fa-white"></span>
-                            <span class="fa fa-bell-o fa-stack-1x fa-danger"></span>
-         </span>
-
+          <span class="fa fa-refresh"></span> Rebuild
+          <span ng-show="NEEDS_REBUILD" class="fa-stack">
+            <span class="fa fa-circle fa-stack-2x fa-white"></span>
+            <span class="fa fa-bell-o fa-stack-1x fa-danger"></span>
+          </span>
         </a>
       </div>
     </div>
@@ -112,19 +109,6 @@
         <i class="fa fa-gavel fa-2x fa-fw fa-middle"></i>
         <span>Tools</span>
         <!--            <span class="badge  pull-right alert-info">{{TOTAL_TOOLS}}</span> -->
-      </a>
-    </li>
-    <li ng-class="{true:'active', false:''}[isPageSelected('#/build')]">
-      <a href="#/build">
-        <i ng-hide="NEEDS_REBUILD" class="fa fa-check-square-o fa-2x fa-fw fa-middle"></i>
-        <i ng-show="NEEDS_REBUILD" class="fa fa-exclamation-triangle fa-2x fa-fw fa-middle"></i>
-        <span>Build</span>
-            <span ng-show="NEEDS_REBUILD" class="badge pull-right alert-danger">
-              <i class="fa fa-bell"></i>
-            </span>
-            <span ng-hide="NEEDS_REBUILD" class="badge pull-right alert-success">
-              <i class="fa fa-check"></i>
-            </span>
       </a>
     </li>
     <li>
