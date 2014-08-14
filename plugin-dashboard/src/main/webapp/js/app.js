@@ -257,7 +257,26 @@
                 });
 
             };
+            $rootScope.getPageTitle = function() {
+                var myPath = $location.path();
 
+                // Map plugin-specific pages to the corresponding plugin-type page
+                if (myPath.slice(0, "/plugins".length) == "/plugins") {
+                    myPath = '/installed-features';
+                }
+                else if (myPath.slice(0, "/tools".length) == "/tools") {
+                    myPath = '/tools';
+                }
+
+                var pageMap = {
+                    '/introduction': 'Setup',
+                    '/library': 'Library',
+                    '/installed-features': 'Installed features',
+                    '/tools': 'Tools'
+                };
+
+                return  pageMap[myPath];
+            };
 
             $rootScope.initData();
         })

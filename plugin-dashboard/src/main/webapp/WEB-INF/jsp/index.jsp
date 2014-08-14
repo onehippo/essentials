@@ -71,9 +71,7 @@
       </button>
       <span class="badge notification-badge">{{TOTAL_NEEDS_ATTENTION}}</span>
       <a class="navbar-brand" href="#">Hippo Essentials</a>
-      <%--<p class="navbar-text pull-left">
-        version: ${project.version}
-      </p>--%>
+      <p class="navbar-text pull-left">{{getPageTitle()}}</p>
       <div class="navbar-text navbar-icons">
         <a href="#/build" class="navbar-link">
           <span class="fa fa-refresh"></span> Rebuild
@@ -82,6 +80,7 @@
             <span class="fa fa-bell-o fa-stack-1x fa-danger"></span>
           </span>
         </a>
+        <%--hierzo--%>
       </div>
     </div>
   </div>
@@ -91,7 +90,7 @@
   <ul class="nav navbar-nav">
     <li ng-class="{true:'active', false:''}[isPageSelected('#/library')]">
       <a href="#/library">
-        <i class="fa fa-cubes fa-2x fa-fw fa-middle"></i>
+        <i class="fa fa-shopping-cart fa-2x fa-fw fa-middle"></i>
         <span>Library</span>
       </a>
     </li>
