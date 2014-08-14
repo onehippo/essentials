@@ -60,7 +60,7 @@
 <body id="container" ng-cloak ng-class="feedbackMessages.length ? 'body-push':''">
 <essentials-notifier ng-show="feedbackMessages.length" messages="feedbackMessages"></essentials-notifier>
 
-<div class="hippo-navbar navbar navbar-default">
+<div class="hippo-navbar navbar navbar-default" ng-controller="navbarCtrl">
   <div class="container-fluid">
     <div class="navbar-header">
       <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".sidebar-navbar-collapse">
@@ -80,7 +80,10 @@
             <span class="fa fa-bell-o fa-stack-1x fa-danger"></span>
           </span>
         </a>
-        <%--hierzo--%>
+        <a ng-click="showMessages()" ng-show="feedbackMessages.length && showMessagesNavbarLink">
+          <span class="fa fa-info-circle"></span>
+          <span class="badge pull-right alert-info">{{feedbackMessages.length}}</span>
+        </a>
       </div>
     </div>
   </div>
