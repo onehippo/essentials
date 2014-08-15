@@ -183,7 +183,7 @@
                         $http.post($rootScope.REST.package_install, $scope.payload).success(function (data) {
                             $rootScope.$broadcast('update-plugin-install-state', {
                                 'pluginId': $scope.pluginId,
-                                'state': $scope.plugin.installState
+                                'state': 'installing'
                             });
                             $location.path('/installed-features');
                         });
@@ -407,7 +407,6 @@
                     $scope.messagesLoaded = false; // Flag for lazy loading
                     $scope.showChanges = false;
                     $scope.hasMessages = !!$scope.plugin.packageFile;
-                    $log.info('plugin ', $scope.plugin.name, ' has messages ', $scope.hasMessages);
                 }
             }
         })
