@@ -233,7 +233,7 @@ public class GalleryPluginResource extends BaseResource {
                         final Node imageFolderNode = galleryRoot.addNode(imageSetName,"hippogallery:stdImageGallery");
                         imageFolderNode.setProperty("hippostd:foldertype", new String[]{folderName});
                         imageFolderNode.setProperty("hippostd:gallerytype", new String[]{newImageNamespace});
-
+                        messages.add(new MessageRestful("Successfully created image folder: " +  absPath));
                     }
 
 
