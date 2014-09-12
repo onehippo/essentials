@@ -20,7 +20,7 @@
   <parent>
     <groupId>org.onehippo.cms7</groupId>
     <artifactId>hippo-cms7-project</artifactId>
-    <version>25</version>
+    <version>26</version>
   </parent>
 
   <name>Hippo CMS7 Site Toolkit Maven Archetypes</name>
@@ -29,7 +29,7 @@
   </description>
 
   <artifactId>essentials-archetype</artifactId>
-  <version>1.02.02-SNAPSHOT</version>
+  <version>2.00.02-SNAPSHOT</version>
   <packaging>pom</packaging>
 
   <properties>
@@ -104,6 +104,7 @@
               <excludes combine.children="append">
                 <!-- skip archetype resources itself (but should not contain 3rd party copyrighted/licensed content) -->
                 <exclude>website/src/**</exclude>
+                <exclude>sync-marker.txt</exclude>
               </excludes>
             </configuration>
           </plugin>
