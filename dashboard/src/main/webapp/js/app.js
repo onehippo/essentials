@@ -210,9 +210,9 @@
                 documents: root + '/documents/',
                 documents_compounds: root + '/documents/' + 'compounds',
                 documents_documents: root + '/documents/' + 'documents',
-                documents_template_queries: root + '/documents/' + 'templatequeries'
+                documents_template_queries: root + '/documents/' + 'templatequeries',
 
-
+                feedback: root + '/feedback/'
             };
 
             /**

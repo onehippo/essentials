@@ -48,6 +48,7 @@
       <ref bean="nodeResource"/>
       <ref bean="pluginResource"/>
       <ref bean="documentResource"/>
+      <bean class="org.onehippo.cms7.essentials.rest.FeedbackResource"/>
       <!-- API -->
       <ref bean="swaggerResourceJSON"/>
 

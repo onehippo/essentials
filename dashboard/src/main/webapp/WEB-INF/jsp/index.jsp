@@ -110,8 +110,8 @@
             Tools
           </a>
         </li>
-        <li>
-          <a target="_blank" href="https://issues.onehippo.com/rest/collectors/1.0/template/form/a23eddf8?os_authType=none">
+        <li ng-class="{true:'active', false:''}[isPageSelected('#/feedback')]">
+          <a href="#/feedback">
             <i class="fa fa-pencil fa-fw"></i>
             Feedback</a>
         </li>

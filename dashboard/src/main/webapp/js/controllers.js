@@ -192,5 +192,17 @@
                 $rootScope.$broadcast('show-messages');
             };
             $scope.showMessagesNavbarLink = false;
+        }])
+        .controller('feedbackCtrl', ['$scope', '$rootScope', '$location', '$log', '$http', function ($scope, $rootScope, $location, $log, $http) {
+            $scope.get = function() {
+                $http.get($rootScope.REST.feedback + "ESSENTIALS-398").success(function (data) {
+                    $log.warn(data);
+                });
+            };
+            $scope.post = function() {
+                $http.post($rootScope.REST.feedback, "Hello World").success(function () {
+                    $log.warn("POST success!");
+                });
+            };
         }]);
 })();

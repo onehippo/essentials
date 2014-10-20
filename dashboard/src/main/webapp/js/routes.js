@@ -60,6 +60,11 @@
                         return 'tool/' + $stateParams.id + '/' + $stateParams.id + '.html';
                     }
                 })
+                .state('feedback', {
+                    url: '/feedback',
+                    templateUrl: 'pages/feedback.html',
+                    controller: 'feedbackCtrl'
+                })
                 .state('build', {
                     url: '/build',
                     templateUrl: 'pages/build.html',
