@@ -105,7 +105,7 @@
 -->
   <instructionSet>
     <file binary="true" action="copy" source="instructions/js/bootstrap.min.js" target="{{javascriptRoot}}/bootstrap.min.js"/>
-    <file binary="true" action="copy" source="instructions/js/jquery-2.1.0.min.js" target="{{javascriptRoot}}/jquery-2.1.0.min.js"/>
+    <file binary="true" action="copy" source="instructions/js/jquery-1.11.2.min.js" target="{{javascriptRoot}}/jquery-1.11.2.min.js"/>
     <file action="copy" binary="true" source="instructions/bootstrap/css/bootstrap.css" target="{{siteWebRoot}}/css/bootstrap.css"/>
     <file action="copy" binary="true" source="instructions/bootstrap/css/bootstrap.min.css" target="{{siteWebRoot}}/css/bootstrap.min.css"/>
     <file action="copy" binary="true" source="instructions/css/cms-request.css" target="{{siteWebRoot}}/css/cms-request.css"/>

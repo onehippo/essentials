@@ -30,7 +30,7 @@ instructions/bootstrap/**
     THE SOFTWARE.
 
 ------------------------------------------------------------------------------------------------------------------------
-/instructions/js/jquery-2.1.0.min.js
+/instructions/js/jquery-1.11.2.min.js
 
     jQuery is released under the MIT License.
 

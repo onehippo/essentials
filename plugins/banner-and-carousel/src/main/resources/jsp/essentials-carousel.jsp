@@ -76,7 +76,7 @@
   </style>
 
   <hst:headContribution category="htmlBodyEnd">
-    <script type="text/javascript" src="<hst:link path="/js/jquery-2.1.0.min.js"/>"></script>
+    <script type="text/javascript" src="<hst:link path="/js/jquery-1.11.2.min.js"/>"></script>
     </hst:headContribution>
     <hst:headContribution category="htmlBodyEnd">
       <script type="text/javascript" src="<hst:link path="/js/bootstrap.min.js"/>"></script>

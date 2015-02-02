@@ -598,7 +598,7 @@ dashboard/src/main/webapp/js/lib/ui-bootstrap-tpls*
     THE SOFTWARE.
 
 ------------------------------------------------------------------------------------------------------------------------
-plugins/skeleton-package/src/main/resources/instructions/js/jquery-2.1.0.min.js
+plugins/skeleton-package/src/main/resources/instructions/js/jquery-1.11.2.min.js
 
     jQuery is released under the MIT License.
 
